@@ -58,11 +58,19 @@ new mysql, logs_skill_high;
 #define SPDF ShowPlayerDialogf
 
 #define str_f(%0,%1) format(SQL_STRING, sizeof SQL_STRING, %0, %1), SQL_STRING
+#define CallTimeOutFunction SetTimerEx
+
+stock sql_get_row(id_0, _:id_1[], array_size = sizeof(id_1)) 
+{
+	for new i; i < array_size; i++ do
+		cache_get_row(id_0, id_1[i], SQL_GET_ROW_STR[i], mysql);
+}
 
 //======================================[ modules ]================================================//
 
 #include modules/remove_build.pwn // удаление зданий
 #include modules/data.pwn // массивы и цвета
+#include modules/player_actions.pwn // массивы и цвета
 
 //=====================================[ global server settings ]==================================//
 
@@ -125,7 +133,7 @@ public OnGameModeInit()
     SetTimer("ServerTimer", 1000, true);
     SetTimer("UpdatePlayer", 250, true);
 
-	printf("ilya.amx was database connect_id [%d]", logs_skill_high = CallRemoteFunction("@CONNECTION_LOG_BASE", "d", Global_Time));
+	printf("main.amx was database connect_id [%d] (day %d)", logs_skill_high = CallRemoteFunction("@CONNECTION_LOG_BASE", "d", Global_Time, day_of_week));
 
 	print("  [Game Mode]: Инициализация успешно завершена!");
 	return 1;
@@ -211,72 +219,6 @@ public OnPlayerConnect(playerid)
 	return 1;
 }
 
-stock ShowLoginDialog(playerid)
-	return SPDF(playerid, 2, DIALOG_STYLE_PASSWORD, !"Авторизация", !"Принять", !"Контекст", "{FFFFFF}Добро пожаловать\n\nВведите свой пароль\n{FFFFFF}Попыток для ввода пароля: {28910B}%d", gPlayerLogTries{playerid});
-
-public: GetPlayerDataMysql(playerid)
-{	
-	if( cache_get_row_count(mysql) > 0 ) 
-		PI[playerid][pID] = cache_get_row_int(0, 0, mysql),
-		cache_get_row(0, 1, PlayerMail[playerid], mysql, 50);
-		
-	else PI[playerid][pID] = -1;
-	
-	if(PI[playerid][pID] != -1)
-	{
-		ShowLoginDialog(playerid);
-    }
-	else
-	{
-		RegisterState[playerid] = 1;
-	   	ShowRegisterDialog(playerid, RegisterState[playerid]);
-	}
-	
-	TogglePlayerSpectating(playerid, true);
-	InterpolateCameraPos(playerid, 2172.266601, -1044.046997, 73.755760, 2172.266601, -1044.046997, 73.755760, 10000000);
-	InterpolateCameraLookAt(playerid, 2168.682861, -1047.527832, 73.553215, 2168.682861, -1047.527832, 73.553215, 1000);
-	
-	f(global_str, 150, "SELECT * FROM `banip` WHERE `IP` = '%s' LIMIT 1", PlayerIp[playerid]);
-    mysql_tquery(mysql, global_str, "MysqlCheckPlayerBanIP", "d", playerid);
-	
-	return true;
-}
-stock Autorisation(playerid)
-{
-    SetPlayerVirtualWorld(playerid, 567);
-	if(PI[playerid][pID] != -1) ShowLoginDialog(playerid);
-	else
-	{
-	    RegisterState[playerid] = 1;
-	   	ShowRegisterDialog(playerid, RegisterState[playerid]);
-	}
-	return 1;
-}
-stock ShowGrandRegiserDialog(playerid)
-{
-	f(global_str, 400, "{FFFFFF}Добро пожаловать, %s\n\nАккаунт не зарегистрирован.\nВведите пароль для регистрации.\nОн потребуется для входа на сервер.\n\n{FF0000}\tПримечания:\n\t- 6–30 символов\n\t- Только буквы и цифры\n\t- Учитывается регистр", PN(playerid));
-	return SPD(playerid, 1, DIALOG_STYLE_INPUT, "Регистрация", global_str, !"Принять", !"Выход");
-}
-stock ShowRegisterDialog(playerid, rstate)
-{
-	switch rstate do  {
-	    case 1: ShowGrandRegiserDialog(playerid);
-	    case 2: SPD(playerid, 1, DIALOG_STYLE_LIST, !"Регистрация", "Мужчина\nЖенщина", !"Принять", !"Выход");
-	    case 3: SPD(playerid, 1, DIALOG_STYLE_INPUT, !"Регистрация", "{FFFFFF}Введите ник игрока пригласившего вас.\nПример: Ivan_Ivanov\n", !"Принять", !"Выход");
-        default: return 0; 
-	}
-	return 1;
-}
-public: MysqlCheckPlayerBanIP(playerid)
-{
-	if(cache_get_row_count(mysql) > 0)
-	{
-	    SCM(playerid, COLOR_RED, !"Вы заблокированы на сервере!");
-		Kick(playerid);
-		return 1;
-	}
-	return 1;
-}
 stock ClearChatForPlayer(playerid)
 {
 	for(new i; i < 20; i ++) SCM(playerid, -1, !" ");
@@ -317,12 +259,72 @@ public OnVehicleDeath(vehicleid, killerid)
 
 public OnPlayerText(playerid, text[])
 {
+	if !IsPlayerLogged{playerid} *then return false;
+
+ 	if(GetString(text, "xD"))
+	{
+		f(global_str, 18 + MAX_PLAYER_NAME, "%s валяется от смеха", PN(playerid));
+		ProxDetector(25, playerid, global_str, COLOR_ME);
+		return 0;
+	}
+	if(GetString(text, "("))
+	{
+		f(global_str, 36, "%s грустит", PN(playerid));
+		ProxDetector(25, playerid, global_str, COLOR_ME);
+		return 0;
+	}
+	if(GetString(text, "(("))
+	{
+		f(global_str, 50, "%s сильно расстроился", PN(playerid));
+		ProxDetector(25, playerid, global_str, COLOR_ME);
+		return 0;
+	}
+	if(GetString(text, "чВ"))
+	{
+		f(global_str, 48, "%s валяется от смеха", PN(playerid));
+		ProxDetector(25, playerid, global_str, COLOR_ME);
+		return 0;
+	}
+	if(GetString(text, ")"))
+	{
+		f(global_str, 39, "%s улыбается", PN(playerid));
+		ProxDetector(25, playerid, global_str, COLOR_ME);
+		return 0;
+	}
+	if(GetString(text, "))"))
+	{
+		f(global_str, 39, "%s смеётся", PN(playerid));
+		ProxDetector(25, playerid, global_str, COLOR_ME);
+		return 0;
+	}
+
+	f(global_str, 300, "- %s {FF0000}(%s)[%d]", text, PN(playerid), playerid);
+	ProxDetector(30.0, playerid, global_str, -1);
+
+	if(GetPlayerState(playerid) == PLAYER_STATE_ONFOOT)
+	{
+		ApplyAnimation(playerid, !"PED", !"IDLE_CHAT", 4.1, 0, 1, 1, 1, 1, 1);
+		CallTimeOutFunction("ClearAnim", 100 * strlen(text), false, "d", playerid);
+	}
+	SetPlayerChatBubble(playerid, text, COLOR_WHITE, 20.0, 10000);
 	return 1;
 }
 
-public OnPlayerCommandText(playerid, cmdtext[])
+public: ClearAnim(playerid) return ApplyAnimation(playerid, !"CARRY", !"crry_prtial", 4.0, 0, 0, 0, 0, 0, 1);
+
+stock ProxDetector(Float:radi, playerid, string[], color)
 {
-	return 0;
+	if(IsPlayerConnected(playerid))
+	{
+		new Float:X, Float:Y, Float:Z;
+		GetPlayerPos(playerid, X, Y, Z);
+		
+		foreach(new i: Player)
+		{
+			if (IsPlayerInRangeOfPoint(i,radi,X,Y,Z) && GetPlayerVirtualWorld(i) == GetPlayerVirtualWorld(playerid)) SCM(i, color, string);
+		}
+	}
+	return 1;
 }
 
 public OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)
@@ -340,42 +342,12 @@ public OnPlayerStateChange(playerid, newstate, oldstate)
 	return 1;
 }
 
-public OnPlayerEnterCheckpoint(playerid)
-{
-	return 1;
-}
-
-public OnPlayerLeaveCheckpoint(playerid)
-{
-	return 1;
-}
-
 public OnPlayerEnterRaceCheckpoint(playerid)
 {
 	return 1;
 }
 
-public OnPlayerLeaveRaceCheckpoint(playerid)
-{
-	return 1;
-}
-
-public OnRconCommand(cmd[])
-{
-	return 1;
-}
-
 public OnPlayerRequestSpawn(playerid)
-{
-	return 1;
-}
-
-public OnObjectMoved(objectid)
-{
-	return 1;
-}
-
-public OnPlayerObjectMoved(playerid, objectid)
 {
 	return 1;
 }
@@ -390,22 +362,7 @@ public OnVehicleMod(playerid, vehicleid, componentid)
 	return 1;
 }
 
-public OnVehiclePaintjob(playerid, vehicleid, paintjobid)
-{
-	return 1;
-}
-
 public OnVehicleRespray(playerid, vehicleid, color1, color2)
-{
-	return 1;
-}
-
-public OnPlayerSelectedMenuRow(playerid, row)
-{
-	return 1;
-}
-
-public OnPlayerExitedMenu(playerid)
 {
 	return 1;
 }
@@ -420,45 +377,8 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	return 1;
 }
 
-public OnRconLoginAttempt(ip[], password[], success)
-{
-	return 1;
-}
-
 public OnPlayerUpdate(playerid)
 {
-	return 1;
-}
-
-public OnPlayerStreamIn(playerid, forplayerid)
-{
-	return 1;
-}
-
-public OnPlayerStreamOut(playerid, forplayerid)
-{
-	return 1;
-}
-
-public OnVehicleStreamIn(vehicleid, forplayerid)
-{
-	return 1;
-}
-
-public OnVehicleStreamOut(vehicleid, forplayerid)
-{
-	return 1;
-}
-
-stock CheckPassword(pass[])
-{
-	for(new i; i < strlen(pass); i ++)
-	{
-	    if( (pass[i] >= 'a' && pass[i] <= 'z') ||
-		(pass[i] >= 'A' && pass[i] <= 'Z') ||
-		(pass[i] >= '0' && pass[i] <= '9')  ) continue;
-		else return 0;
-	}
 	return 1;
 }
 
@@ -529,29 +449,9 @@ stock SetString(param_1[], param_2[], size = 300)
 	return strmid(param_1, param_2, 0, strlen(param_2), size);
 }
 
-public: OnPlayerRegister(playerid, const password[])
+stock GetString(param1[],param2[])
 {
-	if cache_get_row_count() *then
-	{
-		SCM(playerid, -1, !"Регистрация аккаунта прервана. Выберите другой никнейм");
-
-		return Kick(playerid);
-	}
-
-	new y, m, d;
-
-	getdate(y, m, d);
-	
-	f(mysql_string, 12, "%d-%d-%d", y, m, d);
-
-	f(global_str, 1024, "INSERT INTO `accounts` (`NickName`,`Password`,`RegIP`,`Score`,`Sex`,`Referal`,`Mail`,`Money`, \
-	`Bank`,`Donate`,`DataReg`) VALUE ('%s', '%s', '%s', '1', '%i', '%s', \
-	'No Mail Adress', '1000', '0', '0', '%s')",\
-	PN(playerid), MD5_Hash(password), PlayerIP(playerid), RegSex[playerid], RegReferal[playerid], mysql_string);
-	
-	mysql_tquery(mysql, global_str, "OnPlayerRegisterMysql", "d", playerid);
-	
-	return true;
+	return !strcmp(param1, param2, false);
 }
 
 stock PlayerIP(playerid)
@@ -559,87 +459,6 @@ stock PlayerIP(playerid)
 	return PlayerIp[playerid];
 }
 
-public: OnPlayerRegisterMysql(playerid)
-{
-    PI[playerid][pID] = cache_insert_id(mysql);
-	
-	RegisterState[playerid] = 0;
-    ClearChatForPlayer(playerid);
-
-	SCM(playerid, COLOR_LIGHTYELLOW, !"Добро пожаловать на Малиновку!");
-	SCM(playerid, COLOR_LIGHTYELLOW, !"Загружаем данные сессии. Пожалуйства подождите...");
-	SCM(playerid, COLOR_LIGHTYELLOW, "Меню помощи - /help, стандартное управление голосовым чатом: X (англ) - говорить");
-
-	UpdatePlayerHealth(playerid, 100);
-
-	return OnPlayerLogin(playerid);
-}
-
-stock OnPlayerLogin(playerid)
-{
-    if IsPlayerLogged{playerid} || PI[playerid][pID] == -1 *then	
-		return Kick(playerid);
-   	
-	//f(global_str, 150, "SELECT * FROM `Bans` WHERE BINARY `Name` = '%s' LIMIT 1", PN(playerid));
-	//mysql_tquery(mysql, global_str, "MysqlCheckBanOnLogin", "ds", playerid, PN(playerid));
-
-	f(global_str, 100, "SELECT * FROM `accounts` WHERE `ID` = '%i' LIMIT 1", PI[playerid][pID]);
-	mysql_tquery(mysql, global_str, "OnPlayerLoadData", "d", playerid);
-	
-    return true;
-}
-
-stock CheckPlayerLogged(playerid, Name[])
-{
-	foreach(Player, i)
-	{
-		if playerid == i *then 
-			continue; 
-
-		if !strcmp(PlayerName[i], Name, true) *then
-		{
-			if IsPlayerLogged{i} *then
-			{	
-				return false;
-			}
-
-			return true;
-		}
-	}
-
-	return 2;
-}
-
-public: OnPlayerLoadData(playerid)
-{
-	if !CheckPlayerLogged(playerid, PlayerName[playerid]) *then
-	{
-		SCM(playerid, -1, "Внутриигровая ошибка. Вы отключены от сервера ( Данный аккаунт уже авторизован ).");
-		return Kick(playerid);
-	}
-	else if !cache_get_row_count() *then
-		return Kick(playerid);
-
-	cache_get_row(0, 1, PlayerName[playerid], mysql, MAX_PLAYER_NAME);
-
-    PI[playerid][pID] = cache_get_row_int(0, 0, mysql);
-	
-    cache_get_row(0, 3, PlayerRegIP[playerid], mysql, 16);
-    cache_get_row(0, 4, PlayerIp[playerid], mysql, 16);
-    cache_get_row(0, 5, PlayerReferal[playerid], mysql, MAX_PLAYER_NAME);
-    cache_get_row(0, 6, PlayerMail[playerid], mysql, 50);
-
-    PI[playerid][pAdmin] = cache_get_row_int(0, 7, mysql);
-    PI[playerid][pMoney] = cache_get_row_int(0, 8, mysql);
-    PI[playerid][pScore] = cache_get_row_int(0, 9, mysql);
-    PI[playerid][pExp] = cache_get_row_int(0, 10, mysql);
-	PI[playerid][pHealth] = cache_get_row_int(0, 109, mysql);
-	cache_get_row(0, 154, PI[playerid][pLastIP], mysql, 16);
-	//---------
-	GetPlayerIp(playerid, PI[playerid][pLastIP], 16);
-	PreloadAllAnimLibs(playerid);
-	return PlayerSpawn(playerid);
-}
 
 public: PlayerSpawn(playerid)
 {
@@ -663,6 +482,8 @@ stock SettingSpawn(playerid)
 	SetSpawnInfoEx(playerid, skin, 167.5974,-109.2371,1.5501,272.6516);
 	SetPlayerInterior(playerid, 0);
 	SetPlayerVirtualWorld(playerid, 0);
+
+	return true;
 }
 
 stock SetSpawnInfoEx(playerid, skin, Float:x, Float:y, Float:z, Float:a)

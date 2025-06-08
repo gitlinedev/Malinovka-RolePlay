@@ -10,6 +10,7 @@
 #define COLOR_GREY              0xAFAFAFAA
 #define COLOR_GREEN 			0x42B02CFF
 #define COLOR_RED 			    0xcc3366FF
+#define COLOR_ME           	 	0xFF99FFFF
 
 //static const AdminPassword[8] = {5673, 4657, 1345, 9755, 7367, 2556, 8086, 6769};
 
