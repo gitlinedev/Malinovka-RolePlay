@@ -52,7 +52,9 @@ enum PlayerInfo {
     pScore,
     pExp,
 	Float:pHealth,
-	pLastIP[16]
+	pLastIP[16],
+	pBank,
+	pDonate,
 };
 new PI[MAX_PLAYERS][PlayerInfo];
 
@@ -68,6 +70,8 @@ stock ClearPlayerData(playerid)
     PI[playerid][pAdmin] =
     PI[playerid][pMoney] =
     PI[playerid][pScore] =
+	PI[playerid][pDonate] =
+	PI[playerid][pBank] =
     PI[playerid][pExp] = 0;
 
     gPlayerLogTries{playerid} = 3;

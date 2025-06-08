@@ -72,6 +72,8 @@ public: OnPlayerRegisterMysql(playerid)
 	SCM(playerid, COLOR_LIGHTYELLOW, !"Загружаем данные сессии. Пожалуйства подождите...");
 	SCM(playerid, COLOR_LIGHTYELLOW, "Меню помощи - /help, стандартное управление голосовым чатом: X (англ) - говорить");
 
+	SendClientMessagef(playerid, -1, "Name %s", PlayerName[playerid]);
+
 	UpdatePlayerHealth(playerid, 100);
 
 	return OnPlayerLogin(playerid);
@@ -93,7 +95,7 @@ public: OnPlayerRegister(playerid, const password[])
 
 	f(global_str, 1024, "INSERT INTO `accounts` (`NickName`,`Password`,`RegIP`,`Score`,`Sex`,`Referal`,`Mail`,`Money`, \
 	`Bank`,`Donate`,`DataReg`) VALUE ('%s', '%s', '%s', '1', '%i', '%s', \
-	'No Mail Adress', '1000', '0', '0', '%s')",\
+	'No Mail Adress', '1000000', '0', '0', '%s')",\
 	PN(playerid), MD5_Hash(password), PlayerIP(playerid), RegSex[playerid], RegReferal[playerid], mysql_string);
 	
 	mysql_tquery(mysql, global_str, "OnPlayerRegisterMysql", "d", playerid);

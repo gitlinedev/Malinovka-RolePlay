@@ -68,23 +68,23 @@ stock sql_get_row(id_0, _:id_1[], array_size = sizeof(id_1))
 
 //======================================[ modules ]================================================//
 
-#include modules/remove_build.pwn // СѓРґР°Р»РµРЅРёРµ Р·РґР°РЅРёР№
-#include modules/data.pwn // РјР°СЃСЃРёРІС‹ Рё С†РІРµС‚Р°
-#include modules/player_actions.pwn // РјР°СЃСЃРёРІС‹ Рё С†РІРµС‚Р°
+#include modules/remove_build.pwn // удаление зданий
+#include modules/data.pwn // массивы и цвета
+#include modules/player_actions.pwn // массивы и цвета
 
 //=====================================[ global server settings ]==================================//
 
 #define Mode_Names 					   "Malinovka"
-#define Mode_Text                      "Malinovka | РРіСЂР° РїСЂРѕ Р РѕСЃСЃРёСЋ"
+#define Mode_Text                      "Malinovka | Игра про Россию"
 
 #define Mode_Site 		               "server-site.com"
 #define Mode_Forum 					   "forum.server-site.com"
 
 // MySQL
 #define DB_HOST						   "localhost"
-#define DB_USER						   "root"
-#define DB_TABLE					   "malinovka"
-#define DB_PASSWORD					   ""
+#define DB_USER						   "gs99002"
+#define DB_TABLE					   "gs99002"
+#define DB_PASSWORD					   "983Orange1MySQL152SQls399PHP"
 #define DB_PORT						   3306
 
 main()
@@ -102,10 +102,11 @@ public OnGameModeInit()
 	mysql = mysql_connect(DB_HOST, DB_USER, DB_TABLE, DB_PASSWORD, DB_PORT);
 
 	if !mysql_errno(mysql) *then
-		print("  [Data Base]: РћС€РёР±РѕРє РЅРµ РІС‹СЏРІР»РµРЅРѕ, Р·Р°РіСЂСѓР·РєР° РїСЂРѕРґРѕР»Р¶Р°РµС‚СЃСЏ!");
+		print("  [Data Base]: Ошибок не выявлено, загрузка продолжается!");
 	else
-		printf("  [Data Base]: РќР°Р№РґРµРЅРЅР° РѕС€РёР±РєР° '%d', РїРѕРІС‚РѕСЂСЏРµРј РїРѕРґРєР»СЋС‡РµРЅРёРµ.", mysql_errno(mysql));
+		printf("  [Data Base]: Найденна ошибка '%d', повторяем подключение.", mysql_errno(mysql));
 
+	mysql_log(LOG_ERROR | LOG_WARNING);
 	mysql_set_charset("cp1251", mysql);
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -135,7 +136,7 @@ public OnGameModeInit()
 
 	printf("main.amx was database connect_id [%d] (day %d)", logs_skill_high = CallRemoteFunction("@CONNECTION_LOG_BASE", "d", Global_Time, day_of_week));
 
-	print("  [Game Mode]: РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СѓСЃРїРµС€РЅРѕ Р·Р°РІРµСЂС€РµРЅР°!");
+	print("  [Game Mode]: Инициализация успешно завершена!");
 	return 1;
 }
 
@@ -200,6 +201,7 @@ stock IsValidNickName(const player[MAX_PLAYER_NAME])
 } 
 public OnPlayerConnect(playerid)
 {
+	ClearPlayerData(playerid);
 	GetPlayerName(playerid, PlayerName[playerid], MAX_PLAYER_NAME);
 
 	if !IsValidNickName(PlayerName[playerid]) *then
@@ -209,7 +211,6 @@ public OnPlayerConnect(playerid)
 	SetPlayerVirtualWorld(playerid, 1228);
 	SetPlayerWeather(playerid, WeatherServer);
 	ClearChatForPlayer(playerid);
-	ClearPlayerData(playerid);
 
 	f(global_str, 150, "SELECT `ID`, `Mail` FROM accounts WHERE NickName = '%s' LIMIT 1;", PlayerName[playerid]);
     mysql_tquery(mysql, global_str, "GetPlayerDataMysql", "d", playerid);
@@ -227,7 +228,7 @@ stock ClearChatForPlayer(playerid)
 public: SetRandomWeather() 
 {
 	new rand = random(sizeof Weather);
-	SendClientMessageToAllf(COLOR_GREEN, "[РџСЂРѕРіРЅРѕР· РїРѕРіРѕРґС‹] РІ РѕР±Р»Р°СЃС‚Рё РѕР¶РёРґР°РµС‚СЃСЏ %s (+%d В°РЎ)", Weather[rand][WeatherName], Weather[rand][WeatherDegrees]);
+	SendClientMessageToAllf(COLOR_GREEN, "[Прогноз погоды] в области ожидается %s (+%d °С)", Weather[rand][WeatherName], Weather[rand][WeatherDegrees]);
     WeatherServer = Weather[rand][WeatherId];
 	return SetWeather(WeatherServer);
 }
@@ -263,37 +264,37 @@ public OnPlayerText(playerid, text[])
 
  	if(GetString(text, "xD"))
 	{
-		f(global_str, 18 + MAX_PLAYER_NAME, "%s РІР°Р»СЏРµС‚СЃСЏ РѕС‚ СЃРјРµС…Р°", PN(playerid));
+		f(global_str, 18 + MAX_PLAYER_NAME, "%s валяется от смеха", PN(playerid));
 		ProxDetector(25, playerid, global_str, COLOR_ME);
 		return 0;
 	}
 	if(GetString(text, "("))
 	{
-		f(global_str, 36, "%s РіСЂСѓСЃС‚РёС‚", PN(playerid));
+		f(global_str, 36, "%s грустит", PN(playerid));
 		ProxDetector(25, playerid, global_str, COLOR_ME);
 		return 0;
 	}
 	if(GetString(text, "(("))
 	{
-		f(global_str, 50, "%s СЃРёР»СЊРЅРѕ СЂР°СЃСЃС‚СЂРѕРёР»СЃСЏ", PN(playerid));
+		f(global_str, 50, "%s сильно расстроился", PN(playerid));
 		ProxDetector(25, playerid, global_str, COLOR_ME);
 		return 0;
 	}
-	if(GetString(text, "С‡Р’"))
+	if(GetString(text, "чВ"))
 	{
-		f(global_str, 48, "%s РІР°Р»СЏРµС‚СЃСЏ РѕС‚ СЃРјРµС…Р°", PN(playerid));
+		f(global_str, 48, "%s валяется от смеха", PN(playerid));
 		ProxDetector(25, playerid, global_str, COLOR_ME);
 		return 0;
 	}
 	if(GetString(text, ")"))
 	{
-		f(global_str, 39, "%s СѓР»С‹Р±Р°РµС‚СЃСЏ", PN(playerid));
+		f(global_str, 39, "%s улыбается", PN(playerid));
 		ProxDetector(25, playerid, global_str, COLOR_ME);
 		return 0;
 	}
 	if(GetString(text, "))"))
 	{
-		f(global_str, 39, "%s СЃРјРµС‘С‚СЃСЏ", PN(playerid));
+		f(global_str, 39, "%s смеётся", PN(playerid));
 		ProxDetector(25, playerid, global_str, COLOR_ME);
 		return 0;
 	}
@@ -435,7 +436,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		       	 	RegisterState[playerid] --;
 					ShowRegisterDialog(playerid,RegisterState[playerid]);
 				}
-				else SPD(playerid, 2, DIALOG_STYLE_MSGBOX, !"{FFFFFF}РџСЂРµРєСЂР°С‰РµРЅРёРµ | {ae433d}Р РµРіРёСЃС‚СЂР°С†РёСЏ", !"{FFFFFF}Р’С‹ РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ Р¶РµР»Р°Р№С‚Рµ РїСЂРµСЂРІР°С‚СЊ СЂРµРіРёСЃС‚СЂР°С†РёСЋ?", !"Р”Р°", !"РќРµС‚");
+				else SPD(playerid, 2, DIALOG_STYLE_MSGBOX, !"{FFFFFF}Прекращение | {ae433d}Регистрация", !"{FFFFFF}Вы действительно желайте прервать регистрацию?", !"Да", !"Нет");
 
 			}
 			return 1;
@@ -477,9 +478,9 @@ public: PlayerSpawn(playerid)
 stock SettingSpawn(playerid)
 {
 	if IsPlayerNPC(playerid) *then return 1;
-	new skin;
+	new skin = 24; // 24 - skin id for player
 
-	SetSpawnInfoEx(playerid, skin, 167.5974,-109.2371,1.5501,272.6516);
+	SetSpawnInfoEx(playerid, skin, 1803.5269, 2506.7034, 15.8725, 308.2673);
 	SetPlayerInterior(playerid, 0);
 	SetPlayerVirtualWorld(playerid, 0);
 
