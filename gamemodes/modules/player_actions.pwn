@@ -12,17 +12,17 @@ public: OnPlayerLoadData(playerid)
 
     PI[playerid][pID] = cache_get_row_int(0, 0, mysql);
 	
-    cache_get_row(0, 3, PlayerRegIP[playerid], mysql, 16);
+    cache_get_row(0, 4, PlayerRegIP[playerid], mysql, 16);
     cache_get_row(0, 4, PlayerIp[playerid], mysql, 16);
-    cache_get_row(0, 5, PlayerReferal[playerid], mysql, MAX_PLAYER_NAME);
-    cache_get_row(0, 6, PlayerMail[playerid], mysql, 50);
+    cache_get_row(0, 9, PlayerReferal[playerid], mysql, MAX_PLAYER_NAME);
+    cache_get_row(0, 10, PlayerMail[playerid], mysql, 50);
 
-    PI[playerid][pAdmin] = cache_get_row_int(0, 7, mysql);
-    PI[playerid][pMoney] = cache_get_row_int(0, 8, mysql);
-    PI[playerid][pScore] = cache_get_row_int(0, 9, mysql);
-    PI[playerid][pExp] = cache_get_row_int(0, 10, mysql);
-	PI[playerid][pHealth] = cache_get_row_int(0, 109, mysql);
-	cache_get_row(0, 154, PI[playerid][pLastIP], mysql, 16);
+    PI[playerid][pAdmin] = cache_get_row_int(0, 2, mysql);
+    PI[playerid][pMoney] = cache_get_row_int(0, 11, mysql);
+    PI[playerid][pScore] = cache_get_row_int(0, 6, mysql);
+    PI[playerid][pExp] = cache_get_row_int(0, 7, mysql);
+	PI[playerid][pHealth] = cache_get_row_int(0, 15, mysql);
+	cache_get_row(0, 4, PI[playerid][pLastIP], mysql, 16);
 	//---------
 	GetPlayerIp(playerid, PI[playerid][pLastIP], 16);
 	PreloadAllAnimLibs(playerid);
@@ -48,13 +48,30 @@ stock CheckPlayerLogged(playerid, Name[])
 
 	return 2;
 }
-stock OnPlayerLogin(playerid)
+stock OnPlayerLogin(playerid, Reg = 0)
 {
     if IsPlayerLogged{playerid} || PI[playerid][pID] == -1 *then	
 		return Kick(playerid);
    	
 	//f(global_str, 150, "SELECT * FROM `Bans` WHERE BINARY `Name` = '%s' LIMIT 1", PN(playerid));
 	//mysql_tquery(mysql, global_str, "MysqlCheckBanOnLogin", "ds", playerid, PN(playerid));
+
+	SCM(playerid, COLOR_BLACKBLUE, !"Добро пожаловать на Малиновка!");
+	SCM(playerid, COLOR_LIGHTYELLOW, !"Загружаем данные сессии. Пожалуйства подождите...");
+	SCM(playerid, COLOR_LIGHTYELLOW, !"Меню помощи - /help, стандартное управление голосовым чатом: X (англ) - говорить");
+
+	if(Reg == 1)
+	{
+		SCM(playerid, 0xCC6666FF, !"Для комфортной игры используйте команды {ffff99}/help /menu /gps");
+		SCM(playerid, 0xCC6666FF, !"Ваш дальнейший путь ограничен только Вашей фантазией и мотивацией");
+		SCM(playerid, 0xCC6666FF, !"Предлагаем небольшую подсказку возможных действий для быстрого развития:");
+		SCM(playerid, 0xCC6666FF, !"Для начала рекомендуем Вам отправиться на одну из временных работ {ffff99}(/gps 2 1-4)");
+		SCM(playerid, 0xCC6666FF, !"Для водительских прав и трудоустройства на работу требуется медицинская справка из БЦРБ {ffff99}(/gps 4 1)");
+		SCM(playerid, 0xCC6666FF, !"Заработав немного денег, Вы сможете сдать на права в автошколе {ffff99}(/gps 1 10)");
+		SCM(playerid, 0xCC6666FF, !"На сервере можно арендовать транспорт за небольшую сумму на срок до трёх дней {ffff99}(/gps 1 10)");
+		SCM(playerid, 0xCC6666FF, !"Перейдя на 2 уровень не забудьте посетить любую мэрию {ffff99}(/gps 3 1-3){cc6666}, там можно устроиться на работу");
+		SCM(playerid, 0xCC6666FF, !"Желаем приятной игры. При возникновении вопросов смело задавайте их игровым мастерам {ffff99}(/report или /menu > 6)");
+	}
 
 	f(global_str, 100, "SELECT * FROM `accounts` WHERE `ID` = '%i' LIMIT 1", PI[playerid][pID]);
 	mysql_tquery(mysql, global_str, "OnPlayerLoadData", "d", playerid);
@@ -68,15 +85,9 @@ public: OnPlayerRegisterMysql(playerid)
 	RegisterState[playerid] = 0;
     ClearChatForPlayer(playerid);
 
-	SCM(playerid, COLOR_LIGHTYELLOW, !"Добро пожаловать на Малиновку!");
-	SCM(playerid, COLOR_LIGHTYELLOW, !"Загружаем данные сессии. Пожалуйства подождите...");
-	SCM(playerid, COLOR_LIGHTYELLOW, "Меню помощи - /help, стандартное управление голосовым чатом: X (англ) - говорить");
-
-	SendClientMessagef(playerid, -1, "Name %s", PlayerName[playerid]);
-
 	UpdatePlayerHealth(playerid, 100);
 
-	return OnPlayerLogin(playerid);
+	return OnPlayerLogin(playerid, 1);
 }
 public: OnPlayerRegister(playerid, const password[])
 {
@@ -113,8 +124,32 @@ stock CheckPassword(pass[])
 	}
 	return 1;
 }
+
+public: LoginDialogMysql(playerid, inputtext[])
+{
+	static password[50];
+ 	cache_get_row(0, 0, password, mysql);
+
+	if strcmp(MD5_Hash(inputtext), password, true) == 0 *then
+	{
+		OnPlayerLogin(playerid);
+	}
+	else
+	{
+		gPlayerLogTries{playerid} --;
+		
+		if (gPlayerLogTries{playerid} <= 0)
+			return SCM(playerid, -1, "Вы исчерпали количество попыток. Вы отключены от сервера"), Kick(playerid);
+			
+	    f(global_str, 270,"\
+	    {FFFFFF}Добро пожаловать на игровой сервер {EE3366}Malinovka RolePlay{FFFFFF}\nВведите свой пароль чтобы зайти на сервер:\n\n{FFFFFF}Попыток для ввода пароля: {EE3366}%d",gPlayerLogTries{playerid});
+	    return SPD(playerid, 2, 3, !"{EE3366}Авторизация", global_str, !"Далее", !"Отмена");
+	}
+	return 1;
+}
+
 stock ShowLoginDialog(playerid)
-	return SPDF(playerid, 2, DIALOG_STYLE_PASSWORD, !"Авторизация", !"Принять", !"Контекст", "{FFFFFF}Добро пожаловать\n\nВведите свой пароль\n{FFFFFF}Попыток для ввода пароля: {28910B}%d", gPlayerLogTries{playerid});
+	return SPDF(playerid, 2, DIALOG_STYLE_PASSWORD, !"{EE3366}Авторизация", !"Далее", !"Отмена", "{FFFFFF}Добро пожаловать\n\nВведите свой пароль\n{FFFFFF}Попыток для ввода пароля: {EE3366}%d", gPlayerLogTries{playerid});
 
 public: GetPlayerDataMysql(playerid)
 {	
@@ -134,9 +169,8 @@ public: GetPlayerDataMysql(playerid)
 	   	ShowRegisterDialog(playerid, RegisterState[playerid]);
 	}
 	
-	TogglePlayerSpectating(playerid, true);
-	InterpolateCameraPos(playerid, 2172.266601, -1044.046997, 73.755760, 2172.266601, -1044.046997, 73.755760, 10000000);
-	InterpolateCameraLookAt(playerid, 2168.682861, -1047.527832, 73.553215, 2168.682861, -1047.527832, 73.553215, 1000);
+	SpecPl(playerid, true);
+	InterpolateCameraLookAt(playerid, 1819.755981, 2093.590820, 20.097853, 1819.755981, 2093.590820, 20.097853, 150000, CAMERA_MOVE);
 	
 	f(global_str, 150, "SELECT * FROM `banip` WHERE `IP` = '%s' LIMIT 1", PlayerIp[playerid]);
     mysql_tquery(mysql, global_str, "MysqlCheckPlayerBanIP", "d", playerid);
@@ -156,15 +190,15 @@ stock Autorisation(playerid)
 }
 stock ShowGrandRegiserDialog(playerid)
 {
-	f(global_str, 400, "{FFFFFF}Добро пожаловать, %s\n\nАккаунт не зарегистрирован.\nВведите пароль для регистрации.\nОн потребуется для входа на сервер.\n\n{FF0000}\tПримечания:\n\t- 6–30 символов\n\t- Только буквы и цифры\n\t- Учитывается регистр", PN(playerid));
-	return SPD(playerid, 1, DIALOG_STYLE_INPUT, "Регистрация", global_str, !"Принять", !"Выход");
+	f(global_str, 400, "{FFFFFF}Добро пожаловать на игровой серрвер {EE3366}Malinovka RolePlay{FFFFFF}\nДля начала игры необходимо зарегистрировать аккаунт.\n\nПожалуйста, придумайте пароль, который в дальнейшем\nбудет использоваться для авториации на сервере.\n\nВнимание! Не используйте простые и короткие пароли\nВведите будущий пароль в поле ниже и нажмите \"Далее\"");
+	return SPD(playerid, 1, DIALOG_STYLE_INPUT, "{EE3366}Регистрация", global_str, !"Далее", !"Отмена");
 }
 stock ShowRegisterDialog(playerid, rstate)
 {
 	switch rstate do  {
 	    case 1: ShowGrandRegiserDialog(playerid);
-	    case 2: SPD(playerid, 1, DIALOG_STYLE_LIST, !"Регистрация", "Мужчина\nЖенщина", !"Принять", !"Выход");
-	    case 3: SPD(playerid, 1, DIALOG_STYLE_INPUT, !"Регистрация", "{FFFFFF}Введите ник игрока пригласившего вас.\nПример: Ivan_Ivanov\n", !"Принять", !"Выход");
+	    case 2: SPD(playerid, 3, DIALOG_STYLE_MSGBOX, !"{EE3366}Пол", !"{FFFFFF}Выберите пол Вашего будущего персонажа", !"Мужской", !"Женский");
+	    case 3: SPD(playerid, 1, DIALOG_STYLE_INPUT, !"{EE3366}Ник пригласившего игрока", !"{FFFFFF}Если Вы попали на наш сервер благодаря своему\nдругу, то напишите его игровой никнейм в поле ниже", !"Ввести", !"Пропустить");
         default: return 0; 
 	}
 	return 1;

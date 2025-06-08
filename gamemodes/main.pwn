@@ -240,6 +240,13 @@ public OnPlayerDisconnect(playerid, reason)
 
 public OnPlayerSpawn(playerid)
 {
+	new hour, minute, second;
+	gettime(hour, minute, second);
+	SetPlayerTime(playerid, hour, minute);
+	SetPlayerWeather(playerid, WeatherServer);
+	StopAudioStreamForPlayer(playerid);
+
+	SettingSpawn(playerid);
 	return 1;
 }
 
@@ -410,13 +417,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						else if(!CheckPassword(inputtextsave)) return ShowRegisterDialog(playerid,RegisterState[playerid]);
 						RegisterState[playerid] = 2;
 						mysql_real_escape_string(inputtextsave, RegPass[playerid]);
-						ShowRegisterDialog(playerid,RegisterState[playerid]);
-					}
-					case 2:
-					{
-					    RegisterState[playerid] = 3;
-				        ShowRegisterDialog(playerid,RegisterState[playerid]);
-				        RegSex[playerid] = listitem+1;
+						ShowRegisterDialog(playerid, RegisterState[playerid]);
 					}
 				    case 3:
 				    {
@@ -436,10 +437,26 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		       	 	RegisterState[playerid] --;
 					ShowRegisterDialog(playerid,RegisterState[playerid]);
 				}
-				else SPD(playerid, 2, DIALOG_STYLE_MSGBOX, !"{FFFFFF}Прекращение | {ae433d}Регистрация", !"{FFFFFF}Вы действительно желайте прервать регистрацию?", !"Да", !"Нет");
+				else SPD(playerid, 2, DIALOG_STYLE_MSGBOX, !"{EE3366}Регистрация", !"{FFFFFF}Вы действительно желайте прервать регистрацию?", !"Да", !"Нет");
 
 			}
 			return 1;
+		}
+		case 2:
+		{
+			if !response *then return Kick(playerid);
+			else if !strlen(inputtext) *then  return ShowLoginDialog(playerid);
+			
+			f(global_str, 150, "SELECT `Password` FROM `accounts` WHERE `NickName` = '%s' LIMIT 1", PN(playerid));
+			mysql_tquery(mysql, global_str, "LoginDialogMysql", "ds", playerid, inputtext);
+			return true;
+		}
+		case 3: 
+		{
+			if(response) RegSex[playerid] = 1;
+			else if(!response) RegSex[playerid] = 2;
+			RegisterState[playerid] = 3;
+			ShowRegisterDialog(playerid, RegisterState[playerid]);
 		}
 	}
 	return 1;
@@ -471,16 +488,21 @@ public: PlayerSpawn(playerid)
 		SetPlayerPos(playerid, X ,Y, Z);
 	}
  	SettingSpawn(playerid);
-	SpawnPlayer(playerid);
+	if pTemp[playerid][SpectPlayer] == true *then SpecPl(playerid, false);
+	else SpawnPlayer(playerid);
 	return 1;
 }
-
+stock SpecPl(playerid, bool:spec)
+{
+	pTemp[playerid][SpectPlayer] = spec;
+	TogglePlayerSpectating(playerid, spec);
+}
 stock SettingSpawn(playerid)
 {
 	if IsPlayerNPC(playerid) *then return 1;
 	new skin = 24; // 24 - skin id for player
 
-	SetSpawnInfoEx(playerid, skin, 1803.5269, 2506.7034, 15.8725, 308.2673);
+	SetSpawnInfoEx(playerid, skin, 1802.0438, 2505.7705, 15.8725, 304.8401);
 	SetPlayerInterior(playerid, 0);
 	SetPlayerVirtualWorld(playerid, 0);
 
@@ -501,6 +523,8 @@ public OnPlayerClickPlayer(playerid, clickedplayerid, source)
 {
 	return 1;
 }
+
+CMD:test(playerid) return SetPlayerSkin(playerid, 35);
 
 stock PreloadAllAnimLibs(playerid)
 {

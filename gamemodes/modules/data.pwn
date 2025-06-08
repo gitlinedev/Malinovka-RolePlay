@@ -11,6 +11,7 @@
 #define COLOR_GREEN 			0x42B02CFF
 #define COLOR_RED 			    0xcc3366FF
 #define COLOR_ME           	 	0xFF99FFFF
+#define COLOR_BLACKBLUE			0x3366ccFF
 
 //static const AdminPassword[8] = {5673, 4657, 1345, 9755, 7367, 2556, 8086, 6769};
 
@@ -45,6 +46,12 @@ new RegPass[MAX_PLAYERS][30];
 new RegSex[MAX_PLAYERS];
 new RegReferal[MAX_PLAYERS][24];
 
+enum _temp_
+{
+	bool:SpectPlayer,
+}
+new pTemp[MAX_PLAYERS][_temp_];
+
 enum PlayerInfo {
     pID,
     pAdmin,
@@ -73,6 +80,8 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pDonate] =
 	PI[playerid][pBank] =
     PI[playerid][pExp] = 0;
+
+	pTemp[playerid][SpectPlayer] = false;
 
     gPlayerLogTries{playerid} = 3;
 	return 1;
