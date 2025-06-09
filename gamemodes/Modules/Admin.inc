@@ -130,9 +130,6 @@ CMD:makegm(playerid, params[])
 
     pTemp[playerid][targetID] = params[0];
 
-    f(global_str, 128, "SELECT * FROM admin WHERE name = '%s'", PN(params[0]));
-	mysql_tquery(mysql, global_str, "SetAdmin", "isi", playerid, PN(params[0]), params[1]);
-
 	return SPD(playerid, 5, DIALOG_STYLE_LIST, !"{ee3366}Выдача прав игрового мастера", !"Снять права игрового мастера\n1. NGM\n2. JRGM\n3. GM\n4. GM+\n5. LGM\n6. SGM\n7. SGM+\n8. DEV", !"Далее", !"Отмена");
 }
 
