@@ -1,5 +1,5 @@
 // if !IsPlayerLogged{playerid} *then return false;
-// #define COLOR_PURPLE           	 	0xFF99FFFF
+// #define COLOR_PURPLE           	 	0xFF99CCFF
 
 cmd:me(playerid, params[])
 {
@@ -47,5 +47,16 @@ cmd:b(playerid, params[])
 	if IsAIP(global_str) *then return 0;
 	f(global_str,150, "(( %s[%d]: %s ))", PN(playerid), playerid, global_str);
 	ProxDetector(2,playerid, global_str, COLOR_BLUE);
+	return 1;
+}
+CMD:s(playerid, params[])
+{
+    if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
+	if sscanf(params,"s[100]",global_str) *then return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /s [текст]");
+    if IsAIP(global_str) *then return 0;
+	SetPlayerChatBubble(playerid, params[0], -1, 25.0, 5000);
+    f(global_str, 200, "%s[%d] крикнул: %s", PN(playerid), playerid, params[0]);
+	ProxDetector(25, playerid, global_str, -1);
+	if(!IsPlayerInAnyVehicle(playerid))	ApplyAnimationEx(playerid, "ON_LOOKERS", "shout_01",1000.0,0,0,0,0,0,1);
 	return 1;
 }

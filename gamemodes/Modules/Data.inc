@@ -10,11 +10,12 @@
 #define COLOR_GREY              0xAFAFAFFF
 #define COLOR_GREEN 			0x42B02CFF
 #define COLOR_RED 			    0xcc3366FF
-#define COLOR_PURPLE           	0xFF99FFFF
+#define COLOR_PURPLE           	0xFF99CCFF
 #define COLOR_BLACKBLUE			0x3366ccFF
 #define COLOR_LIGHTGREY 		0xCCCCCCFF
 #define COLOR_ADMINCHAT         0x8FBEDBFF
 #define COLOR_JOBYELLOW 		0xFFCD00FF
+#define COLOR_HINT 				0x6699FFFF
 
 new WeatherServer;
 
@@ -31,8 +32,17 @@ new Weather[][WeatherData] = {
 	{"ясная погода", 18, 36}
 };
 
+enum cInfo
+{
+    cID,
+ 	Float:cFuel,
+	cCreate,
+};
+new CarInfo[Max_Cars][cInfo];
+
 new gPlayerLogTries[MAX_PLAYERS char],
 	bool:ALogin[MAX_PLAYERS char],
+	bool:AnimPlayed[MAX_PLAYERS char],
 	bool:IsPlayerLogged[MAX_PLAYERS char];
 
 new PlayerMail[MAX_PLAYERS][50],
@@ -60,6 +70,7 @@ enum PlayerInfo {
 	pModer,
     pMoney,
     pScore,
+	pSex,
     pExp,
 	Float:pHealth,
 	Float:pArmour,
@@ -89,10 +100,10 @@ stock ClearPlayerData(playerid)
 	PlayerName[playerid][0] = EOS;
 	
 
-    PI[playerid][pID] = 
+    PI[playerid][pID] = -1;
 	PI[playerid][pWarnsTime] =
 	PI[playerid][pJailTime] =
-	PI[playerid][pMuteTime] = -1;
+	PI[playerid][pMuteTime] = 0;
 	
     PI[playerid][pAdmin] =
 	PI[playerid][pAdminNumber] =
@@ -106,6 +117,7 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pJail] =
 	PI[playerid][pMute] =
 	PI[playerid][pWanted] =
+	PI[playerid][pSex] = 0;
 	PI[playerid][pModer] =
     PI[playerid][pExp] = 0;
 
@@ -113,6 +125,7 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pHealth] = 0.0;
 
 	ALogin{playerid} =
+	AnimPlayed{playerid} =
 	pTemp[playerid][SpectPlayer] = false;
 
 	pTemp[playerid][targetID] = INVALID_PLAYER_ID;

@@ -22,6 +22,7 @@ public: OnPlayerLoadData(playerid)
     PI[playerid][pMoney] = cache_get_row_int(0, 11, mysql);
     PI[playerid][pScore] = cache_get_row_int(0, 6, mysql);
     PI[playerid][pExp] = cache_get_row_int(0, 7, mysql);
+	PI[playerid][pSex] = cache_get_row_int(0, 8, mysql);
 	PI[playerid][pHealth] = cache_get_row_int(0, 15, mysql);
 	PI[playerid][pArmour] = cache_get_row_int(0, 16, mysql);
 	PI[playerid][pMute] = cache_get_row_int(0, 17, mysql);
@@ -119,10 +120,8 @@ public: MysqlCheckBanOnLogin(playerid, namez[])
 			SQL("UPDATE `accounts` SET `Warns` = '0' WHERE `ID` = '%d' LIMIT 1", PI[playerid][pID]),
 		    SQL("DELETE FROM `bans` WHERE `Name` = '%s' LIMIT 1", PN(playerid));
     }
-
     f(global_str, 100, "SELECT * FROM `accounts` WHERE `ID` = '%i' LIMIT 1", PI[playerid][pID]);
 	mysql_tquery(mysql, global_str, "OnPlayerLoadData", "d", playerid);
-	
 	return true;
 }
 public: OnPlayerRegisterMysql(playerid)
@@ -217,7 +216,8 @@ public: GetPlayerDataMysql(playerid)
 	}
 	
 	SpecPl(playerid, true);
-	InterpolateCameraLookAt(playerid, 1819.755981, 2093.590820, 20.097853, 1819.755981, 2093.590820, 20.097853, 150000, CAMERA_MOVE);
+	InterpolateCameraPos(playerid, 1864.6229, 2067.9146, 25.7431, 1864.6229, 2067.9146, 25.7431, 10000000);
+	InterpolateCameraLookAt(playerid, 1821.6516, 2095.7375, 16.1631, 1821.6516, 2095.7375, 16.1631, 1000);
 	
 	f(global_str, 150, "SELECT * FROM `banip` WHERE `IP` = '%s' LIMIT 1", PlayerIp[playerid]);
     mysql_tquery(mysql, global_str, "MysqlCheckPlayerBanIP", "d", playerid);
@@ -280,18 +280,20 @@ stock accounts_OnDialogResponse(playerid, dialogid, response, inputtextsave[])
 					}
 				    case 3:
 				    {
-						SetString(RegReferal[playerid],"No Referal");
-						mysql_tquery(mysql, (str_f("SELECT `ID` FROM accounts WHERE NickName = BINARY('%s') LIMIT 1;", PlayerName[playerid])), "OnPlayerRegister", "ds", playerid, RegPass[playerid]);
-
-				        //mysql_format(mysql, global_str, 256, "SELECT `ID` FROM `accounts` WHERE `NickName` = '%s' LIMIT 1", inputtextsave);
-				        //mysql_tquery(mysql, global_str, "MysqlCheckNickReferal", "ds", playerid, inputtextsave);
+						mysql_format(mysql, global_str, 256, "SELECT `ID` FROM `accounts` WHERE `NickName` = '%s' LIMIT 1", inputtextsave);
+				        mysql_tquery(mysql, global_str, "MysqlCheckNickReferal", "ds", playerid, inputtextsave);
 				    }
 				    default: return 0;
 				}
 			}
 			else
 			{
-		        if(RegisterState[playerid] > 1)
+				if (RegisterState[playerid] == 3)
+				{
+					SetString(RegReferal[playerid],"No Referal"),
+					mysql_tquery(mysql, (str_f("SELECT `ID` FROM accounts WHERE NickName = BINARY('%s') LIMIT 1;", PlayerName[playerid])), "OnPlayerRegister", "ds", playerid, RegPass[playerid]);
+				}
+		        else if(RegisterState[playerid] > 1)
 		        {
 		       	 	RegisterState[playerid] --;
 					ShowRegisterDialog(playerid,RegisterState[playerid]);
@@ -319,4 +321,68 @@ stock accounts_OnDialogResponse(playerid, dialogid, response, inputtextsave[])
 		}
 	}
 	return 1;
+}
+public: MysqlCheckNickReferal(playerid, inputtext[])
+{
+	if(!strlen(inputtext) || ( cache_get_row_count(mysql)>0 && !GetString(inputtext, PlayerName[playerid]) ) )
+    {
+
+		mysql_tquery(mysql, (str_f("SELECT `ID` FROM accounts WHERE NickName = BINARY('%s') LIMIT 1;", PlayerName[playerid])), "OnPlayerRegister", "ds", playerid, RegPass[playerid]);
+
+		if(!strlen(inputtext)) SetString(RegReferal[playerid],"No Referal");
+		else
+		{
+			mysql_real_escape_string(inputtext, RegReferal[playerid]);
+			SCMF(playerid, COLOR_HINT, "[Информация]: {FFFFFF}Вы указали игрока {6699ff}%s{FFFFFF} в качестве пригласившего Вас игрока.", RegReferal[playerid]);
+		}
+   	}
+   	else
+   	{
+		SCM(playerid, COLOR_GREY, !"Игрок не найден.");
+   	    ShowRegisterDialog(playerid, RegisterState[playerid]);
+   	}
+   	return 1;
+}
+
+stock SaveAccount(playerid)
+{
+    if !IsPlayerOnline(playerid) *then return false;
+	
+	new ORM:orm = orm_create("accounts");
+	
+	// Integer
+	orm_addvar_int(orm, PI[playerid][pID], "ID");
+	
+	orm_addvar_int(orm, PI[playerid][pScore], "Score");
+	orm_addvar_int(orm, PI[playerid][pExp], "Exp");
+	orm_addvar_int(orm, PI[playerid][pSex], "Sex");
+	orm_addvar_int(orm, PI[playerid][pAdmin], "Admin");
+	orm_addvar_int(orm, PI[playerid][pMoney], "Money");
+	orm_addvar_int(orm, PI[playerid][pBank], "Bank");
+	orm_addvar_int(orm, PI[playerid][pDonate], "Donate");
+	orm_addvar_int(orm, PI[playerid][pMute], "Mute");
+	orm_addvar_int(orm, PI[playerid][pMuteTime], "MuteTime");
+	orm_addvar_int(orm, PI[playerid][pJail], "Jail");
+	orm_addvar_int(orm, PI[playerid][pJailTime], "JailTime");
+	orm_addvar_int(orm, PI[playerid][pWarns], "Warns");
+	orm_addvar_int(orm, PI[playerid][pWarnsTime], "WarnsTime");
+	orm_addvar_int(orm, PI[playerid][pHospital], "Hospital");
+	orm_addvar_int(orm, PI[playerid][pSkin], "Skin");
+	orm_addvar_int(orm, PI[playerid][pWanted], "Wanted");
+	orm_addvar_int(orm, PI[playerid][pAdminNumber], "AdminNumber");
+	
+	//Float
+	orm_addvar_float(orm, PI[playerid][pHealth], "Health");
+	orm_addvar_float(orm, PI[playerid][pArmour], "Armour");
+	
+	//String
+	orm_addvar_string(orm, PlayerMail[playerid], 50, "Mail");
+	orm_addvar_string(orm, PI[playerid][pLastIP], 16, "LastIP");
+	
+	orm_setkey(orm, "ID");
+	
+	orm_update(orm);
+	orm_destroy(orm);
+
+	return true;
 }

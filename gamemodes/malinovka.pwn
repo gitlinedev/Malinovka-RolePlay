@@ -1,3 +1,5 @@
+// доработать
+
 @include_a_samp_();
 @include_a_samp_()
 {
@@ -58,6 +60,7 @@ new mysql;
 #define SPD ShowPlayerDialog
 #define SPDF ShowPlayerDialogf
 
+#define IsPlayerOnline(%0) (!(%0 == INVALID_PLAYER_ID) && IsPlayerLogged{%0} && IsPlayerConnected(%0))
 #define SAMF(%0,%1,%2) format(global_str, 256, %1,%2), SendAdminsMessage(%0, global_str)
 #define SQL(%0,%1) format(SQL_STRING, sizeof SQL_STRING, %0, %1), mysql_tquery(mysql, SQL_STRING)
 #define str_f(%0,%1) format(SQL_STRING, sizeof SQL_STRING, %0, %1), SQL_STRING
@@ -74,6 +77,13 @@ stock sql_get_row(id_0, _:id_1[], array_size = sizeof(id_1))
 		cache_get_row(id_0, id_1[i], SQL_GET_ROW_STR[i], mysql);
 }
 
+new PlayerDialogList[MAX_PLAYERS][64];
+
+#define spdList(%0,%1,%2) PlayerDialogList[%0][%1] = %2
+#define gpdList(%0,%1) PlayerDialogList[%0][%1]
+
+//======================================[ limits ]================================================//
+#define Max_Cars 					   2000
 //======================================[ modules ]================================================//
 
 #include Modules/RemoveBuild // удаление зданий
@@ -82,6 +92,7 @@ stock sql_get_row(id_0, _:id_1[], array_size = sizeof(id_1))
 #include Modules/DefaultCMD // команды по умолчанию
 #include Modules/Admin // система админов
 #include Modules/SQL // работа с базой данных
+#include Modules/VoiceChat // работа с базой данных
 
 //=====================================[ global server settings ]==================================//
 
@@ -160,6 +171,10 @@ public: ServerTimer()
    	getdate(year,month,day);
    	Global_Time = gettime(hour,minuite,second);
 
+	if minuite == 45 && second == 0 *then
+	{
+		SetRandomWeather();
+	}
 
 	if second == 0 *then
 	{
@@ -179,10 +194,13 @@ public OnGameModeExit()
 
 public OnPlayerRequestClass(playerid, classid)
 {
-	SetPlayerPos(playerid, 1958.3783, 1343.1572, 15.3746);
-	SetPlayerCameraPos(playerid, 1958.3783, 1343.1572, 15.3746);
-	SetPlayerCameraLookAt(playerid, 1958.3783, 1343.1572, 15.3746);
-	return 1;
+    SetSpawnInfo(playerid, 255, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0);
+	if(IsPlayerLogged{playerid})
+	{
+		PlayerSpawn(playerid);
+		//GetSkinOfPlayer(playerid); доработать
+	}
+	return 0;
 }
 
 stock getDayEx()
@@ -220,6 +238,14 @@ public OnPlayerConnect(playerid)
 	SetPlayerWeather(playerid, WeatherServer);
 	ClearChatForPlayer(playerid);
 
+	if SvGetVersion(playerid) == SV_NULL *then SCM(playerid, 0xEE83F0AA, !"[VoiceChat] {FFFFFF}загрузка плагина произошла {FFFF33}неуспешно (NULL)");
+    else if SvHasMicro(playerid) == SV_FALSE *then SCM(playerid, 0xEE83F0AA, !"[VoiceChat] {FFFFFF}загрузка плагина произошла {FFFF33}c ошибкой (MIC)");
+    else if ((lstream[playerid] = SvCreateDLStreamAtPlayer(40.0, 0xEE83F0AA, playerid, 0xff0000ff, !"")))
+    {
+        if (gstream) SvAttachListenerToStream(gstream, playerid);
+        SvAddKey(playerid, 0x58);
+    }
+
 	f(global_str, 150, "SELECT `ID`, `Mail` FROM accounts WHERE NickName = '%s' LIMIT 1;", PlayerName[playerid]);
     mysql_tquery(mysql, global_str, "GetPlayerDataMysql", "d", playerid);
 
@@ -245,10 +271,17 @@ public OnPlayerDisconnect(playerid, reason)
 	if IsPlayerLogged{playerid} *then
 	{
 		if Iter_Contains(Admin, playerid) *then Iter_Remove(Admin, playerid);
-		
+		SaveAccount(playerid);
 		IsPlayerLogged{playerid} = false;
 	}
 	PlayerName[playerid][0] = EOS;
+	
+	new DisconnectReason[3][] = {
+        "Таймаут/Краш",
+        "Выход",
+        "Кик/Бан"
+    };
+	printf("*[Player Disconnect]*: %s (%d) - %s", PN(playerid), playerid, DisconnectReason[reason]);
 	return 1;
 }
 
@@ -346,7 +379,7 @@ public OnPlayerText(playerid, text[])
 	f(global_str, 300, "- %s {FF0000}(%s)[%d]", text, PN(playerid), playerid);
 	ProxDetector(30.0, playerid, global_str, -1);
 
-	if(GetPlayerState(playerid) == PLAYER_STATE_ONFOOT)
+	if(GetPlayerState(playerid) == PLAYER_STATE_ONFOOT && !AnimPlayed{playerid})
 	{
 		ApplyAnimation(playerid, !"PED", !"IDLE_CHAT", 4.1, 0, 1, 1, 1, 1, 1);
 		CallTimeOutFunction("ClearAnim", 100 * strlen(text), false, "d", playerid);
@@ -659,4 +692,61 @@ stock IsAIP(text[])
 	for(new i = 0;i < strlen(text); i++) if('0' <= text[i] <= '9') if(!('0' <= text[i+1] <= '9')) numbers ++;
 	if(numbers >= 4) return 1;
 	return 0;
+}
+
+stock ApplyAnimationEx(playerid, animlib[], animname[], Float:speed = 4.0, ab = 0, abc = 0, abcd = 0, abcde = 0, abcdef = 0, abcdefg = 1)
+{
+	return ApplyAnimation(playerid, animlib, animname, speed, ab, abc, abcd, abcde, abcdef, abcdefg);
+}
+stock ClearAnimationsEx(playerid)
+{
+    ClearAnimations(playerid);
+    ApplyAnimationEx(playerid, "BD_FIRE", "BD_Fire1", 4.1, 0, 0, 0, 0, 1, 1);
+	AnimPlayed{playerid} = false;
+	return true;
+}
+stock UpdatePlayerPos(playerid, Float:X, Float:Y, Float:Z, Float:A = -1.0)
+{
+	if !(A == -1.0) *then SetPlayerFacingAngle(playerid, A);
+
+	return Streamer_UpdateEx(playerid, X,Y,Z, -1, -1, -1, 500, 1);
+}
+
+stock SetPlayerSkinEx(playerid, skin)
+{
+	SetPlayerSkin(playerid, skin);
+	UpdatePlayerDataInt(playerid, "Skin", PI[playerid][pSkin]);
+	return 1;
+}
+stock SetPlayerArmourEx(playerid, Float:armour)
+{
+	if IsPlayerNPC(playerid) *then return 1;
+
+	PI[playerid][pArmour] = armour;
+	return SetPlayerArmour(playerid, armour);
+}
+stock ShiftCords(style, &Float:x, &Float:y, Float:a, Float:distance)
+{
+	switch(style)
+	{
+	    case 0:
+	    {
+	        x += (distance * floatsin(-a, degrees));
+			y += (distance * floatcos(-a, degrees));
+	    }
+	    case 1:
+		{
+		    x -= (distance * floatsin(-a, degrees));
+			y -= (distance * floatcos(-a, degrees));
+		}
+		default: return 0;
+	}
+	return 1;
+}
+stock ClearCarData(car) 
+{
+	CarInfo[car][cID] = INVALID_VEHICLE_ID;
+
+	CarInfo[car][cFuel] =
+	CarInfo[car][cCreate] = 0;
 }
