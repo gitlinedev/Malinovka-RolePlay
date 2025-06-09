@@ -86,10 +86,10 @@ stock sql_get_row(id_0, _:id_1[], array_size = sizeof(id_1))
 //=====================================[ global server settings ]==================================//
 
 #define Mode_Names 					   "Malinovka"
-#define Mode_HostName                  "Malinovka | Игра про Россию"
+#define Mode_HostName                  "Malinovka RolePlay | Сервер #1"
 
-#define Mode_Site 		               "server-site.com"
-#define Mode_Forum 					   "forum.server-site.com"
+#define Mode_Site 		               "m-bonus.com"
+#define Mode_Forum 					   "forum.m-bonus.com"
 
 // MySQL
 #define DB_HOST						   "localhost"
