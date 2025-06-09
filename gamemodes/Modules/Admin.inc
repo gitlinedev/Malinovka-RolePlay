@@ -23,7 +23,8 @@ new Iterator:Admin<MAX_PLAYERS>;
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 cmd:as(playerid)
 {
-    if(CheckAccess(playerid, 1)) return 1;
+    if PI[playerid][pAdmin] < 1 *then
+        return 0;
 
 	if !ALogin{playerid} *then return 
 		SPD(playerid, 4, DIALOG_STYLE_PASSWORD, !"{EE3366}Авторизация", !"{FFFFFF}Для получения доступа к правам {EE3366}игрового мастера{FFFFFF}\n необходимо подтвердить личность, введя пароль.", !"Далее", !"Отмена");
@@ -110,9 +111,12 @@ stock CheckAccess(playerid, adminLvl = 1, modLvl = 0)
     if (modLvl >= 1 && PI[playerid][pModer] >= modLvl) return 0;
     if (PI[playerid][pAdmin] < adminLvl) 
     {
-        if !ALogin{playerid} *then return SendClientMessage(playerid, COLOR_LIGHTGREY, !"Вы не авторизованы как игровой мастер");
-        return SendClientMessage(playerid, COLOR_LIGHTGREY, !"У Вас нет доступа к этой команде");
+        return 0;
     }
+    else if !ALogin{playerid} *then
+	{
+		return SCM(playerid, COLOR_LIGHTGREY, !"Вы не авторизованы как игровой мастер");
+	}
     return 0;
 }
 CMD:makegm(playerid, params[]) 
