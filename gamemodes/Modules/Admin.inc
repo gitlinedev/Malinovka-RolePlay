@@ -181,7 +181,7 @@ cmd:gethere(playerid, params[])
     else SetVehiclePos(GetPlayerVehicleID(id), X, Y, Z);
     
 	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] телепортировал к себе %s[%d]", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid),playerid, PN(params[0]), params[0]);
-	SCMF(params[0], -1, "Вы были телепортированы %s",  PI[playerid][pAdmin] ? "игровым мастером" : "игровым модератором");
+	SCMF(params[0], COLOR_LIGHTGREY, "Вы были телепортированы %s",  PI[playerid][pAdmin] ? "игровым мастером" : "игровым модератором");
     return SCMF(playerid, -1, "Вы телепортировали к себе игрока %s", PN(id));
 }
 

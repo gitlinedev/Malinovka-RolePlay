@@ -44,6 +44,7 @@ new
 #include cef
 #include fmt
 #include mapandreas
+#include colandreas
 #include UnixConvertor
 
 new mysql;
@@ -93,6 +94,7 @@ new PlayerDialogList[MAX_PLAYERS][64];
 #include Modules/Admin // система админов
 #include Modules/SQL // работа с базой данных
 #include Modules/VoiceChat // работа с базой данных
+#include Modules/SpeedLimit // ограничение скорости
 
 //=====================================[ global server settings ]==================================//
 
@@ -120,6 +122,9 @@ public OnGameModeInit()
 
 	Global_Time = gettime();
 	MapAndreas_Init(MAP_ANDREAS_MODE_MINIMAL);
+
+	CA_Init();
+    SetTimer("CheckGrassSpeed", 500, true);
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	mysql = mysql_connect(DB_HOST, DB_USER, DB_TABLE, DB_PASSWORD, DB_PORT);
 
@@ -174,6 +179,16 @@ public: ServerTimer()
 	if minuite == 45 && second == 0 *then
 	{
 		SetRandomWeather();
+	}
+
+	if minuite == 30 && second == 0 *then
+	{
+		SCMALL(0xEE3366FF, !"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		SCMALL(0xFFFFFFFF, !"Для посещения игрового магазина посетите сайт: {EE3366}m-bonus.com");
+		SCMALL(0xFFFFFFFF, !"Общение игроков и торговая площадка - ждём тебя! {EE3366}vk.com/mbonus_free");
+		SCMALL(0xFFFFFFFF, !"В нашей игре действует реферальная система. Подброности на {EE3366}m-bonus.com/ref");
+		SCMALL(0xFFFFFFFF, !"При возникновении вопросов по игре обращайтесь в тех. поддержку: {EE3366}m-bonus.com/help");
+		SCMALL(0xEE3366FF, !"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 	}
 
 	if second == 0 *then
@@ -475,6 +490,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 	accounts_OnDialogResponse(playerid, dialogid, response, inputtextsave);
 	admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave);
+	k_OnDialogResponse(playerid, dialogid, response, listitem);
 
 	switch dialogid do
 	{
@@ -749,4 +765,44 @@ stock ClearCarData(car)
 
 	CarInfo[car][cFuel] =
 	CarInfo[car][cCreate] = 0;
+}
+stock ShowPlayerStats(playerid)
+{
+	return SCM(playerid, -1, "В разработке!");
+}
+stock ShowServerCommands(playerid)
+{
+	return SCM(playerid, -1, "В разработке!");
+}
+stock ShowHotKeys(playerid)
+{
+	return SCM(playerid, -1, "В разработке!");
+}
+stock ShowHelpDialog(playerid)
+{
+	return SCM(playerid, -1, "В разработке!");
+}
+stock ShowPlayerSettings(playerid)
+{
+	return SCM(playerid, -1, "В разработке!");
+}
+stock ShowServerRules(playerid)
+{
+	return SCM(playerid, -1, "В разработке!");
+}
+stock ShowServerResources(playerid)
+{
+	return SCM(playerid, -1, "В разработке!");
+}
+stock ChangePlayerName(playerid)
+{
+	return SCM(playerid, -1, "В разработке!");
+}
+stock ShowBlacklistDialog(playerid)
+{
+	return SCM(playerid, -1, "В разработке!");
+}
+stock ShowDonate(playerid)
+{
+	return SCM(playerid, -1, "В разработке!");
 }

@@ -49,7 +49,7 @@ cmd:b(playerid, params[])
 	ProxDetector(2,playerid, global_str, COLOR_BLUE);
 	return 1;
 }
-CMD:s(playerid, params[])
+cmd:s(playerid, params[])
 {
     if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
 	if sscanf(params,"s[100]",global_str) *then return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /s [текст]");
@@ -59,4 +59,45 @@ CMD:s(playerid, params[])
 	ProxDetector(25, playerid, global_str, -1);
 	if(!IsPlayerInAnyVehicle(playerid))	ApplyAnimationEx(playerid, "ON_LOOKERS", "shout_01",1000.0,0,0,0,0,0,1);
 	return 1;
+}
+cmd:menu(playerid)
+{
+	return ShowPlayerDialog(playerid, 6, DIALOG_STYLE_LIST, !"{EE3366}Меню игрока", 
+	!"{FFFFFF}1. Статистика\n\
+	{FFFFFF}2. Команды сервера\n\
+	{FFFFFF}3. Горячие клавиши\n\
+	{FFFFFF}4. Помощь / жалоба\n\
+	{FFFFFF}5. Настройки аккаунта\n\
+	{FFFFFF}6. Общие правила\n\
+	{FFFFFF}7. Ресурсы игры\n\
+	{FFFFFF}8. Изменить никнейм\n\
+	{FFFFFF}9. Чёрный список организаций\n\
+	{5fc2f1}10. Дополнительные услуги", !"Выбрать", !"Отмена");
+}
+
+stock k_OnDialogResponse(playerid, dialogid, response, listitem)
+{
+    switch dialogid do
+	{
+        case 6:
+        {
+            if (response)
+            {
+                switch (listitem)
+                {
+                    case 0: ShowPlayerStats(playerid);
+                    case 1: ShowServerCommands(playerid);
+                    case 2: ShowHotKeys(playerid);
+                    case 3: ShowHelpDialog(playerid);
+                    case 4: ShowPlayerSettings(playerid);
+                    case 5: ShowServerRules(playerid);
+                    case 6: ShowServerResources(playerid);
+                    case 8: ChangePlayerName(playerid);
+                    case 9: ShowBlacklistDialog(playerid);
+                    case 10: ShowDonate(playerid);
+                }
+            }
+        }
+    }
+    return 1;
 }
