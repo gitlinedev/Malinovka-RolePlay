@@ -406,7 +406,7 @@ cmd:goto(playerid, params[])
     if(GetPlayerState(playerid) != 2) UpdatePlayerPos(playerid, X+2, Y+2, Z);
     else SetVehiclePos(GetPlayerVehicleID(playerid), X+2, Y+2, Z);
 
-	return SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] телепортировалс€ к игроку %s[%d]", StaffTag(playerid), PN(playerid), playerid, PN(params[0]), params[0]);
+	return SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] телепортировалс€ к игроку %s[%d]", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[0]);
 }
 
 cmd:tpcor(playerid, data[])
@@ -520,14 +520,14 @@ stock admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 
                 if listitem == 0 *then
                 { 
-                    SCMF(playerid, COLOR_YELLOW, "¬ы изменили уровень игрового мастера дл€ %s[%d], теперь он '%s'", Admin_Names[listitem - 1], PN(pTemp[playerid][targetID]), pTemp[playerid][targetID]);
-                    SCM(pTemp[playerid][targetID], COLOR_YELLOW, "»гровой мастер изменил ваш уровень до %s");
-                    callcmd::as(pTemp[playerid][targetID]);
+					SCM(playerid, COLOR_YELLOW, !"¬ы были сн€ты с поста игрового мастера!");
+                    SCMF(pTemp[playerid][targetID], COLOR_YELLOW, "»гровой мастер %s сн€л ¬ас с должности игрового мастера", PN(playerid));
                 }
                 else 
                 {
-                    SCM(playerid, COLOR_YELLOW, !"¬ы были сн€ты с поста игрового мастера!");
-                    SCMF(pTemp[playerid][targetID], COLOR_YELLOW, "»гровой мастер %s сн€л ¬ас с должности игрового мастера", PN(playerid));
+					SCMF(playerid, COLOR_YELLOW, "¬ы изменили уровень игрового мастера дл€ %s[%d], теперь он '%s'", Admin_Names[listitem - 1], PN(pTemp[playerid][targetID]), pTemp[playerid][targetID]);
+                    SCM(pTemp[playerid][targetID], COLOR_YELLOW, "»гровой мастер изменил ваш уровень до %s");
+                    callcmd::as(pTemp[playerid][targetID]);
                 }
                 ALogin{pTemp[playerid][targetID]} = false;
                 UpdatePlayerDataInt(pTemp[playerid][targetID], "Admin", PI[pTemp[playerid][targetID]][pAdmin]);

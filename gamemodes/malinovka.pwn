@@ -252,7 +252,7 @@ public OnPlayerConnect(playerid)
 	GetPlayerIp(playerid, PlayerIp[playerid], 16);
 	SetPlayerVirtualWorld(playerid, 1228);
 	SetPlayerWeather(playerid, WeatherServer);
-	ClearChatForPlayer(playerid);
+	//ClearChatForPlayer(playerid);
 
 	if SvGetVersion(playerid) == SV_NULL *then SCM(playerid, 0xEE83F0AA, !"[VoiceChat] {FFFFFF}загрузка плагина произошла {FFFF33}неуспешно (NULL)");
     else if SvHasMicro(playerid) == SV_FALSE *then SCM(playerid, 0xEE83F0AA, !"[VoiceChat] {FFFFFF}загрузка плагина произошла {FFFF33}c ошибкой (MIC)");
@@ -773,11 +773,11 @@ stock ShowPlayerStats(playerid)
 }
 stock ShowServerCommands(playerid)
 {
-	return SCM(playerid, -1, "В разработке!");
+	return SPD(playerid, 7, 2, !"{EE3366}Команды сервера ", !"1. Основные команды\n2. Коммуникации\n3. Дома и квартиры\n4. Бизнес и АЗС\n5. Основные работы\n6. Организации\n7. Лидеры и заместители", !"Просмотр ", !"Назад ");
 }
 stock ShowHotKeys(playerid)
 {
-	return SCM(playerid, -1, "В разработке!");
+	return SPD(playerid, 9, 5, "{EE3366}Горячие клавиши ", "Клавиша\tТип\tОписание\nJ\t{FFFF99}Любой\tОткрыть меню лидера\nJ\t{FFFF99}Любой\tУдалить рабочий транспорт\nL\t{FFFF99}Любой\tОткрыть / закрыть транспорт\nM\t{FFFF99}Любой\tОткрыть меню игрока\nP\t{FFFF99}Любой\tОткрыть меню телефона\nO\t{FFFF99}Любой\tНастройки голосового чата (стандарт.)\nX\t{FFFF99}Любой\tГолосовой чат (стандарт.)\nB\t{FF9933}Пешеход\tЗанять койку в палате\nB\t{FF9933}Пешеход\tОткрыть меню покупок в бизнесе\nB\t{FF9933}Пешеход\tНажать на кнопку (открыть ворота, дверь)\nB\t{FF9933}Пешеход\tСесть на стул / кресло / лавку\nR\t{FF9933}Пешеход\tПерезарядить оружие\nЛевый ALT\t{FF9933}Пешеход\tЗалезть / слезть на вышку (ВЧ)\nH\t{66CC66}Водитель\tОткрыть ворота\nJ\t{66CC66}Водитель\tОткрыть меню работы\nK\t{66CC66}Водитель\tВставить / вытащить ключ\nB\t{66CC66}Водитель\tПристегнуть / отстегнуть ремень безопасности\nЛевый ALT\t{66CC66}Водитель\tВключить / выключить фары\nЛевый CTRL\t{66CC66}Водитель\tВключить / выключить двигатель\nM\t{66CCFF}Водитель / пассажир\tМегафон (в рабочем транспорте полиции)", "Закрыть ", "Назад ");
 }
 stock ShowHelpDialog(playerid)
 {
@@ -785,15 +785,15 @@ stock ShowHelpDialog(playerid)
 }
 stock ShowPlayerSettings(playerid)
 {
-	return SCM(playerid, -1, "В разработке!");
+	return SPD(playerid, 10, 4, !"{EE3366}Настройки аккаунта ", "1. Размер HUD\t{FFFF99}...\n2. Ники других игроков\t{FFFF99}Включены\n3. Кинематографический режим\t{FFFF99}Отключён\n4. Голосовой чат\t{FFFF99}Включён\n5. Счетчик кадров в сек (FPS)\t{FFFF99}Включён\n6. Отображение дождя\t{FFFF99}Включено\n7. Рабочая голосовая рация\t{FFFF99}Включена\n8. Шум в голосовой рации\t{FFFF99}Включен\n9. Звук при нанесении урона\t{FFFF99}Включен\n10. Индикатор источника урона\t{FFFF99}Включен", !"Изменить ", !"Назад ");
 }
 stock ShowServerRules(playerid)
 {
-	return SCM(playerid, -1, "В разработке!");
+	return SPD(playerid, 11, 0, !"{EE3366}Общие правила ", !"{FFFFFF}Правила игры расположены на форуме.\nВы хотите перейти к ним в браузере?", !"Открыть ", !"Назад ");
 }
 stock ShowServerResources(playerid)
 {
-	return SCM(playerid, -1, "В разработке!");
+	return SPD(playerid, 89, 4, !"{EE3366}Ресурсы игры ", !"Сайт\t{FFFF99}malinovka.org\nФорум\t{FFFF99}malinovka.org/forum\nТех. поддержка\t{FFFF99}malinovka.org/help\nРеферальная система\t{FFFF99}malinovka.org/ref\nНовости и обновления\t{FFFF99}t.me/malinovka_game\nМалиновый сад\t{FFFF99}vk.com/malinovka_free", !"Перейти ", !"Назад ");
 }
 stock ChangePlayerName(playerid)
 {
