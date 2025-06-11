@@ -44,7 +44,6 @@ new
 #include cef
 #include fmt
 #include mapandreas
-#include colandreas
 #include UnixConvertor
 
 new mysql;
@@ -87,6 +86,8 @@ new PlayerDialogList[MAX_PLAYERS][64];
 #define Max_Cars 					   2000
 //======================================[ modules ]================================================//
 
+#include Modules/Test // тестовый модуль
+
 #include Modules/RemoveBuild // удаление зданий
 #include Modules/Data // массивы и цвета
 #include Modules/Accounts // авторизация и регистрация
@@ -123,8 +124,8 @@ public OnGameModeInit()
 	Global_Time = gettime();
 	MapAndreas_Init(MAP_ANDREAS_MODE_MINIMAL);
 
-	CA_Init();
     SetTimer("CheckGrassSpeed", 500, true);
+
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	mysql = mysql_connect(DB_HOST, DB_USER, DB_TABLE, DB_PASSWORD, DB_PORT);
 
