@@ -207,6 +207,8 @@ public: GetPlayerDataMysql(playerid)
 	
 	if(PI[playerid][pID] != -1)
 	{
+		LoadSession(playerid);
+		// Если игрок уже зарегистрирован, то сразу показываем диалог авторизации
 		ShowLoginDialog(playerid);
     }
 	else

@@ -54,6 +54,7 @@ new mysql;
 #define f format
 #define SCM	SendClientMessage
 #define SCMALL	SendClientMessageToAll
+#define SCMALLF	SendClientMessageToAllf
 #define SCMF SendClientMessagef
 #define PN(%0) PlayerName[%0]
 
@@ -86,7 +87,6 @@ new PlayerDialogList[MAX_PLAYERS][64];
 #define Max_Cars 					   2000
 //======================================[ modules ]================================================//
 
-#include Modules/Test // тестовый модуль
 
 #include Modules/RemoveBuild // удаление зданий
 #include Modules/Data // массивы и цвета
@@ -96,7 +96,11 @@ new PlayerDialogList[MAX_PLAYERS][64];
 #include Modules/SQL // работа с базой данных
 #include Modules/VoiceChat // работа с базой данных
 #include Modules/SpeedLimit // ограничение скорости
+#include Modules/CEFClient // цеф
+#include Modules/Session // сессии игроков
+#include Modules/Moderators // модераторы
 
+#include Modules/Test // тестовый модуль
 //=====================================[ global server settings ]==================================//
 
 #define Mode_Names 					   "Malinovka"
@@ -265,7 +269,7 @@ public OnPlayerConnect(playerid)
 	f(global_str, 150, "SELECT `ID`, `Mail` FROM accounts WHERE NickName = '%s' LIMIT 1;", PlayerName[playerid]);
     mysql_tquery(mysql, global_str, "GetPlayerDataMysql", "d", playerid);
 
-	RemoveBuildings(playerid);
+	//RemoveBuildings(playerid);
 
 	return 1;
 }
@@ -773,11 +777,15 @@ stock ShowPlayerStats(playerid)
 }
 stock ShowServerCommands(playerid)
 {
-	return SPD(playerid, 7, 2, !"{EE3366}Команды сервера ", !"1. Основные команды\n2. Коммуникации\n3. Дома и квартиры\n4. Бизнес и АЗС\n5. Основные работы\n6. Организации\n7. Лидеры и заместители", !"Просмотр ", !"Назад ");
+	return SPD(playerid, 10, 2, !"{EE3366}Команды сервера", !"1. Основные команды\n2. Коммуникации\n3. Дома и квартиры\n4. Бизнес и АЗС\n5. Основные работы\n6. Организации\n7. Лидеры и заместители", !"Просмотр ", !"Назад ");
 }
 stock ShowHotKeys(playerid)
 {
-	return SPD(playerid, 9, 5, "{EE3366}Горячие клавиши ", "Клавиша\tТип\tОписание\nJ\t{FFFF99}Любой\tОткрыть меню лидера\nJ\t{FFFF99}Любой\tУдалить рабочий транспорт\nL\t{FFFF99}Любой\tОткрыть / закрыть транспорт\nM\t{FFFF99}Любой\tОткрыть меню игрока\nP\t{FFFF99}Любой\tОткрыть меню телефона\nO\t{FFFF99}Любой\tНастройки голосового чата (стандарт.)\nX\t{FFFF99}Любой\tГолосовой чат (стандарт.)\nB\t{FF9933}Пешеход\tЗанять койку в палате\nB\t{FF9933}Пешеход\tОткрыть меню покупок в бизнесе\nB\t{FF9933}Пешеход\tНажать на кнопку (открыть ворота, дверь)\nB\t{FF9933}Пешеход\tСесть на стул / кресло / лавку\nR\t{FF9933}Пешеход\tПерезарядить оружие\nЛевый ALT\t{FF9933}Пешеход\tЗалезть / слезть на вышку (ВЧ)\nH\t{66CC66}Водитель\tОткрыть ворота\nJ\t{66CC66}Водитель\tОткрыть меню работы\nK\t{66CC66}Водитель\tВставить / вытащить ключ\nB\t{66CC66}Водитель\tПристегнуть / отстегнуть ремень безопасности\nЛевый ALT\t{66CC66}Водитель\tВключить / выключить фары\nЛевый CTRL\t{66CC66}Водитель\tВключить / выключить двигатель\nM\t{66CCFF}Водитель / пассажир\tМегафон (в рабочем транспорте полиции)", "Закрыть ", "Назад ");
+	return SPD(playerid, 12, 5, "{EE3366}Горячие клавиши", "Клавиша\tТип\tОписание\nJ\t{FFFF99}Любой\tОткрыть меню лидера\nJ\t{FFFF99}Любой\tУдалить рабочий транспорт\nL\t{FFFF99}Любой\tОткрыть / закрыть транспорт\nM\t{FFFF99}Любой\tОткрыть меню игрока\nP\t{FFFF99}Любой\tОткрыть меню телефона\nO\t{FFFF99}Любой\tНастройки голосового чата (стандарт.)\nX\t{FFFF99}Любой\tГолосовой чат (стандарт.)\nB\t{FF9933}Пешеход\tЗанять койку в палате\nB\t{FF9933}Пешеход\tОткрыть меню покупок в бизнесе\nB\t{FF9933}Пешеход\tНажать на кнопку (открыть ворота, дверь)\nB\t{FF9933}Пешеход\tСесть на стул / кресло / лавку\nR\t{FF9933}Пешеход\tПерезарядить оружие\nЛевый ALT\t{FF9933}Пешеход\tЗалезть / слезть на вышку (ВЧ)\nH\t{66CC66}Водитель\tОткрыть ворота\nJ\t{66CC66}Водитель\tОткрыть меню работы\nK\t{66CC66}Водитель\tВставить / вытащить ключ\nB\t{66CC66}Водитель\tПристегнуть / отстегнуть ремень безопасности\nЛевый ALT\t{66CC66}Водитель\tВключить / выключить фары\nЛевый CTRL\t{66CC66}Водитель\tВключить / выключить двигатель\nM\t{66CCFF}Водитель / пассажир\tМегафон (в рабочем транспорте полиции)", "Закрыть ", "Назад ");
+}
+stock ShowServerRules(playerid)
+{
+	return SPD(playerid, 0, 0, !"{EE3366}Общие правила", !"{FFFFFF}Правила игры расположены на форуме.\nВы хотите перейти к ним в браузере?", !"Открыть ", !"Назад ");
 }
 stock ShowHelpDialog(playerid)
 {
@@ -785,25 +793,59 @@ stock ShowHelpDialog(playerid)
 }
 stock ShowPlayerSettings(playerid)
 {
-	return SPD(playerid, 10, 4, !"{EE3366}Настройки аккаунта ", "1. Размер HUD\t{FFFF99}...\n2. Ники других игроков\t{FFFF99}Включены\n3. Кинематографический режим\t{FFFF99}Отключён\n4. Голосовой чат\t{FFFF99}Включён\n5. Счетчик кадров в сек (FPS)\t{FFFF99}Включён\n6. Отображение дождя\t{FFFF99}Включено\n7. Рабочая голосовая рация\t{FFFF99}Включена\n8. Шум в голосовой рации\t{FFFF99}Включен\n9. Звук при нанесении урона\t{FFFF99}Включен\n10. Индикатор источника урона\t{FFFF99}Включен", !"Изменить ", !"Назад ");
-}
-stock ShowServerRules(playerid)
-{
-	return SPD(playerid, 11, 0, !"{EE3366}Общие правила ", !"{FFFFFF}Правила игры расположены на форуме.\nВы хотите перейти к ним в браузере?", !"Открыть ", !"Назад ");
+	return SPD(playerid, 0, 4, !"{EE3366}Настройки аккаунта", "1. Размер HUD\t{FFFF99}...\n2. Ники других игроков\t{FFFF99}Включены\n3. Кинематографический режим\t{FFFF99}Отключён\n4. Голосовой чат\t{FFFF99}Включён\n5. Счетчик кадров в сек (FPS)\t{FFFF99}Включён\n6. Отображение дождя\t{FFFF99}Включено\n7. Рабочая голосовая рация\t{FFFF99}Включена\n8. Шум в голосовой рации\t{FFFF99}Включен\n9. Звук при нанесении урона\t{FFFF99}Включен\n10. Индикатор источника урона\t{FFFF99}Включен", !"Изменить ", !"Назад ");
 }
 stock ShowServerResources(playerid)
 {
-	return SPD(playerid, 89, 4, !"{EE3366}Ресурсы игры ", !"Сайт\t{FFFF99}malinovka.org\nФорум\t{FFFF99}malinovka.org/forum\nТех. поддержка\t{FFFF99}malinovka.org/help\nРеферальная система\t{FFFF99}malinovka.org/ref\nНовости и обновления\t{FFFF99}t.me/malinovka_game\nМалиновый сад\t{FFFF99}vk.com/malinovka_free", !"Перейти ", !"Назад ");
+	return SPD(playerid, 0, 4, !"{EE3366}Ресурсы игры", !"Сайт\t{FFFF99}malinovka.org\nФорум\t{FFFF99}malinovka.org/forum\nТех. поддержка\t{FFFF99}malinovka.org/help\nРеферальная система\t{FFFF99}malinovka.org/ref\nНовости и обновления\t{FFFF99}t.me/malinovka_game\nМалиновый сад\t{FFFF99}vk.com/malinovka_free", !"Перейти ", !"Назад ");
 }
 stock ChangePlayerName(playerid)
 {
-	return SCM(playerid, -1, "В разработке!");
+	return SPD(playerid, 12, 4, !"{EE3366}Выбор типа", !"1. Изменить на случайный никнейм\t{FFFF99}Бесплатно\n2. Изменить на свой никнейм\t{3377CC}Платно", "Далее ", "Назад ");
 }
 stock ShowBlacklistDialog(playerid)
 {
-	return SCM(playerid, -1, "В разработке!");
+	return SPD(playerid, 12, 0, !"{EE3366}Чёрный список организаций ", !"{FFFFFF}Вы не состоите в чёрном списке ни одной организации", !"Закрыть ", !"Назад ");
+}
+stock ShowActivePunishments(playerid)
+{
+	return SPD(playerid, 12, 0, !"{EE3366}Активные наказания ", !"{FFFFFF}У Вас нет активных наказаний", "Закрыть ", "Назад ");
 }
 stock ShowDonate(playerid)
 {
-	return SCM(playerid, -1, "В разработке!");
+	return SPD(playerid, 0, 4, !"{EE3366}Дополнительные услуги ", !"{FFFF99}1. Информация\t\n{FFFF99}2. Последние 10 операций\t\n{FFFF99}3. Купить малину\t\n4. Конвертация малины в рубли\t{66CCFF}(от 1 мал.)\n5. Подписка {DD3366}Малиновка Плюс\t{66CCFF}(от 249 руб)\n6. Покупка номеров на транспорт\t{66CCFF}(от 199 руб)\n7. Покупка лицензии или разрешения\t{66CCFF}(от 19 мал.)\n8. Покупка военного билета\t{66CCFF}(129 мал.)\n9. Покупка законопослушности (+10)\t{66CCFF}(19 мал.)\n10. Покупка одного навыка на оружие\t{66CCFF}(99 мал.)\n11. Покупка всех навыков на оружие\t{66CCFF}(499 мал.)\n12. Покупка 4-х значного номера телефона\t{66CCFF}(199 мал.)\n13. Изменение имени\t{66CCFF}(49 мал.)\n14. Изменение пола\t{66CCFF}(89 мал.)", "Далее ", "Закрыть ");
+}
+
+stock IsWordsInvalid(playerid, const text[])
+{
+    for(new i = 0; i < MAX_INWORDS; i++)
+    {
+        if(strfind(text, InvalidWords[i][20]) != -1)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+stock SendDebug(playerid, const text[], type = 0)
+{
+	if(type == 1)
+	{
+		printf("[DEBUG] %s", text), SCM(playerid, -1, text);
+		return 1;
+	}
+	return 1;
+}
+
+stock _GiveGun(playerid, weaponid, ammo)
+{
+	GivePlayerWeapon(playerid, weaponid, ammo);
+	return 1;
+}
+
+stock _ResetPlayerWeapons(playerid) 
+{
+    ResetPlayerWeapons(playerid);
+    return 1;
 }

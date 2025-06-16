@@ -16,6 +16,7 @@
 #define COLOR_ADMINCHAT         0x8FBEDBFF
 #define COLOR_JOBYELLOW 		0xFFCD00FF
 #define COLOR_HINT 				0x6699FFFF
+#define COLOR_BLACKRED 			0xCC3366FF
 
 new WeatherServer;
 
@@ -30,6 +31,39 @@ new Weather[][WeatherData] = {
 	{"гром", 18, 17},
 	{"сильный ветер", 18, 21},
 	{"ясная погода", 18, 36}
+};
+
+#define MAX_INWORDS 28
+
+new InvalidWords[MAX_INWORDS][20] = {
+    "mq",
+    "сын",
+    "дочь",
+    "папа",
+    "дед",
+    "мам",
+    "мама",
+    "батя",
+    "сестра",
+    "брат",
+    "мку",
+    "админ",
+    "игровой",
+    "мастер",
+    "бог",
+    "гитлайн",
+    "графф",
+    "graff",
+    "gitline",
+    ".com",
+    ".org",
+    ".ru",
+    ".net",
+    ".cc",
+    ".online",
+    ".site",
+    "сайт",
+    "форум",
 };
 
 enum cInfo
@@ -87,18 +121,25 @@ enum PlayerInfo {
 
 	pHospital,
 	pSkin,
-	pWanted
+	pWanted,
+
+	pHWID[35],
+	pUUID[70],
+	pPath[150],
 };
 new PI[MAX_PLAYERS][PlayerInfo];
 
 stock ClearPlayerData(playerid)
 {
-	PlayerMail[playerid][0] = EOS;
-	PlayerReferal[playerid][0] = EOS;
-	PlayerRegIP[playerid][0] = EOS;
-	PlayerIp[playerid][0] = EOS;
+	PlayerMail[playerid][0] =
+	PlayerReferal[playerid][0] =
+	PlayerRegIP[playerid][0] =
+	PlayerIp[playerid][0] = 
+	PI[playerid][pHWID][0] = 
+	PI[playerid][pUUID][0] = 
+	PI[playerid][pPath][0] = 
 	PlayerName[playerid][0] = EOS;
-	
+
 
     PI[playerid][pID] = -1;
 	PI[playerid][pWarnsTime] =

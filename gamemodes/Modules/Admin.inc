@@ -38,53 +38,364 @@ static const stock Vehicle_Names[][] = {
 	"Car594", "Car595", "Car596", "Car597", "Car598", "Car599", "Car600", "Car601", "Car602", "Car603", "Car604", "Car605", "Car606",
 	"Car607", "Car608", "Car609", "Car610", "Car611"
 };
+// WeaponNames[ID][0] — Названия оружия по ID (0-46)
+new const WeaponNames[][] = {
+    /*  0 */ {"Кулак"},                      // Безоружие
+    /*  1 */ {"Кастет"},
+    /*  2 */ {"Клюшка для гольфа"},
+    /*  3 */ {"Полицейская дубинка"},
+    /*  4 */ {"Нож"},
+    /*  5 */ {"Бейсбольная бита"},
+    /*  6 */ {"Лопата"},
+    /*  7 */ {"Кий"},
+    /*  8 */ {"Катана"},
+    /*  9 */ {"Бензопила"},
+    /* 10 */ {"Большой дилдо"},
+    /* 11 */ {"Малый дилдо"},
+    /* 12 */ {"Большой вибратор"},
+    /* 13 */ {"Малый вибратор"},
+    /* 14 */ {"Цветы"},
+    /* 15 */ {"Трость"},
+    /* 16 */ {"Граната"},
+    /* 17 */ {"Слезоточивый газ"},
+    /* 18 */ {"Коктейль Молотова"},
+    /* 19 */ {""},                           // Не используется
+    /* 20 */ {""},                           // Не используется
+    /* 21 */ {""},                           // Не используется
+    /* 22 */ {"ТТ"},                         // Пистолет ТТ (замена стандартного пистолета)
+    /* 23 */ {"Тайзер"},                     // Электрошокер
+    /* 24 */ {"ПЛ-15"},                      // Пистолет ПЛ-15
+    /* 25 */ {"Дробовик"},
+    /* 26 */ {"Обрез"},
+    /* 27 */ {"Автоматический дробовик"},
+    /* 28 */ {"Узи"},
+    /* 29 */ {"MP5"},
+    /* 30 */ {"АК-47"},
+    /* 31 */ {"M4"},
+    /* 32 */ {"TEC-9"},
+    /* 33 */ {"Винтовка"},
+    /* 34 */ {"Снайперская винтовка"},
+    /* 35 */ {"Гранатомёт"},
+    /* 36 */ {"Самонаводящийся гранатомёт"},
+    /* 37 */ {"Огнемёт"},
+    /* 38 */ {"Пулемёт"},
+    /* 39 */ {"Взрывпакет"},
+    /* 40 */ {"Детонатор"},
+    /* 41 */ {"Баллончик с краской"},
+    /* 42 */ {"Огнетушитель"},
+    /* 43 */ {"Фотоаппарат"},
+    /* 44 */ {"Прибор ночного видения"},
+    /* 45 */ {"Тепловизор"},
+    /* 46 */ {"Парашют"}
+};
 
 enum AdminCommand
 {
 	adminCommand[30],
 	adminLevel,
+	ModLevel,
 	adminCommandInfo[100]
 };
 new const AdminCommandList[][AdminCommand] = {
 
 	//level 1
-	{"as", 1, "Панель игрового мастера"},
-	{"a", 1, "Чат игровых-мастеров"},
-    {"admins", 1, "Список игровых мастеров"},
-    {"ahelp", 1, "Список команд игровых мастеров"},
-	{"spawn", 1, "Заспавнить игрока"},
-	{"tpcor", 1, "Телепортироваться по координатам"},
-	{"freeze", 1, "Заморозить игрока"},
-	{"unfreeze", 1, "Разморозить игрока"},
-	{"flip", 1, "Починить транспорт игрока"},
-	{"ans", 1, "Ответить игроку"},
+	{"as", 1, 0, "Панель игрового мастера"},
+	{"a", 1, 1, "Чат игровых-мастеров"},
+    {"admins", 1, 1, "Список игровых мастеров"},
+    {"ahelp", 1, 0, "Список команд игровых мастеров"},
+	{"spawn", 1, 1, "Заспавнить игрока"},
+	{"tpcor", 1, 2, "Телепортироваться по координатам"},
+	{"freeze", 1, 1, "Заморозить игрока"},
+	{"unfreeze", 1, 1, "Разморозить игрока"},
+	{"flip", 1, 1, "Починить транспорт игрока"},
+	{"ans", 1, 1, "Ответить игроку"},
 
 	//level 2
-	{"slap", 2, "Подбросить игрока в воздух"},
-	{"vw", 2, "Перейти в виртуальный мир"},
-	{"goto", 2, "Телепортироваться к игроку"},
-	{"gethere", 2, "Телепортировать игрока к себе"},
+	{"slap", 2, 1, "Подбросить игрока в воздух"},
+	{"vw", 2, 2, "Перейти в виртуальный мир"},
+	{"goto", 2, 3, "Телепортироваться к игроку"},
+	{"gethere", 2, 2, "Телепортировать игрока к себе"},
 
 	//level 3
-	{"skin", 3, "Выдать игроку скин (временный/вечный)"},
-	{"veh", 3, "Создать транспорт"},
-	{"dveh", 3, "Удалить транспорт"},
-	{"setarm", 3, "Выдать игроку бронежилет"},
-	{"kick", 3, "Кикнуть игрока"},
+	{"skin", 3, 3, "Выдать игроку скин (временный/вечный)"},
+	{"veh", 3, 3, "Создать транспорт"},
+	{"dveh", 3, 3, "Удалить транспорт"},
+	{"setarm", 3, 3, "Выдать игроку бронежилет"},
+	{"kick", 3, 3, "Кикнуть игрока"},
+	{"cc", 3, 3, "Очистить чат"},
+	{"setfuel", 3, 3, "Установить уровень топлива в транспорте"},
+	{"spawncar", 3, 3, "Заспавнить транспорт"},
+	{"gun", 3, 3, "Выдать оружие"},
+	{"aclear", 3, 3, "Снять розыск игроку"},
+	{"resgun", 3, 3, "Забрать оружие"},
+
+	//level 4
+	{"atw", 4, 0, "Забрать оружие у игроков в радиусе"},
+	{"ahp", 4, 0, "Выдать ХП игрокам в радиусе"},
+
+	//level 5
+	{"msg", 5, 0, "Написать на весь сервер"},
+
+	//level6
+	{"setsex", 6, 0, "Изменить пол персонажа игроку"},
+
+	//level7
+	{"banip", 7, 0, "Заблокировать IP игрока"},
+	{"unbanip", 7, 0, "Разблокировать IP игрока"},
 
     //level 8
-    {"makegm", 8, "Выдать права игрового мастера"}
+    {"makegm", 8, 0, "Выдать права игрового мастера"}
 };
 
 new Iterator:Admin<MAX_PLAYERS>;
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+cmd:setsex(playerid, params[])
+{
+    if(!CheckAccess(playerid, 6)) 
+        return false;
 
-CMD:kick(playerid,params[]) 
+	if sscanf(params, "u", params[0]) *then  
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setsex [ID игрока]");
+
+	switch(PI[params[0]][pSex])
+	{
+		case 1:
+		{
+			SCMF(playerid, -1, "Вы изменили пол игроку %s на женский", PN(params[0]));
+			SCM(params[0], -1, !"Игровой мастер изменил ваш пол на женский");
+			PI[params[0]][pSex] = 2;
+		}
+		case 2:
+		{
+			SCMF(playerid, -1, "Вы изменили пол игроку %s на мужской", PN(params[0]));
+			SCM(params[0], -1, !"Игровой мастер изменил ваш пол на мужской");
+			PI[params[0]][pSex] = 1;
+		}
+	}
+	return 1;
+}
+cmd:unbanip(playerid, data[])
+{
+	if(!CheckAccess(playerid, 7)) 
+        return false;
+
+	extract data -> new string:ip[16]; else
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используй: /unbanip [ip]");
+
+	SQL("DELETE FROM `banip` WHERE `IP` = '%s'", ip);
+
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s разблокировал IP %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), ip);
+	return 1;
+}
+cmd:banip(playerid, params[])
+{
+	if(!CheckAccess(playerid, 7)) 
+        return false;
+
+    new id, reason[30];
+    if sscanf(params, "us[30]", id, reason) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используй: /banip [id] [Причина]");
+
+	if id == INVALID_PLAYER_ID *then 
+		return 0;
+
+	PI[id][pWarns] = 0;
+    BanIP(PlayerIP(id));
+    BanName(PN(id), PN(playerid), 666, reason);
+    Kick(id);
+
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s заблокировал IP адрес игрока %s [%s]. Причина: %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), PN(id), PlayerIP(id), reason);
+	return 1;
+}
+CMD:msg(playerid, params[]) 
+{
+    if(!CheckAccess(playerid, 5)) 
+        return false;
+
+	if sscanf(params,"s[144]",params[0]) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /msg [текст]");
+
+    return SCMALLF(COLOR_BLACKRED, "Игровой мастер: %s", params[0]);
+}
+
+CMD:getcar(playerid, params[])
 {
     if(!CheckAccess(playerid, 3, 3)) 
         return false;
 
-	if(sscanf(params,"us[32]",params[0],params[1])) 
+	if sscanf(params, "i", params[0]) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /getcar [Car ID]");
+
+	new Float:x, Float:y, Float:z;
+	GetPlayerPos(playerid, x, y, z);
+	SetVehiclePos(params[0], x+2, y+2, z);
+	return 1;
+}
+
+CMD:atw(playerid, params[])
+{
+	if(!CheckAccess(playerid, 4)) 
+        return false;
+
+    new Float:id,Float:x,Float:y,Float:z;
+    if sscanf(params,"f",id) *then 
+		 return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /ahp [радиус]");
+    if id<1 || id > 100 *then 
+	 	return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /ahp [радиус > 0 или < 100]");
+
+	new num;
+    foreach(new i: Player)
+    {
+        if(IsPlayerLogged{i})
+        {
+	        GetPlayerPos(playerid,x,y,z);
+	        if(IsPlayerInRangeOfPoint(i,id,x,y,z))
+	        {
+				SCM(i, -1, !"Игровой мастер изъял Ваше оружие");
+	            ResetPlayerWeapons(i);
+	            num++;
+	        }
+		}
+    }
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s изъял оружие у %d игрока(-ов)", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), num);
+	return 1;
+}
+cmd:ahp(playerid, params[])
+{
+	if(!CheckAccess(playerid, 4)) 
+        return false;
+
+    new Float:id,Float:x,Float:y,Float:z;
+    if sscanf(params,"f",id) *then 
+		 return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /ahp [радиус]");
+    if id<1 || id > 100 *then 
+	 	return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /ahp [радиус > 0 или < 100]");
+
+    new num;
+    foreach(new i: Player)
+    {
+        if(IsPlayerLogged{i})
+        {
+	        GetPlayerPos(playerid,x,y,z);
+	        if(IsPlayerInRangeOfPoint(i,id,x,y,z))
+	        {
+				SCM(i, -1, !"Игровой мастер изменил Вам здоровье");
+	            UpdatePlayerHealth(i,100);
+	            num++;
+	        }
+		}
+    }
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s выдал здоровье у %d игрока(-ов)", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), num);
+    return 1;
+}
+
+cmd:resgun(playerid, params[]) 
+{
+    if(!CheckAccess(playerid, 3, 3)) 
+        return false;
+
+    if sscanf(params,"u",params[0]) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /resgun [ID игрока]");
+
+	if !IsPlayerOnline(params[0]) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Игрок не в сети");
+
+	_ResetPlayerWeapons(params[0]);
+
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s забрал оружие у %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), PN(params[0]));
+	SCMF(params[0], -1, "%s забрал у Вас оружие", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
+    return 1;
+}
+
+cmd:aclear(playerid, params[]) 
+{
+    if(!CheckAccess(playerid, 3, 3)) 
+        return false;
+
+	if sscanf(params, "u", params[0]) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /aclear [ID игрока]");
+
+    if !IsPlayerOnline(params[0]) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Игрок не в сети");
+
+    if PI[params[0]][pWanted] == 0 *then 
+		return SCM(playerid, COLOR_GREY, !"У игрока нет розыска");
+
+	PI[params[0]][pWanted] = 0;
+	SetPlayerWantedLevel(params[0],PI[params[0]][pWanted]);
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s обнулил розыск %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), PN(params[0]));
+	SCMF(params[0], -1, "%s обнулил Вам розыск", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
+	return 1;
+}
+
+cmd:gun(playerid, params[])
+{
+	if(!CheckAccess(playerid, 3, 3)) 
+        return false;
+
+	if sscanf(params, "udd", params[0], params[1], params[2]) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /gun [ID игрока] [оружие] [патроны]");
+
+	if(params[0] == INVALID_PLAYER_ID)
+	    return 0;
+
+    if(params[1] == 35 || params[1] == 36 || params[1] == 37 || params[1] == 38 || params[1] == 39 || params[1] == 40) return SCM(playerid, COLOR_GREY, !"Это оружие запрещен разработчиками сервера");
+	_GiveGun(params[0], params[1], params[2]);
+
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал %s[%d] %s[%d] (%d пт)", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[0], WeaponNames[params[1]], params[1], params[2]);
+	SCMF(params[0], -1, "%s выдал Вам %s (+%d пт)", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор", WeaponNames[params[1]], params[2]);
+	return 1;
+}
+
+cmd:setfuel(playerid,params[]) 
+{
+    if(!CheckAccess(playerid, 3, 3)) 
+        return false;
+
+	new Float:dd;
+    if sscanf(params, "f", dd) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setfuel [кол-во]");
+
+    if(IsPlayerInAnyVehicle(playerid) && GetPlayerState(playerid) == PLAYER_STATE_DRIVER) 
+	{
+		new VehId = GetPlayerVehicleID(playerid);
+		CarInfo[VehId][cFuel] = dd;
+		SCM(playerid, -1, !"Уровень топлива в автомобиле изменен");
+	}
+	else SCM(playerid, COLOR_LIGHTGREY, !"Нужно находиться на водительском месте");
+	return 1;
+}
+cmd:spawncar(playerid) 
+{
+    if(!CheckAccess(playerid, 3, 3)) 
+        return false;
+
+	new VehId = GetPlayerVehicleID(playerid);
+
+	if GetPlayerState(playerid) != PLAYER_STATE_DRIVER *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Нужно находиться за рулем транспорта");
+
+	SetVehicleToRespawn(VehId);
+	return SCM(playerid, -1, !"Автомобиль был заспавнен");
+}
+cmd:cc(playerid)
+{
+	if(!CheckAccess(playerid, 3, 3)) 
+        return false;
+		
+    for(new i; i < 20; i++)
+		SCMALL(-1, !" ");
+
+    SCMALL(-1, !"Игровой мастер очистил чат");
+	return 1;
+}
+
+cmd:kick(playerid,params[]) 
+{
+    if(!CheckAccess(playerid, 3, 3)) 
+        return false;
+
+	if sscanf(params,"us[32]",params[0],params[1]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /kick [ID игрока] [причина]");
 		
 	if !IsPlayerOnline(params[0]) *then 
@@ -112,14 +423,14 @@ cmd:makegm(playerid, params[])
     if(!CheckAccess(playerid, 8)) 
         return false;
 
-    if(sscanf(params,"u",params[0])) 
+    if sscanf(params,"u",params[0]) *then 
         return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /makegm [ID игрока]");
 
 	if params[0] == INVALID_PLAYER_ID *then return 0;
 
     if params[0] == playerid *then return 0;
 
-	if !IsPlayerLogged{params[0]} *then return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+	if !IsPlayerLogged{params[0]} *then return SCM(playerid, COLOR_LIGHTGREY, !"Игрок не авторизован");
 
     pTemp[playerid][targetID] = params[0];
 
@@ -130,7 +441,7 @@ cmd:freeze(playerid, params[])
 	if(!CheckAccess(playerid, 1, 1)) 
         return false;
 
-	if(sscanf(params, "u", params[0])) 
+	if sscanf(params, "u", params[0]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Используй: /freeze [ID игрока]");
 
 	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] заморозил игрока %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]));
@@ -138,12 +449,12 @@ cmd:freeze(playerid, params[])
 	return 1;
 }
 
-CMD:setarm(playerid, params[]) 
+cmd:setarm(playerid, params[]) 
 {
     if(!CheckAccess(playerid, 2, 3)) 
         return false;
 
-	if(sscanf(params, "ud", params[0], params[1])) 
+	if sscanf(params, "ud", params[0], params[1]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setarm [ID игрока] [кол-во]");
 
 	if !IsPlayerOnline(params[0]) *then 
@@ -162,13 +473,13 @@ cmd:gethere(playerid, params[])
 
 	new id, Float:X, Float:Z, Float:Y, Float:A;
 
-    if(sscanf(params,"u",id)) 
+    if sscanf(params,"u",id) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Используй: /gethere [id]");
 		
     if !IsPlayerOnline(params[0]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Игрок не в сети");
 
-	if(AInfo[id][admGethere])
+	if AInfo[id][admGethere] *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Данный администратор запретил телепортировать его к себе");
 
     GetPlayerPos(playerid,X,Y,Z);
@@ -193,7 +504,7 @@ cmd:unfreeze(playerid, params[])
 	if !IsPlayerOnline(params[0]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Игрок не в сети");
 
-	if(sscanf(params, "u", params[0]))
+	if sscanf(params, "u", params[0]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Используй: /unfreeze [ID игрока]");
 
 	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] разморозил игрока %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]));
@@ -206,13 +517,13 @@ cmd:flip(playerid, params[])
     if(!CheckAccess(playerid, 1, 1)) 
         return false;
 
-	if(sscanf(params, "d", params[0])) 
+	if sscanf(params, "d", params[0]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /flip [ID игрока]");
 
 	if !IsPlayerOnline(params[0]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Игрок не в сети");
 
-	if(!IsPlayerInAnyVehicle(params[0])) 
+	if !IsPlayerInAnyVehicle(params[0]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Игрок не в машине");
 
 	new car = GetPlayerVehicleID(params[0]), Float:X, Float:Y, Float:Z, Float:A;
@@ -230,13 +541,13 @@ cmd:ans(playerid,params[])
 {
     if(!CheckAccess(playerid, 1, 1)) 
         return false;
-	if(sscanf(params,"us[90]", params[0], params[1])) 
+	if sscanf(params,"us[90]", params[0], params[1])  *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /ans [ID игрока] [текст]");
 
 	if !IsPlayerOnline(params[0]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Игрок не в сети");
 
-	if(params[0] == playerid) 
+	if params[0] == playerid *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Вы не можете ответить самому себе");
 
     SCMF(params[0], 0x906868FF, "%s ответил Вам: {FFFFFF}%s", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор", params[1]);
@@ -260,7 +571,7 @@ cmd:slap(playerid, params[])
 	if(!CheckAccess(playerid, 2, 1)) 
 		return false;
 
-	if(sscanf(params,"u", params[0])) 
+	if sscanf(params,"u", params[0]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /slap [ID игрока]");
 
 	if !IsPlayerOnline(params[0]) *then 
@@ -277,7 +588,7 @@ cmd:spawn(playerid, params[])
     if(!CheckAccess(playerid, 1, 1)) 
 		return false;
 
-    if(sscanf(params,"u",params[0])) 
+    if sscanf(params,"u",params[0]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /spawn [ID игрока]");
 
     if !IsPlayerOnline(params[0]) *then 
@@ -294,13 +605,13 @@ cmd:vw(playerid, params[])
     if(!CheckAccess(playerid, 2, 2)) 
 		return false;
 
-	if(sscanf(params, "d", params[0])) 
+	if sscanf(params, "d", params[0]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /vw [ID виртуального мира] (0 - стандартный)");
 
 	if !IsPlayerOnline(params[0]) *then 
 		return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 
-	if(params[0] > 100 || params[0] < 0) 
+	if params[0] > 100 || params[0] < 0 *then 
 		return SCM(playerid, COLOR_GREY, !"ID виртуального мира должен быть в пределах от 0 до 100.");
 
 	SetPlayerVirtualWorld(playerid, params[0]);
@@ -312,10 +623,10 @@ cmd:veh(playerid, params[])
     if(!CheckAccess(playerid, 3, 3)) 
 		return false;
 
-    if(sscanf(params, "dddd", params[0], params[1], params[2], params[3])) 
+    if sscanf(params, "dddd", params[0], params[1], params[2], params[3]) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /veh [ID игрока] [ID машины] [цвет] [цвет]");
 
-    if(params[1] < 400 || params[1] > 611 && params[0]) 
+    if params[1] < 400 || params[1] > 611 && params[0] *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Номер Транспортного средства не может быть ниже 400 или выше 611 !");
 
 	if !IsPlayerOnline(params[0]) *then 
@@ -341,12 +652,12 @@ cmd:dveh(playerid)
     if(!CheckAccess(playerid, 3, 3)) 
 		return false;
 
-    if(!IsPlayerInAnyVehicle(playerid)) 
+    if !IsPlayerInAnyVehicle(playerid) *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Нужно находиться в транспорте");
 
     new CarID = GetPlayerVehicleID(playerid);
 	
-	if(CarInfo[CarID][cCreate] == 0) 
+	if CarInfo[CarID][cCreate] == 0 *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Данный транспорт нельзя удалить");
 	
 	ClearCarData(CarID);
@@ -422,7 +733,7 @@ cmd:tpcor(playerid, data[])
 
 cmd:admins(playerid)
 {
- 	if(!CheckAccess(playerid, 1)) 
+ 	if(!CheckAccess(playerid, 1, 1)) 
         return false;
 
 	SCMF(playerid, COLOR_BLUE, "Игровые мастера онлайн (в сети: %d, из них в АФК: NaN)", Iter_Count(Admin));
@@ -605,7 +916,7 @@ stock CheckAccess(playerid, adminLvl = 1, modLvl = 0)
 	{
 		return 0;
 	}
-    else if modLvl >= 1 && PI[playerid][pModer] >= modLvl *then 
+    else if modLvl >= 1 && PI[playerid][pModer] >= modLvl && modLvl != 0 *then 
     {
         return 0;
     }
@@ -615,4 +926,23 @@ stock CheckAccess(playerid, adminLvl = 1, modLvl = 0)
 		return 0;
 	}
     return 1;
+}
+stock BanIP(IP[])
+{
+    f(global_str, 100, "INSERT INTO `banip` (`IP`) VALUE ('%s')",IP);
+	mysql_tquery(mysql, global_str);
+	return 1;
+}
+stock BanName(const name[], const namez[], days, reason[])
+{
+	mysql_tquery(mysql, (str_f("SELECT * FROM bans WHERE BINARY `Name` = '%s' LIMIT 1;", name)), "@BanName", "ssds", name, namez, days, reason);
+
+	return true;
+}
+
+public: @BanName(player_name[], ban_admin[], days, reason[])
+{
+	mysql_tquery(mysql, !cache_get_row_count() ? (str_f("INSERT INTO `bans` (`Name`, `BanAdmin`, `BanSeconds`, `BanReason`) VALUE ('%s', '%s', '%d', '%s')", player_name, ban_admin, Global_Time+days*60*60*24, reason)):(str_f("UPDATE `bannames` SET `BanAdmin` = '%s', `BanSeconds` = %d, `BanReason` = '%s' WHERE `Name` = BINARY('%s') LIMIT 1;", ban_admin, Global_Time+days*60*60*24, reason, player_name)));
+	
+    return true;
 }
