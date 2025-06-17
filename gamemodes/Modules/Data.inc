@@ -146,6 +146,7 @@ enum PlayerInfo {
 	// ADD
 	pLeader,
 	pMember,
+	pOrgSkin,
 	pRang,
 	pSpawnSetting,
 	pDemorgan,
@@ -190,6 +191,7 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pAdminNumber] =
     PI[playerid][pMoney] =
     PI[playerid][pLevel] =
+	PI[playerid][pOrgSkin] =
 	PI[playerid][pDonate] =
 	PI[playerid][pBank] =
 	PI[playerid][pHospital] =

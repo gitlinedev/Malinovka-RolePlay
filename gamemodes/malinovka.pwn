@@ -200,6 +200,8 @@ public: ServerTimer()
 	{
 		MinuteTimer();
 	}
+	
+	UpdatePlayers();
 }
 stock MinuteTimer()
 {
@@ -542,7 +544,7 @@ stock SpecPl(playerid, bool:spec)
 stock SettingSpawn(playerid)
 {
 	if IsPlayerNPC(playerid) *then return 1;
-	new skin = 24;
+	new skin = GetSkinOfPlayer(playerid);
 
 	if PI[playerid][pJailTime] > 0 *then // отправка в тюрягу
 	{	
@@ -955,4 +957,43 @@ stock IsAArmy(playerid)
 	    case TEAM_ARMY: return 1;
 	}
 	return 0;
+}
+//
+stock UpdatePlayers()
+{
+	new year,month,day,minuite,second,hour; 
+	getdate(year,month,day);
+	gettime(hour,minuite,second);
+
+	foreach(Player, playerid)
+	{
+		if IsPlayerLogged{playerid} *then
+		{
+			if(!IsPlayerNPC(playerid))
+	    	{
+				if(PI[playerid][pDemorgan] > 0)
+				{
+					PI[playerid][pDemorgan] --;
+
+					if(!IsPlayerInRangeOfPoint(playerid, 50.0, 100.000, 100.000, 100.000)) PlayerSpawn(playerid); // проверка что игрок не убежал с деморгана
+					
+					if !PI[playerid][pDemorgan] *then
+					{
+						SCM(playerid, COLOR_LIGHTGREY, !"Вы отсидели свое время в ДеМоргане.");
+						SetPlayerSkinEx(playerid, GetSkinOfPlayer(playerid));
+					}
+				}
+			}
+		}
+	}
+}
+stock GetSkinOfPlayer(playerid)
+{
+	new skin, org = PI[playerid][pMember];
+	if(!org) skin = PI[playerid][pSkin];
+	else
+	{
+	    skin = PI[playerid][pOrgSkin];
+	}
+	return skin;
 }
