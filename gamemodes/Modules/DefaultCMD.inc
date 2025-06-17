@@ -77,8 +77,17 @@ cmd:menu(playerid)
 		{66CCFF}12. Дополнительные услуги", !"Выбрать ", !"Закрыть ");
 }
 cmd:help(playerid) return ShowServerCommands(playerid);
+cmd:report(playerid) return ReportDialog(playerid);
+stock ReportDialog(playerid) 
+{
+	if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
 
-stock k_OnDialogResponse(playerid, dialogid, response, listitem)
+	if Int_GetPlayerData(playerid, !"report") > Global_Time *then
+		return SCM(playerid, COLOR_GREY, "Эту команду можно использовать 1 раз в минуту");
+
+	return SPD(playerid, 15, DIALOG_STYLE_LIST, !"{EE3366}Выберите тип", !"1. Вопрос или помощь\n2. Жалоба на игрока", !"Далее", !"Назад");
+}
+stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[])
 {
     switch dialogid do
 	{
@@ -156,6 +165,63 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem)
 			if(response) return 1;
 			if(!response) return 1;
 		}
+		case 15:
+		{
+			if(!response) return callcmd::menu(playerid);
+			if(response) 
+			{
+			    switch(listitem) 
+				{
+			        case 0: 
+					{
+						SPD(playerid, 16, DIALOG_STYLE_INPUT, !"{EE3366}Вопрос или жалоба", !"\
+						{FFFFFF}Введите сообщение для игровых мастеров. Пишите кратко и по делу.\n\
+						Перед тем, как задать вопрос, проверьте, нет ли ответа в меню помощи - {EE3366}/help\n\
+						{696969}Обратите внимание: за оффтоп Вы можете получить блокировку чата", !"Далее", !"Отмена");
+			        }
+			        case 1: 
+					{
+						SPD(playerid, 17, DIALOG_STYLE_INPUT, !"{EE3366}Вопрос или жалоба", !"\
+						{FFFFFF}Введите сообщение для игровых мастеров. Пишите кратко и по делу.\n\
+						Перед тем, как задать вопрос, проверьте, нет ли ответа в меню помощи - {EE3366}/help\n\
+						{696969}Обратите внимание: за оффтоп Вы можете получить блокировку чата", !"Далее", !"Отмена");
+			        }
+			    }
+			}
+		}
+		case 16:
+  		{
+  		    if(!response) return callcmd::menu(playerid);
+   			if(response)
+   			{
+   			    if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
+
+  				if strlen(inputtextsave) < 1 || strlen(inputtextsave) > 100 *then 
+					return SCM(playerid, COLOR_GREY, !"Не менее 1 и не более 100 символов"), ReportDialog(playerid);
+
+   				SAMF(COLOR_LIGHTYELLOW, "Вопрос от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
+				SCMF(playerid, COLOR_LIGHTYELLOW, "Вопрос от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
+
+				SetPVarInt(playerid, !"report", Global_Time + 60);
+			}
+    	}
+		case 17:
+  		{
+  		    if(!response) return callcmd::menu(playerid);
+   			if(response)
+   			{
+				if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
+
+  				if strlen(inputtextsave) < 1 || strlen(inputtextsave) > 100 *then 
+					return SCM(playerid, COLOR_GREY, !"Не менее 1 и не более 100 символов"), ReportDialog(playerid);
+
+	   			SAMF(COLOR_REPORT, "Жалоба от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
+				SCMF(playerid,COLOR_REPORT, "Жалоба от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
+				SCM(playerid, COLOR_REPORT, !"Вы можете заблокировать голосовой чат игрока {FFFF99}O{FF8877}");
+
+				SetPVarInt(playerid, !"report", Global_Time + 60);
+			}
+    	}
     }
     return 1;
 }

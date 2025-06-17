@@ -72,6 +72,13 @@ new mysql;
 #define str_f(%0,%1) format(SQL_STRING, sizeof SQL_STRING, %0, %1), SQL_STRING
 #define CallTimeOutFunction SetTimerEx
 
+#define float_GetPlayerData(%0,%1) GetPVarFloat(%0, %1)
+#define float_SetPlayerData(%0,%1,%2) SetPVarFloat(%0, %1, %2)
+#define Int_GetPlayerData(%0,%1) GetPVarInt(%0, %1)
+#define Int_SetPlayerData(%0,%1,%2) SetPVarInt(%0, %1, %2)
+
+#define DPlayerData(%0,%1) DeletePVar(%0, %1)
+
 public: PlayKick(playerid)
 	return Kick(playerid);
 
@@ -299,6 +306,9 @@ public OnPlayerDisconnect(playerid, reason)
 	if IsPlayerLogged{playerid} *then
 	{
 		if Iter_Contains(Admin, playerid) *then Iter_Remove(Admin, playerid);
+
+		DPlayerData(playerid, !"vr");
+
 		SaveAccount(playerid);
 		IsPlayerLogged{playerid} = false;
 	}
@@ -504,7 +514,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 	accounts_OnDialogResponse(playerid, dialogid, response, inputtextsave);
 	admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave);
-	k_OnDialogResponse(playerid, dialogid, response, listitem);
+	k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave);
 
 	switch dialogid do
 	{

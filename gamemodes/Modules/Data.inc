@@ -18,6 +18,7 @@
 #define COLOR_HINT 				0x6699FFFF
 #define COLOR_BLACKRED 			0xCC3366FF
 #define COLOR_ANS 				0x886A68FF
+#define COLOR_REPORT 			0xFF8877FF
 
 #define TEAM_NONE       (0)
 #define TEAM_GOV 		(1)
