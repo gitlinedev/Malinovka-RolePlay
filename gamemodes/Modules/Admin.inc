@@ -115,6 +115,7 @@ new const AdminCommandList[][AdminCommand] = {
 	{"vw", 2, 2, "Перейти в виртуальный мир"},
 	{"goto", 2, 3, "Телепортироваться к игроку"},
 	{"gethere", 2, 2, "Телепортировать игрока к себе"},
+	{"jail", 2, 3, "Посадить игрока в ДеМорган"},
 
 	//level 3
 	{"skin", 3, 3, "Выдать игроку скин (временный/вечный)"},
@@ -149,6 +150,47 @@ new const AdminCommandList[][AdminCommand] = {
 
 new Iterator:Admin<MAX_PLAYERS>;
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+cmd:jail(playerid, params[])
+{
+	if(!CheckAccess(playerid, 2, 3)) 
+        return false;
+
+    new time;
+    if(sscanf(params,"uds[100]",params[0],time,params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используй: /jail [ID игрока] [время] [причина]");
+
+	if !IsPlayerOnline(params[0]) *then return false;
+
+    if(strlen(params[1]) > 30) 
+		return SCM(playerid,COLOR_LIGHTGREY, !"Причина не может быть больше 30 символов");
+
+    if(PI[params[0]][pJailTime] > 0)
+		return SCM(playerid, COLOR_LIGHTGREY,!"Этот игрок уже в КПЗ!");
+
+    if(PI[params[0]][pDemorgan] > 0)
+		return SCM(playerid, COLOR_LIGHTGREY,!"Этот игрок уже в ДеМоргане!");
+
+    if(time == 0) 
+		return SCM(playerid, COLOR_LIGHTGREY, "Нельзя посадить на 0 минут");
+
+    if(time> 900) 
+		return SCM(playerid, COLOR_LIGHTGREY, "Нельзя посадить больше чем на 900 минут");
+
+    if(PI[params[0]][pDemorgan]>0 && PI[playerid][pAdmin] < 4) return SCM(playerid, COLOR_LIGHTGREY, !"Ваш уровень не дает возможность менять время отсидки этого игрока.");
+	//
+	SetSpawnInfo(params[0], 255, 8, 100.000, 100.000, 100.000, 90.0, 6, 6, 6, 6, 6, 6);
+
+	SCMF(playerid, COLOR_TOMATO, "Вы посадили в тюрьму игрока %s на %d минут. Причина: %s", PN(params[0]), time, params[1]);
+	SCMF(params[0], COLOR_TOMATO, "%s посадил Вас в тюрьму на %d минут. Причина: %s", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор", time, params[1]);
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] посадил игрока %s в тюрьму на %d минут. Причина: %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid),playerid, PN(params[0]), time,params[1]);
+	//
+	_ResetPlayerWeapons(params[0]);
+	PI[params[0]][pDemorgan] = time*60;
+	PI[params[0]][pWanted] = 0;
+	PI[params[0]][pHospital] = 0;
+	UpdatePlayerHealth(params[0], 100);
+	PlayerSpawn(params[0]);
+	return 1;
+}
 cmd:setsex(playerid, params[])
 {
     if(!CheckAccess(playerid, 6)) 

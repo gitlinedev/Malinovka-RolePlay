@@ -18,6 +18,38 @@
 #define COLOR_HINT 				0x6699FFFF
 #define COLOR_BLACKRED 			0xCC3366FF
 
+#define TEAM_NONE       (0)
+#define TEAM_GOV 		(1)
+#define TEAM_ARMY 		(2)
+#define TEAM_MEDIC 		(3)
+#define TEAM_POLICE		(4)
+#define TEAM_SKINHEAD 	(5)
+#define TEAM_KAVKAZ 	(6)
+#define TEAM_GOPOTA 	(7)
+
+new Float:SpawnInfo[8][4] =
+{
+	{1874.8156,2228.1123,1036.3204, 90.0},				//Int:  0 | World: 0 | None
+	{-469.2832,2201.7419,1601.0879,180.0},				//Int:  10 | World: 10 | GOV
+	{-469.2832,2201.7419,1601.0879,180.0},				//Int:  11 | World: 11 | ARMY
+	{-2517.5935,-650.5844,1327.9659,358.1692},			//Int:  12 | World: 12 | MEDIC
+	{-469.2832,2201.7419,1601.0879,180.0},				//Int:  13 | World: 13 | POLICE
+	{1151.9828,-1321.5035,1019.4178,180.7741},			//Int:  14 | World: 14 | SKINHEAD
+	{1495.7332,-1283.4430,113.8212,88.8265},			//Int:  15 | World: 15 | KAVKAZ
+	{582.7991,1473.3457,1900.7980,94.9175}				//Int:  16 | World: 16 | GOPOTA
+};
+new SpawnIntWorld[8][2] =
+{
+	{0,0},				//Int: 0 | World: 0 | None
+	{10,10},			//Int: 10 | World: 10 | GOV
+	{11,11},			//Int: 11 | World: 11 | ARMY
+	{12,12},			//Int: 12 | World: 12 | MEDIC
+	{13,13},			//Int: 13 | World: 13 | POLICE
+	{14,14},			//Int: 14 | World: 14 | SKINHEAD
+	{15,15},			//Int: 15 | World: 15 | KAVKAZ
+	{16,16}				//Int: 16 | World: 16 | GOPOTA
+};
+
 new WeatherServer;
 
 enum WeatherData {
@@ -103,7 +135,7 @@ enum PlayerInfo {
 	pAdminNumber,
 	pModer,
     pMoney,
-    pScore,
+    pLevel,
 	pSex,
     pExp,
 	Float:pHealth,
@@ -111,7 +143,14 @@ enum PlayerInfo {
 	pLastIP[16],
 	pBank,
 	pDonate,
-
+	// ADD
+	pLeader,
+	pMember,
+	pRang,
+	pSpawnSetting,
+	pDemorgan,
+	pDemorganTime,
+	//
 	pMute,
 	pMuteTime,
 	pWarns,
@@ -144,20 +183,26 @@ stock ClearPlayerData(playerid)
     PI[playerid][pID] = -1;
 	PI[playerid][pWarnsTime] =
 	PI[playerid][pJailTime] =
+	PI[playerid][pDemorganTime] =
 	PI[playerid][pMuteTime] = 0;
 	
     PI[playerid][pAdmin] =
 	PI[playerid][pAdminNumber] =
     PI[playerid][pMoney] =
-    PI[playerid][pScore] =
+    PI[playerid][pLevel] =
 	PI[playerid][pDonate] =
 	PI[playerid][pBank] =
 	PI[playerid][pHospital] =
+	PI[playerid][pSpawnSetting] =
 	PI[playerid][pSkin] =
 	PI[playerid][pWarns] =
 	PI[playerid][pJail] =
+	PI[playerid][pDemorgan] =
 	PI[playerid][pMute] =
 	PI[playerid][pWanted] =
+	PI[playerid][pRang] =
+	PI[playerid][pMember] =
+	PI[playerid][pLeader] =
 	PI[playerid][pSex] = 0;
 	PI[playerid][pModer] =
     PI[playerid][pExp] = 0;

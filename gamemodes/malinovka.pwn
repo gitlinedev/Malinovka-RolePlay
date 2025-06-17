@@ -542,12 +542,94 @@ stock SpecPl(playerid, bool:spec)
 stock SettingSpawn(playerid)
 {
 	if IsPlayerNPC(playerid) *then return 1;
-	new skin = 24; // 24 - skin id for player
+	new skin = 24;
 
-	SetSpawnInfoEx(playerid, skin, 1802.0438, 2505.7705, 15.8725, 304.8401);
+	if PI[playerid][pJailTime] > 0 *then // отправка в тюр€гу
+	{	
+		SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000, 0.0);
+						
+		SetPlayerInterior(playerid, 0);
+		UpdatePlayerHealth(playerid, 100);
+		return 1;
+	}
+	else if PI[playerid][pDemorgan] > 0 *then // отправка в деморган
+	{
+		SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000, 180.0);
+		UpdatePlayerHealth(playerid, 100);
+		SetPlayerInterior(playerid, 6);
+		SetPlayerVirtualWorld(playerid, 6);
+		SetPlayerSkin(playerid, 100);
+		return 1;
+	}
+	else if PI[playerid][pHospital] > 0 && !IsAtOpg(playerid) *then // отправка в больку
+	{
+		if !IsAArmy(playerid) *then
+	    {
+	        switch(random(2))
+			{
+				case 0: SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000,90.000); // казарма спавн 1
+				case 1: SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000,90.000); // казарма спавн 2
+			}
+			SetPlayerVirtualWorld(playerid, 2);
+			SetPlayerInterior(playerid, 2);
+        }
+		else
+		{
+			SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000,90.000); // дефолт болька дл€ всех
+			SetPlayerVirtualWorld(playerid, 1);
+  			SetPlayerInterior(playerid, 2);
+			return 1;
+		}
+	    UpdatePlayerHealth(playerid, 25);
+	    return 1;
+	}
+	else if PI[playerid][pSpawnSetting] == 1 && !IsAArmy(playerid) *then // дом/квартира
+	{
+		return 1;
+	}
+	else if PI[playerid][pSpawnSetting] == 2 && !IsAArmy(playerid) *then // вокзал
+	{
+		if PI[playerid][pLevel] < 3 *then
+		{
+			switch random(2) do
+			{
+				case 0: SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000,90.000); // спавн 1 (батырево)
+				case 1: SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000,90.000); // спавн 2 (батырево)
+			}
+			SetPlayerInterior(playerid, 0);
+			SetPlayerVirtualWorld(playerid, 0);
+			return true;
+		}
+
+		else if(PI[playerid][pLevel] >= 3 && PI[playerid][pLevel] < 8)
+		{
+			SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000,90.000); // спавн 1 (бусаево)
+			SetPlayerInterior(playerid, 0);
+			SetPlayerVirtualWorld(playerid, 0);
+			return 1;
+		}
+		else if(PI[playerid][pLevel] >= 5 && PI[playerid][pLevel] < 20)
+		{
+			SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000,90.000); // спавн 1 (южка)
+			SetPlayerInterior(playerid, 0);
+			SetPlayerVirtualWorld(playerid, 0);
+			return 1;
+		}
+		return 1;
+	}
+	else if PI[playerid][pSpawnSetting] == 3 && GetTeamID(playerid) != 0 *then // орга
+	{
+		SetPlayerFacingAngle(playerid,SpawnInfo[PI[playerid][pMember]][3]);
+		SetPlayerInterior(playerid,SpawnIntWorld[PI[playerid][pMember]][0]);
+		SetPlayerVirtualWorld(playerid,SpawnIntWorld[PI[playerid][pMember]][1]);
+		SetSpawnInfoEx(playerid, skin, SpawnInfo[PI[playerid][pMember]][0], SpawnInfo[PI[playerid][pMember]][1], SpawnInfo[PI[playerid][pMember]][2], SpawnInfo[PI[playerid][pMember]][3]);
+		return 1;
+	}
+
+	// если нет спавна то спавним на дефолт респе
+	SetSpawnInfoEx(playerid, skin, 1802.0438, 2505.7705, 15.8725, 304.8401); // батырево вокзал
 	SetPlayerInterior(playerid, 0);
 	SetPlayerVirtualWorld(playerid, 0);
-
 	return true;
 }
 
@@ -848,4 +930,29 @@ stock _ResetPlayerWeapons(playerid)
 {
     ResetPlayerWeapons(playerid);
     return 1;
+}
+stock GetTeamID(playerid)
+{
+	if(PI[playerid][pMember] > 0) return PI[playerid][pMember];
+	if(PI[playerid][pLeader] > 0) return PI[playerid][pLeader];
+	return 0;
+}
+stock IsAtOpg(playerid)
+{
+	new team = GetTeamID(playerid);
+	switch(team)
+	{
+	    case TEAM_SKINHEAD,TEAM_KAVKAZ,TEAM_GOPOTA: return 1;
+	    default: return 0;
+	}
+	return 0;
+}
+stock IsAArmy(playerid)
+{
+	new team = GetTeamID(playerid);
+	switch(team)
+	{
+	    case TEAM_ARMY: return 1;
+	}
+	return 0;
 }

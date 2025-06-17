@@ -20,7 +20,7 @@ public: OnPlayerLoadData(playerid)
 
     PI[playerid][pAdmin] = cache_get_row_int(0, 2, mysql);
     PI[playerid][pMoney] = cache_get_row_int(0, 11, mysql);
-    PI[playerid][pScore] = cache_get_row_int(0, 6, mysql);
+    PI[playerid][pLevel] = cache_get_row_int(0, 6, mysql);
     PI[playerid][pExp] = cache_get_row_int(0, 7, mysql);
 	PI[playerid][pSex] = cache_get_row_int(0, 8, mysql);
 	PI[playerid][pHealth] = cache_get_row_int(0, 15, mysql);
@@ -355,7 +355,7 @@ stock SaveAccount(playerid)
 	// Integer
 	orm_addvar_int(orm, PI[playerid][pID], "ID");
 	
-	orm_addvar_int(orm, PI[playerid][pScore], "Score");
+	orm_addvar_int(orm, PI[playerid][pLevel], "Score");
 	orm_addvar_int(orm, PI[playerid][pExp], "Exp");
 	orm_addvar_int(orm, PI[playerid][pSex], "Sex");
 	orm_addvar_int(orm, PI[playerid][pAdmin], "Admin");
