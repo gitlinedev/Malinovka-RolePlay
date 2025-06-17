@@ -503,7 +503,7 @@ cmd:setarm(playerid, params[])
 		return SCM(playerid, COLOR_LIGHTGREY, !"Игрок не в сети");
 
 	SetPlayerArmourEx(params[0], params[1]);
-	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] изменил уровень брони игрока %s[%d] на %d.0", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[0], params[1]);
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] изменил броню %s[%d] на %d.0", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[0], params[1]);
 	SCMF(params[0], -1, "%s мастер выдал Вам бронижелет",  PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
 	return 1;
 }
@@ -575,7 +575,7 @@ cmd:flip(playerid, params[])
     SetVehicleZAngle(car, A);
     RepairVehicle(car);
 
-	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] починил транспорт игрока %s[%d]", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[0]);
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] перевернул транспорт ID %d", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, car);
 	return SCMF(params[0], -1, "%s починил Вам транспорт", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
 }
 
@@ -592,8 +592,8 @@ cmd:ans(playerid,params[])
 	if params[0] == playerid *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Вы не можете ответить самому себе");
 
-    SCMF(params[0], 0x906868FF, "%s ответил Вам: {FFFFFF}%s", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор", params[1]);
-	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] написал игроку %s[%d]:{FFFFFF} %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[0], params[1]);
+    SCMF(params[0], COLOR_ANS, "%s ответил Вам: {FFFFFF}%s", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор", params[1]);
+	SAMF(COLOR_ANS, "[%s #%d] %s[%d] > %s[%d]:{FFFFFF} %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[0], params[1]);
     return 1;
 }
 
@@ -727,12 +727,12 @@ cmd:skin(playerid, params[])
 	{
 		PI[params[0]][pSkin] = params[1];
 
-		SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал вечный скин игроку %s[%d] (ID %d)", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[0], params[1]);
+		SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал %s[%d] вечный скин ID %d", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[0], params[1]);
 		SCMF(params[0], -1, "%s Игровой мастер выдал Вам вечный скин.", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
 	}
 	else
 	{
-		SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал временный скин игроку %s[%d] (ID %d)", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[0], params[1]);
+		SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал %s[%d] временный скин ID %d", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[0], params[1]);
 		SCMF(params[0], -1, "%s выдал Вам временный скин.", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
 	}
 	SetPlayerSkinEx(params[0], params[1]);
@@ -936,7 +936,7 @@ public: AloginAuth(playerid, password)
 
             SCMF(playerid, -1, "Вы успешно авторизовались как {EE3366}%s{FFFFFF}!", Admin_Names[PI[playerid][pAdmin]]);
         
-            //for new i; i < 53; i++ do EnableAntiCheatForPlayer(playerid, i, 0); 
+            for new i; i < 53; i++ do EnableAntiCheatForPlayer(playerid, i, 0); 
 
             Iter_Add(Admin, playerid);
             ALogin{playerid} = true;

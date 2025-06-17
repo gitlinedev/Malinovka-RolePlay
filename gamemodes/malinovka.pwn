@@ -38,6 +38,11 @@ new
 #include Pawn.CMD
 #include a_mysql
 #include sscanf2
+//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#define DEBUG
+#include nex-ac_ru.lang
+#include nex-ac
+//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include foreach
 #include sampvoice
 #include md5
@@ -88,8 +93,8 @@ new PlayerDialogList[MAX_PLAYERS][64];
 //======================================[ modules ]================================================//
 
 
-#include Modules/RemoveBuild // удаление зданий
 #include Modules/Data // массивы и цвета
+#include Modules/AntiCheat // анти-чит
 #include Modules/Accounts // авторизация и регистрация
 #include Modules/DefaultCMD // команды по умолчанию
 #include Modules/Admin // система админов
@@ -100,6 +105,7 @@ new PlayerDialogList[MAX_PLAYERS][64];
 #include Modules/Session // сессии игроков
 #include Modules/Moderators // модераторы
 
+#include Modules/RemoveBuild // удаление зданий
 #include Modules/Test // тестовый модуль
 //=====================================[ global server settings ]==================================//
 
@@ -474,6 +480,7 @@ public OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid)
 
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
+	AC_OnPlayerKeyStateChange(playerid, newkeys);
 	return 1;
 }
 

@@ -17,6 +17,7 @@
 #define COLOR_JOBYELLOW 		0xFFCD00FF
 #define COLOR_HINT 				0x6699FFFF
 #define COLOR_BLACKRED 			0xCC3366FF
+#define COLOR_ANS 				0x886A68FF
 
 #define TEAM_NONE       (0)
 #define TEAM_GOV 		(1)
@@ -125,7 +126,8 @@ new RegReferal[MAX_PLAYERS][24];
 enum _temp_
 {
 	bool:SpectPlayer,
-	targetID
+	targetID,
+	ACWarnings
 }
 new pTemp[MAX_PLAYERS][_temp_];
 
@@ -215,6 +217,8 @@ stock ClearPlayerData(playerid)
 	ALogin{playerid} =
 	AnimPlayed{playerid} =
 	pTemp[playerid][SpectPlayer] = false;
+
+	pTemp[playerid][ACWarnings] = 0;
 
 	pTemp[playerid][targetID] = INVALID_PLAYER_ID;
 
