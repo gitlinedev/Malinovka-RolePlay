@@ -107,7 +107,6 @@ new PlayerDialogList[MAX_PLAYERS][64];
 #include Modules/Admin // система админов
 #include Modules/SQL // работа с базой данных
 #include Modules/VoiceChat // работа с базой данных
-#include Modules/SpeedLimit // ограничение скорости
 #include Modules/CEFClient // цеф
 #include Modules/Session // сессии игроков
 #include Modules/Moderators // модераторы
@@ -202,10 +201,10 @@ public: ServerTimer()
 	if minuite == 30 && second == 0 *then
 	{
 		SCMALL(0xEE3366FF, !"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-		SCMALL(0xFFFFFFFF, !"Для посещения игрового магазина посетите сайт: {EE3366}m-bonus.com");
+		SCMALL(0xFFFFFFFF, !"Для посещения игрового магазина посетите сайт: {EE3366}"Mode_Site"");
 		SCMALL(0xFFFFFFFF, !"Общение игроков и торговая площадка - ждём тебя! {EE3366}vk.com/mbonus_free");
-		SCMALL(0xFFFFFFFF, !"В нашей игре действует реферальная система. Подброности на {EE3366}m-bonus.com/ref");
-		SCMALL(0xFFFFFFFF, !"При возникновении вопросов по игре обращайтесь в тех. поддержку: {EE3366}m-bonus.com/help");
+		SCMALL(0xFFFFFFFF, !"В нашей игре действует реферальная система. Подброности на {EE3366}"Mode_Site"/ref");
+		SCMALL(0xFFFFFFFF, !"При возникновении вопросов по игре обращайтесь в тех. поддержку: {EE3366}"Mode_Site"/help");
 		SCMALL(0xEE3366FF, !"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 	}
 

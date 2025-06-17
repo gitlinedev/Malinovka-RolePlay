@@ -120,7 +120,16 @@ public: MysqlCheckBanOnLogin(playerid, namez[])
 			SQL("UPDATE `accounts` SET `Warns` = '0' WHERE `ID` = '%d' LIMIT 1", PI[playerid][pID]),
 		    SQL("DELETE FROM `bans` WHERE `Name` = '%s' LIMIT 1", PN(playerid));
     }
-    f(global_str, 100, "SELECT * FROM `accounts` WHERE `ID` = '%i' LIMIT 1", PI[playerid][pID]);
+//	global_str = "{FFFFFF}Выберите место повяления:\n\
+//				Место выхода из игры\n\
+//				Автовокзал\n\
+//				Дом/квартира\n\
+	//			База организации";
+//
+	//SPDF(playerid, 18, DIALOG_STYLE_TABLIST_HEADERS, !"{ee3366}Выход", !"Войти", !"", global_str);
+    
+	
+	f(global_str, 100, "SELECT * FROM `accounts` WHERE `ID` = '%i' LIMIT 1", PI[playerid][pID]);
 	mysql_tquery(mysql, global_str, "OnPlayerLoadData", "d", playerid);
 	return true;
 }
