@@ -60,9 +60,68 @@ cmd:s(playerid, params[])
 	if(!IsPlayerInAnyVehicle(playerid))	ApplyAnimationEx(playerid, "ON_LOOKERS", "shout_01",1000.0,0,0,0,0,0,1);
 	return 1;
 }
+stock ShowPlayerStats(playerid)
+{
+	return SPD(playerid, dStats, 2, !"{EE3366}Стата игрока лол", !"Моя стата типа", !"Назад", !"Закрыть");
+}
+stock ShowServerCommands(playerid)
+{
+	return SPD(playerid, dCommands, 2, !"{EE3366}Команды сервера", !"1. Основные команды\n2. Коммуникации\n3. Дома и квартиры\n4. Бизнес и АЗС\n5. Основные работы\n6. Организации\n7. Лидеры и заместители", !"Просмотр ", !"Назад ");
+}
+stock ShowHotKeys(playerid)
+{
+	return SPD(playerid, dHotKeys, 5, !"{EE3366}Горячие клавиши", !"Клавиша\tТип\tОписание\nJ\t{FFFF99}Любой\tОткрыть меню лидера\nJ\t{FFFF99}Любой\tУдалить рабочий транспорт\nL\t{FFFF99}Любой\tОткрыть / закрыть транспорт\nM\t{FFFF99}Любой\tОткрыть меню игрока\nP\t{FFFF99}Любой\tОткрыть меню телефона\nO\t{FFFF99}Любой\tНастройки голосового чата (стандарт.)\nX\t{FFFF99}Любой\tГолосовой чат (стандарт.)\nB\t{FF9933}Пешеход\tЗанять койку в палате\nB\t{FF9933}Пешеход\tОткрыть меню покупок в бизнесе\nB\t{FF9933}Пешеход\tНажать на кнопку (открыть ворота, дверь)\nB\t{FF9933}Пешеход\tСесть на стул / кресло / лавку\nR\t{FF9933}Пешеход\tПерезарядить оружие\nЛевый ALT\t{FF9933}Пешеход\tЗалезть / слезть на вышку (ВЧ)\nH\t{66CC66}Водитель\tОткрыть ворота\nJ\t{66CC66}Водитель\tОткрыть меню работы\nK\t{66CC66}Водитель\tВставить / вытащить ключ\nB\t{66CC66}Водитель\tПристегнуть / отстегнуть ремень безопасности\nЛевый ALT\t{66CC66}Водитель\tВключить / выключить фары\nЛевый CTRL\t{66CC66}Водитель\tВключить / выключить двигатель\nM\t{66CCFF}Водитель / пассажир\tМегафон (в рабочем транспорте полиции)", !"Закрыть ", !"Назад ");
+}
+stock ShowServerRules(playerid)
+{
+	return SPD(playerid, dRules, 0, !"{EE3366}Общие правила", !"{FFFFFF}Правила игры расположены на форуме.\nВы хотите перейти к ним в браузере?", !"Открыть ", !"Назад ");
+}
+stock ShowHelpDialog(playerid)
+{
+	if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
+
+	if Int_GetPlayerData(playerid, !"report") > Global_Time *then
+		return SCM(playerid, COLOR_GREY, "Эту команду можно использовать 1 раз в минуту");
+
+	return SPD(playerid, dHelp, DIALOG_STYLE_LIST, !"{EE3366}Выберите тип", !"1. Вопрос или помощь\n2. Жалоба на игрока", !"Далее", !"Назад");
+}
+stock ShowPlayerSettings(playerid)
+{
+	return SPDF(playerid, dSettings, 4, !"{EE3366}Настройки аккаунта", !"Изменить ", !"Назад",
+	"1. Размер HUD\t{FFFF99}...\n\
+	2. Ники других игроков\t{FFFF99}Включены\n\
+	3. Кинематографический режим\t{FFFF99}Отключён\n\
+	4. Голосовой чат\t{FFFF99}Включён\n\
+	5. Счетчик кадров в сек (FPS)\t{FFFF99}Включён\n\
+	6. Отображение дождя\t{FFFF99}Включено\n\
+	7. Рабочая голосовая рация\t{FFFF99}Включена\n\
+	8. Шум в голосовой рации\t{FFFF99}Включен\n\
+	9. Звук при нанесении урона\t{FFFF99}Включен\n\
+	10. Индикатор источника урона\t{FFFF99}Включен");
+}
+stock ShowServerResources(playerid)
+{
+	return SPD(playerid, dResources, 4, !"{EE3366}Ресурсы игры", !"Сайт\t{FFFF99}malinovka.org\nФорум\t{FFFF99}malinovka.org/forum\nТех. поддержка\t{FFFF99}malinovka.org/help\nРеферальная система\t{FFFF99}malinovka.org/ref\nНовости и обновления\t{FFFF99}t.me/malinovka_game\nМалиновый сад\t{FFFF99}vk.com/malinovka_free", !"Перейти ", !"Назад ");
+}
+stock ChangePlayerName(playerid)
+{
+	return SPD(playerid, dChangeName, 4, !"{EE3366}Выбор типа", !"1. Изменить на случайный никнейм\t{FFFF99}Бесплатно\n2. Изменить на свой никнейм\t{3377CC}Платно", "Далее ", "Назад ");
+}
+stock ShowBlacklistDialog(playerid)
+{
+	return SPD(playerid, dBlackListMenu, 0, !"{EE3366}Чёрный список организаций ", !"{FFFFFF}Вы не состоите в чёрном списке ни одной организации", !"Закрыть ", !"Назад ");
+}
+stock ShowActivePunishments(playerid)
+{
+	return SPD(playerid, dActivePunishment, 0, !"{EE3366}Активные наказания ", !"{FFFFFF}У Вас нет активных наказаний", "Закрыть ", "Назад ");
+}
+stock ShowDonate(playerid)
+{
+	return SPD(playerid, dDonate, 4, !"{EE3366}Дополнительные услуги ", !"{FFFF99}1. Информация\t\n{FFFF99}2. Последние 10 операций\t\n{FFFF99}3. Купить малину\t\n4. Конвертация малины в рубли\t{66CCFF}(от 1 мал.)\n5. Подписка {DD3366}Малиновка Плюс\t{66CCFF}(от 249 руб)\n6. Покупка номеров на транспорт\t{66CCFF}(от 199 руб)\n7. Покупка лицензии или разрешения\t{66CCFF}(от 19 мал.)\n8. Покупка военного билета\t{66CCFF}(129 мал.)\n9. Покупка законопослушности (+10)\t{66CCFF}(19 мал.)\n10. Покупка одного навыка на оружие\t{66CCFF}(99 мал.)\n11. Покупка всех навыков на оружие\t{66CCFF}(499 мал.)\n12. Покупка 4-х значного номера телефона\t{66CCFF}(199 мал.)\n13. Изменение имени\t{66CCFF}(49 мал.)\n14. Изменение пола\t{66CCFF}(89 мал.)", "Далее ", "Закрыть ");
+}
 cmd:menu(playerid)
 {
-	return SPD(playerid, 9, 2, !"{EE3366}Меню игрока ",\
+	return SPD(playerid, dMenu, 2, !"{EE3366}Меню игрока ",\
 		"1. Список преступлений\n\
 		2. Пассивный режим {66CC66}(Включён)\n\
 		3. Команды сервера\n\
@@ -77,21 +136,12 @@ cmd:menu(playerid)
 		{66CCFF}12. Дополнительные услуги", !"Выбрать ", !"Закрыть ");
 }
 cmd:help(playerid) return ShowServerCommands(playerid);
-cmd:report(playerid) return ReportDialog(playerid);
-stock ReportDialog(playerid) 
-{
-	if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
-
-	if Int_GetPlayerData(playerid, !"report") > Global_Time *then
-		return SCM(playerid, COLOR_GREY, "Эту команду можно использовать 1 раз в минуту");
-
-	return SPD(playerid, 15, DIALOG_STYLE_LIST, !"{EE3366}Выберите тип", !"1. Вопрос или помощь\n2. Жалоба на игрока", !"Далее", !"Назад");
-}
+cmd:report(playerid) return ShowHelpDialog(playerid);
 stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[])
 {
     switch dialogid do
 	{
-        case 9:
+        case dMenu:
         {
             if (response)
             {
@@ -99,19 +149,20 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
                 {
                     case 0: ShowPlayerStats(playerid);
 					case 1: return 1;
-                    case 2: ShowServerCommands(playerid);
-                    case 3: ShowHotKeys(playerid);
-                    case 4: ShowHelpDialog(playerid);
-                    case 5: ShowPlayerSettings(playerid);
-                    case 6: ShowServerRules(playerid);
-                    case 7: ShowServerResources(playerid);
-                    case 8: ChangePlayerName(playerid);
-                    case 9: ShowBlacklistDialog(playerid);
-                    case 10: ShowDonate(playerid);
+					case 2: return 1;
+                    case 3: ShowServerCommands(playerid);
+                    case 4: ShowHotKeys(playerid);
+                    case 5: ShowHelpDialog(playerid);
+                    case 6: ShowPlayerSettings(playerid);
+                    case 7: ShowServerRules(playerid);
+                    case 8: ShowServerResources(playerid);
+                    case 9: ChangePlayerName(playerid);
+                    case 10: ShowBlacklistDialog(playerid);
+                    case 11: ShowDonate(playerid);
                 }
             }
         }
-		case 10:
+		case dCommands:
 		{
 			if(!response) callcmd::help(playerid);
 			if(response) 
@@ -145,27 +196,52 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
 				}
 			}
 		}
-		case 11:
-		{
-			if(response) return 1;
-			if(!response) callcmd::help(playerid);
-		}
-		case 12:
+		case dStats:
 		{
 			if(response) return 1;
 			if(!response) callcmd::menu(playerid);
 		}
-		case 13:
+		case dActivePunishment:
+		{
+			if(response) return 1;
+			if(!response) callcmd::menu(playerid);
+		}
+		case dBlackListMenu:
+		{
+			if(response) return 1;
+			if(!response) callcmd::menu(playerid);
+		}
+		case dResources:
+		{
+			if(response) return 1;
+			if(!response) callcmd::menu(playerid);
+		}
+		case dChangeName:
+		{
+			if(response) return 1;
+			if(!response) callcmd::menu(playerid);
+		}
+		case dHotKeys:
+		{
+			if(response) return 1;
+			if(!response) callcmd::menu(playerid);
+		}
+		case dSettings:
+		{
+			if(response) return 1;
+			if(!response) callcmd::menu(playerid);
+		}
+		case dDonate:
+		{
+			if(response) return 1;
+			if(!response) callcmd::menu(playerid);
+		}
+		case dRules: // открытие ссылки
 		{
 			if(response) return 1;
 			if(!response) return 1;
 		}
-		case 14: // открытие ссылки
-		{
-			if(response) return 1;
-			if(!response) return 1;
-		}
-		case 15:
+		case dHelp:
 		{
 			if(!response) return callcmd::menu(playerid);
 			if(response) 
@@ -174,14 +250,14 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
 				{
 			        case 0: 
 					{
-						SPD(playerid, 16, DIALOG_STYLE_INPUT, !"{EE3366}Вопрос или жалоба", !"\
+						SPD(playerid, dHelpQuestions, DIALOG_STYLE_INPUT, !"{EE3366}Вопрос или жалоба", !"\
 						{FFFFFF}Введите сообщение для игровых мастеров. Пишите кратко и по делу.\n\
 						Перед тем, как задать вопрос, проверьте, нет ли ответа в меню помощи - {EE3366}/help\n\
 						{696969}Обратите внимание: за оффтоп Вы можете получить блокировку чата", !"Далее", !"Отмена");
 			        }
 			        case 1: 
 					{
-						SPD(playerid, 17, DIALOG_STYLE_INPUT, !"{EE3366}Вопрос или жалоба", !"\
+						SPD(playerid, dHelpComplaints, DIALOG_STYLE_INPUT, !"{EE3366}Вопрос или жалоба", !"\
 						{FFFFFF}Введите сообщение для игровых мастеров. Пишите кратко и по делу.\n\
 						Перед тем, как задать вопрос, проверьте, нет ли ответа в меню помощи - {EE3366}/help\n\
 						{696969}Обратите внимание: за оффтоп Вы можете получить блокировку чата", !"Далее", !"Отмена");
@@ -189,7 +265,7 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
 			    }
 			}
 		}
-		case 16:
+		case dHelpQuestions:
   		{
   		    if(!response) return callcmd::menu(playerid);
    			if(response)
@@ -197,7 +273,7 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
    			    if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
 
   				if strlen(inputtextsave) < 1 || strlen(inputtextsave) > 100 *then 
-					return SCM(playerid, COLOR_GREY, !"Не менее 1 и не более 100 символов"), ReportDialog(playerid);
+					return SCM(playerid, COLOR_GREY, !"Не менее 1 и не более 100 символов"), ShowHelpDialog(playerid);
 
    				SAMF(COLOR_LIGHTYELLOW, "Вопрос от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
 				SCMF(playerid, COLOR_LIGHTYELLOW, "Вопрос от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
@@ -205,7 +281,7 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
 				SetPVarInt(playerid, !"report", Global_Time + 60);
 			}
     	}
-		case 17:
+		case dHelpComplaints:
   		{
   		    if(!response) return callcmd::menu(playerid);
    			if(response)
@@ -213,7 +289,7 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
 				if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
 
   				if strlen(inputtextsave) < 1 || strlen(inputtextsave) > 100 *then 
-					return SCM(playerid, COLOR_GREY, !"Не менее 1 и не более 100 символов"), ReportDialog(playerid);
+					return SCM(playerid, COLOR_GREY, !"Не менее 1 и не более 100 символов"), ShowHelpDialog(playerid);
 
 	   			SAMF(COLOR_REPORT, "Жалоба от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
 				SCMF(playerid,COLOR_REPORT, "Жалоба от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);

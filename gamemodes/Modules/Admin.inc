@@ -454,7 +454,7 @@ cmd:as(playerid)
         return 0;
 
 	if !ALogin{playerid} *then return 
-		SPD(playerid, 4, DIALOG_STYLE_PASSWORD, !"{EE3366}Авторизация", !"{FFFFFF}Для получения доступа к правам {EE3366}игрового мастера{FFFFFF}\n необходимо подтвердить личность, введя пароль.", !"Далее", !"Отмена");
+		SPD(playerid, dALogin, DIALOG_STYLE_PASSWORD, !"{EE3366}Авторизация", !"{FFFFFF}Для получения доступа к правам {EE3366}игрового мастера{FFFFFF}\n необходимо подтвердить личность, введя пароль.", !"Далее", !"Отмена");
     
     SCM(playerid, -1, !"В разработке!");
     return 1;
@@ -476,7 +476,7 @@ cmd:makegm(playerid, params[])
 
     pTemp[playerid][targetID] = params[0];
 
-	return SPD(playerid, 5, DIALOG_STYLE_LIST, !"{EE3366}Выдача прав игрового мастера", !"Снять права игрового мастера\n1. NGM\n2. JRGM\n3. GM\n4. GM+\n5. LGM\n6. SGM\n7. SGM+\n8. DEV", !"Далее", !"Отмена");
+	return SPD(playerid, dMakeGameMaster, DIALOG_STYLE_LIST, !"{EE3366}Выдача прав игрового мастера", !"Снять права игрового мастера\n1. NGM\n2. JRGM\n3. GM\n4. GM+\n5. LGM\n6. SGM\n7. SGM+\n8. DEV", !"Далее", !"Отмена");
 }
 cmd:freeze(playerid, params[])
 {
@@ -800,7 +800,7 @@ cmd:ahelp(playerid)
 	for new i = 1; i < 9; i++ do
 		strcat(global_str, (str_f("\n{FFFFFF}%d.{%s} %s", i, PI[playerid][pAdmin] >= i ? "FFFFFF":"AFAFAF", Admin_Names[i])));
     
-	return SPD(playerid, 6, DIALOG_STYLE_LIST, !"{EE3366}Команды администратора", global_str, !"Выбрать", !"Отмена");
+	return SPD(playerid, dAdminCMD, DIALOG_STYLE_LIST, !"{EE3366}Команды администратора", global_str, !"Выбрать", !"Отмена");
 }
 
 stock GetMaxAmountAHelp(level)
@@ -837,7 +837,7 @@ stock print_AdminCommand(playerid, level, page = 0)
 			strcat(global_str, (str_f("%s — %s\n", AdminCommandList[i][adminCommand], AdminCommandList[i][adminCommandInfo])));
 	}
 
-	return SPD(playerid, 7, DIALOG_STYLE_MSGBOX, (str_f("{EE3366}%s [%d/%d]", Admin_Names[level], page + 1, GetMaxAmountAHelp(level))), global_str, !"Далее", !"Назад");
+	return SPD(playerid, dAdminCMDList, DIALOG_STYLE_MSGBOX, (str_f("{EE3366}%s [%d/%d]", Admin_Names[level], page + 1, GetMaxAmountAHelp(level))), global_str, !"Далее", !"Назад");
 }
 
 stock StaffTag(playerid)
@@ -853,18 +853,18 @@ stock admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 {
     switch dialogid do
     {
-        case 4: 
+        case dALogin: 
 		{
 			if !response *then
 		    	return 1;
 
 			if !strlen(inputtextsave) *then
-			    	return SPD(playerid, 5, DIALOG_STYLE_PASSWORD, !"{EE3366}Авторизация", !"{FFFFFF}Для получения доступа к правам {EE3366}игрового мастера{FFFFFF}\n необходимо подтвердить личность, введя пароль.", !"Далее", !"Отмена");
+			    	return SPD(playerid, dALogin, DIALOG_STYLE_PASSWORD, !"{EE3366}Авторизация", !"{FFFFFF}Для получения доступа к правам {EE3366}игрового мастера{FFFFFF}\n необходимо подтвердить личность, введя пароль.", !"Далее", !"Отмена");
 
 			mysql_format(mysql, global_str, 150, "SELECT * FROM accounts WHERE NickName = '%s' LIMIT 1", PN(playerid));
 			mysql_tquery(mysql, global_str, "AloginAuth", "id", playerid, strval(inputtextsave));
 		}
-        case 5:
+        case dMakeGameMaster:
         {
             if(!response) return pTemp[playerid][targetID] = INVALID_PLAYER_ID;
             if(response) 
@@ -888,7 +888,7 @@ stock admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
                 return pTemp[playerid][targetID] = INVALID_PLAYER_ID;
             }
         }
-        case 6:
+        case dAdminCMD:
 		{
 			if !response *then
 				return false;
@@ -899,7 +899,7 @@ stock admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 			return print_AdminCommand(playerid, listitem);
 		}
 
-		case 7:
+		case dAdminCMDList:
 		{
 			new level = gpdList(playerid, 0), page = gpdList(playerid, 1);
 

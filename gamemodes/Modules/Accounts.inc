@@ -198,13 +198,13 @@ public: LoginDialogMysql(playerid, inputtext[])
 			
 	    f(global_str, 270,"\
 	    {FFFFFF}Добро пожаловать на игровой сервер {EE3366}Malinovka RolePlay{FFFFFF}\nВведите свой пароль чтобы зайти на сервер:\n\n{FFFFFF}Попыток для ввода пароля: {EE3366}%d",gPlayerLogTries{playerid});
-	    return SPD(playerid, 2, 3, !"{EE3366}Авторизация", global_str, !"Далее", !"Отмена");
+	    return SPD(playerid, dLogin, 3, !"{EE3366}Авторизация", global_str, !"Далее", !"Отмена");
 	}
 	return 1;
 }
 
 stock ShowLoginDialog(playerid)
-	return SPDF(playerid, 2, DIALOG_STYLE_PASSWORD, !"{EE3366}Авторизация", !"Далее", !"Отмена", "{FFFFFF}Добро пожаловать\n\nВведите свой пароль\n{FFFFFF}Попыток для ввода пароля: {EE3366}%d", gPlayerLogTries{playerid});
+	return SPDF(playerid, dLogin, DIALOG_STYLE_PASSWORD, !"{EE3366}Авторизация", !"Далее", !"Отмена", "{FFFFFF}Добро пожаловать\n\nВведите свой пароль\n{FFFFFF}Попыток для ввода пароля: {EE3366}%d", gPlayerLogTries{playerid});
 
 public: GetPlayerDataMysql(playerid)
 {	
@@ -249,14 +249,14 @@ stock Autorisation(playerid)
 stock ShowGrandRegiserDialog(playerid)
 {
 	f(global_str, 400, "{FFFFFF}Добро пожаловать на игровой серрвер {EE3366}Malinovka RolePlay{FFFFFF}\nДля начала игры необходимо зарегистрировать аккаунт.\n\nПожалуйста, придумайте пароль, который в дальнейшем\nбудет использоваться для авториации на сервере.\n\nВнимание! Не используйте простые и короткие пароли\nВведите будущий пароль в поле ниже и нажмите \"Далее\"");
-	return SPD(playerid, 1, DIALOG_STYLE_INPUT, "{EE3366}Регистрация", global_str, !"Далее", !"Отмена");
+	return SPD(playerid, dRegister, DIALOG_STYLE_INPUT, "{EE3366}Регистрация", global_str, !"Далее", !"Отмена");
 }
 stock ShowRegisterDialog(playerid, rstate)
 {
 	switch rstate do  {
 	    case 1: ShowGrandRegiserDialog(playerid);
-	    case 2: SPD(playerid, 3, DIALOG_STYLE_MSGBOX, !"{EE3366}Пол", !"{FFFFFF}Выберите пол Вашего будущего персонажа", !"Мужской", !"Женский");
-	    case 3: SPD(playerid, 1, DIALOG_STYLE_INPUT, !"{EE3366}Ник пригласившего игрока", !"{FFFFFF}Если Вы попали на наш сервер благодаря своему\nдругу, то напишите его игровой никнейм в поле ниже", !"Ввести", !"Пропустить");
+	    case 2: SPD(playerid, dSex, DIALOG_STYLE_MSGBOX, !"{EE3366}Пол", !"{FFFFFF}Выберите пол Вашего будущего персонажа", !"Мужской", !"Женский");
+	    case 3: SPD(playerid, dRegister, DIALOG_STYLE_INPUT, !"{EE3366}Ник пригласившего игрока", !"{FFFFFF}Если Вы попали на наш сервер благодаря своему\nдругу, то напишите его игровой никнейм в поле ниже", !"Ввести", !"Пропустить");
         default: return 0; 
 	}
 	return 1;
@@ -275,7 +275,7 @@ stock accounts_OnDialogResponse(playerid, dialogid, response, inputtextsave[])
 {
 	switch dialogid do
 	{
-		case 1:
+		case dRegister:
 	    {
 			if(response)
 			{
@@ -314,7 +314,7 @@ stock accounts_OnDialogResponse(playerid, dialogid, response, inputtextsave[])
 			}
 			return 1;
 		}
-		case 2:
+		case dLogin:
 		{
 			if !response *then return Kick(playerid);
 			else if !strlen(inputtextsave) *then  return ShowLoginDialog(playerid);
@@ -323,7 +323,7 @@ stock accounts_OnDialogResponse(playerid, dialogid, response, inputtextsave[])
 			mysql_tquery(mysql, global_str, "LoginDialogMysql", "ds", playerid, inputtextsave);
 			return true;
 		}
-		case 3: 
+		case dSex: 
 		{
 			if(response) RegSex[playerid] = 1;
 			else if(!response) RegSex[playerid] = 2;
