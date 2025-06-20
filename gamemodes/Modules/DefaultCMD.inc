@@ -298,6 +298,118 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
 				SetPVarInt(playerid, !"report", Global_Time + 60);
 			}
     	}
+		case dGPS:
+		{
+			if(!response) return 1;
+   			if(response)
+   			{
+				switch(listitem)
+				{
+					case 0:
+					{
+						SPD(playerid, dGPSInfo, 0, !"{EE3366}Информация", !"{FFFFFF}Чтобы отключить навигатор зайдите в раздел Карта (ESC) и нажмите ПКМ.\n\nИспользуйте диалог или команду /gps с номером категории и места.\n{FFFF99}Например: /gps 3 6 {FFFFFF}(ввод места в разделе 'Бизнесы' станет ID бизнеса)", !"Закрыть", !"Назад");
+					}
+					case 1..7:
+					{
+						listitem = listitem - 1;
+
+						global_str[0] = EOS;
+
+						for (new i = 0; i < GPS_Counts[listitem]; i++) 
+						{
+							strcat(global_str, GPS_Items[listitem][i]);
+    						strcat(global_str, "\n");
+						}
+
+						pTemp[playerid][dialogListItem] = listitem;
+						
+						new tempStr[30];
+						f(tempStr, sizeof(tempStr), "{EE3366}%s", GPS_Categories[listitem]);
+
+						f(global_str, 1048, "Место\tРасположение\n%s", global_str);
+
+						SPD(playerid, dGPSSub, 5, tempStr, global_str, !"Отметить", !"Назад");
+					}
+					case 8..13:
+					{
+						SCM(playerid, -1, !"soon");
+					}
+					case 14:
+					{
+						pTemp[playerid][pMarkerX] =
+						pTemp[playerid][pMarkerY] = 
+						pTemp[playerid][pMarkerZ] = 0.0;
+
+						return DisablePlayerCheckpoint(playerid);
+					}
+				}
+			}
+		}
+		case dGPSInfo:
+		{
+			if(!response) return callcmd::gps(playerid, "");
+   			if(response) return 1;
+		}
+		case dGPSSub:
+		{
+			if(!response) return callcmd::gps(playerid, "");
+   			if(response)
+   			{
+				new cat = pTemp[playerid][dialogListItem];
+				new item = listitem;
+
+				if (item < GPS_Counts[cat]) 
+				{
+					SetPlayerCheckpoint(playerid, GPS_Positions[cat][item][0], GPS_Positions[cat][item][1], GPS_Positions[cat][item][2], 3.0);
+					SCMF(playerid, -1, "Установлен маршрут: %s", GPS_Items[cat][item]);
+
+					pTemp[playerid][pMarker] = 1;
+					pTemp[playerid][pMarkerX] = GPS_Positions[cat][item][0];
+					pTemp[playerid][pMarkerY] = GPS_Positions[cat][item][1];
+					pTemp[playerid][pMarkerZ] = GPS_Positions[cat][item][2];
+				}
+				
+				pTemp[playerid][dialogListItem] = -1;
+				return 1;
+			}
+		}
     }
+    return 1;
+}
+
+CMD:gps(playerid, params[])
+{
+    new cat, item;
+
+    if (sscanf(params, "dd", cat, item)) {
+
+		if(cat >= 1 && cat <= sizeof(GPS_Categories) && item < GPS_Counts[cat - 1]) 
+			return SCMF(playerid, COLOR_LIGHTGREY, "Номер категории от 1 до %d", GPS_Counts[cat - 1]);
+
+        global_str[0] = EOS;
+
+        for (new i = 0; i < sizeof(GPS_Categories); i++) {
+            format(global_str, 256, "%s%d. %s\n", global_str, i + 1, GPS_Categories[i]);
+        }
+		
+
+        SPDF(playerid, dGPS, DIALOG_STYLE_LIST, !"{EE3366}Навигатор", !"Далее", !"Закрыть", "{FFFF99}Информация\n\
+		%s{66CC99}8. Найти АЗС\n\
+		{66CC99}9. Найти банкомат\n\
+		{66CC99}10. Найти автобусную остановку\n\
+		{66CC99}11. Найти столовую\n\
+		{66CC99}12. Найти станцию зарядки\n\
+		{66CC99}13. Найти магазин талисманов\n\
+		{888888}14. Отключить навигатор", global_str);
+        return 1;
+    }
+
+    if (cat >= 1 && cat <= sizeof(GPS_Categories) && item >= 1 && item <= GPS_Counts[cat - 1]) 
+	{
+        cat--; item--;
+        SetPlayerCheckpoint(playerid, GPS_Positions[cat][item][0], GPS_Positions[cat][item][1], GPS_Positions[cat][item][2], 3.0);
+        SCM(playerid, -1, !"Местоположение отмечено на карте.");
+    } 
+
     return 1;
 }

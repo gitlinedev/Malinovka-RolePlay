@@ -21,4 +21,7 @@ enum
     dAdminCMD,
     dAdminCMDList,
     dBlackListMenu,
+    dGPS,
+    dGPSSub,
+    dGPSInfo
 };

@@ -598,7 +598,7 @@ stock SettingSpawn(playerid)
 			SetPlayerVirtualWorld(playerid, 0);
 			return true;
 		}
-
+		//
 		else if(PI[playerid][pLevel] >= 3 && PI[playerid][pLevel] < 8)
 		{
 			SetSpawnInfoEx(playerid, skin, 1802.0438, 2505.7705, 15.8725, 304.8401); // спавн 1 (бусаево)
@@ -943,6 +943,9 @@ stock UpdatePlayers()
 }
 stock GetSkinOfPlayer(playerid)
 {
+	if !IsPlayerOnline(playerid) *then 
+		return 1;
+
 	new skin, org = PI[playerid][pMember];
 	if(!org) skin = PI[playerid][pSkin];
 	else
@@ -950,4 +953,37 @@ stock GetSkinOfPlayer(playerid)
 	    skin = PI[playerid][pOrgSkin];
 	}
 	return skin;
+}
+
+stock PlayerToPoint(Float:Radius, playerid, Float:X, Float:Y, Float:Z)
+{
+    if (!IsPlayerOnline(playerid)) return 0;
+
+    new Float:OldX, Float:OldY, Float:OldZ;
+    GetPlayerPos(playerid, OldX, OldY, OldZ);
+
+    new Float:dx = OldX - X;
+    new Float:dy = OldY - Y;
+    new Float:dz = OldZ - Z;
+
+    new Float:distance = floatsqroot(dx * dx + dy * dy + dz * dz);
+
+    return (distance <= Radius);
+}
+
+public OnPlayerEnterCheckpoint(playerid) 
+{
+	if !IsPlayerOnline(playerid) *then 
+		return 1;
+
+    if(PlayerToPoint(5.0, playerid, pTemp[playerid][pMarkerX], pTemp[playerid][pMarkerY], pTemp[playerid][pMarkerZ])) 
+	{
+	    pTemp[playerid][pMarkerX] =
+		pTemp[playerid][pMarkerY] = 
+		pTemp[playerid][pMarkerZ] = 0.0;
+
+		DisablePlayerCheckpoint(playerid);
+     	return SCM(playerid, COLOR_GREEN, !"¬ы достигли точки назначени€");
+	}
+	return 1;
 }
