@@ -152,6 +152,8 @@ public OnGameModeInit()
 
 	mysql_log(LOG_ERROR | LOG_WARNING);
 	mysql_set_charset("cp1251", mysql);
+
+	EnableAntiCheat(39, 0);
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 	format(global_str, 256, "hostname %s",  Mode_HostName);
@@ -589,8 +591,8 @@ stock SettingSpawn(playerid)
 		{
 			switch random(2) do
 			{
-				case 0: SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000,90.000); // спавн 1 (батырево)
-				case 1: SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000,90.000); // спавн 2 (батырево)
+				case 0: SetSpawnInfoEx(playerid, skin, 1802.0438, 2505.7705, 15.8725, 304.8401); // спавн 1 (батырево)
+				case 1: SetSpawnInfoEx(playerid, skin, 1802.0438, 2505.7705, 15.8725, 304.8401); // спавн 2 (батырево)
 			}
 			SetPlayerInterior(playerid, 0);
 			SetPlayerVirtualWorld(playerid, 0);
@@ -599,14 +601,14 @@ stock SettingSpawn(playerid)
 
 		else if(PI[playerid][pLevel] >= 3 && PI[playerid][pLevel] < 8)
 		{
-			SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000,90.000); // спавн 1 (бусаево)
+			SetSpawnInfoEx(playerid, skin, 1802.0438, 2505.7705, 15.8725, 304.8401); // спавн 1 (бусаево)
 			SetPlayerInterior(playerid, 0);
 			SetPlayerVirtualWorld(playerid, 0);
 			return 1;
 		}
 		else if(PI[playerid][pLevel] >= 5 && PI[playerid][pLevel] < 20)
 		{
-			SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000,90.000); // спавн 1 (южка)
+			SetSpawnInfoEx(playerid, skin, 1802.0438, 2505.7705, 15.8725, 304.8401); // спавн 1 (южка)
 			SetPlayerInterior(playerid, 0);
 			SetPlayerVirtualWorld(playerid, 0);
 			return 1;

@@ -82,6 +82,7 @@ stock OnPlayerLogin(playerid, Reg = 0)
     if IsPlayerLogged{playerid} || PI[playerid][pID] == -1 *then	
 		return Kick(playerid);
 
+
 	SCM(playerid, COLOR_BLACKBLUE, !"Добро пожаловать на Малиновка!");
 	SCM(playerid, COLOR_LIGHTYELLOW, !"Загружаем данные сессии. Пожалуйства подождите...");
 	SCM(playerid, COLOR_LIGHTYELLOW, !"Меню помощи - /help, стандартное управление голосовым чатом: X (англ) - говорить");
@@ -198,6 +199,8 @@ public: LoginDialogMysql(playerid, inputtext[])
 {
 	static password[50];
  	cache_get_row(0, 0, password, mysql);
+
+	SCM(playerid, -1, "LoginDialogMysql");
 
 	if strcmp(MD5_Hash(inputtext), password, true) == 0 *then
 	{
@@ -333,6 +336,8 @@ stock accounts_OnDialogResponse(playerid, dialogid, response, inputtextsave[])
 			if !response *then return Kick(playerid);
 			else if !strlen(inputtextsave) *then  return ShowLoginDialog(playerid);
 			
+			SCM(playerid, -1, "dLogin");
+
 			f(global_str, 150, "SELECT `Password` FROM `accounts` WHERE `NickName` = '%s' LIMIT 1", PN(playerid));
 			mysql_tquery(mysql, global_str, "LoginDialogMysql", "ds", playerid, inputtextsave);
 			return true;

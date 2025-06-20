@@ -115,7 +115,7 @@ new AC_CODE_TRIGGER_TYPE[AC_MAX_CODES] = {
     AC_CODE_TRIGGER_TYPE_WARNING, // Fake NPC
     AC_CODE_TRIGGER_TYPE_WARNING, // Reconnect
     AC_CODE_TRIGGER_TYPE_WARNING, // High Ping
-    AC_CODE_TRIGGER_TYPE_WARNING, // Dialog Hack
+    AC_CODE_TRIGGER_TYPE_DISABLED, // Dialog Hack
     AC_CODE_TRIGGER_TYPE_WARNING, // Sandbox
     AC_CODE_TRIGGER_TYPE_WARNING, // Invalid Version
     AC_CODE_TRIGGER_TYPE_WARNING, // Rcon hack
@@ -132,7 +132,7 @@ new AC_CODE_TRIGGER_TYPE[AC_MAX_CODES] = {
 };
 public: OnCheatDetected(playerid, const ip_address[], type, code)
 {	
-    if (!IsPlayerOnline(playerid)) return 1;
+    if (!IsPlayerOnline(playerid)) return 0;
 
     if (pTemp[playerid][ACWarnings] >= 5)
     {
@@ -146,7 +146,9 @@ public: OnCheatDetected(playerid, const ip_address[], type, code)
         case AC_CODE_TRIGGER_TYPE_WARNING:
         {
             pTemp[playerid][ACWarnings]++;
-            return SAMF(COLOR_ADMINCHAT, "[Анти-чит] Подозрение %s[%d] (#%d/%d: %s).", PN(playerid), playerid, type, code, AC_CODE_NAME[code]);
+            SAMF(COLOR_ADMINCHAT, "[Анти-чит] Подозрение %s[%d] (#%d/%d: %s).", PN(playerid), playerid, type, code, AC_CODE_NAME[code]);
+            
+            SCMF(playerid, -1, "[Анти-чит] Подозрение %s[%d] (#%d/%d: %s).", PN(playerid), playerid, type, code, AC_CODE_NAME[code]);
         }
         case AC_CODE_TRIGGER_TYPE_KICK: 
 		{
