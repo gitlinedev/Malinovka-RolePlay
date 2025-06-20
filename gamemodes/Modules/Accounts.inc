@@ -35,6 +35,20 @@ public: OnPlayerLoadData(playerid)
 	PI[playerid][pSkin] = cache_get_row_int(0, 24, mysql);
 	PI[playerid][pWanted] = cache_get_row_int(0, 25, mysql);
 	PI[playerid][pAdminNumber] = cache_get_row_int(0, 26, mysql);
+	//new
+	PI[playerid][pLeader] = cache_get_row_int(0, 27, mysql);
+	PI[playerid][pMember] = cache_get_row_int(0, 28, mysql);
+	PI[playerid][pOrgSkin] = cache_get_row_int(0, 29, mysql);
+	PI[playerid][pRang] = cache_get_row_int(0, 30, mysql);
+	PI[playerid][pSpawnSetting] = cache_get_row_int(0, 31, mysql);
+	PI[playerid][pDemorgan] = cache_get_row_int(0, 32, mysql);
+	PI[playerid][pDemorganTime] = cache_get_row_int(0, 33, mysql);
+
+	SetPlayerScore(playerid, PI[playerid][pLevel]);
+	GivePlayerMoney(playerid, PI[playerid][pMoney]);
+
+	if(GetTeamID(playerid) != 0) SetPlayerColor(playerid, TeamColors[GetTeamID(playerid)]);
+	else SetPlayerColor(playerid, 0xFFFFFFFF);
 
 	IsPlayerLogged{playerid} = true;
 

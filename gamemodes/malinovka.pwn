@@ -123,12 +123,12 @@ new PlayerDialogList[MAX_PLAYERS][64];
 
 // MySQL
 #define DB_HOST						   "localhost"
-#define DB_USER						   "gs99002"
-#define DB_TABLE					   "gs99002"
-#define DB_PASSWORD					   "983Orange1MySQL152SQls399PHP"
+#define DB_USER						   "gs99874"
+#define DB_TABLE					   "gs99874"
+#define DB_PASSWORD					   "oupqydrv"
 #define DB_PORT						   3306
 
-main()
+main()	
 {
 	return 1;
 }
@@ -232,7 +232,7 @@ public OnPlayerRequestClass(playerid, classid)
 	if(IsPlayerLogged{playerid})
 	{
 		PlayerSpawn(playerid);
-		//GetSkinOfPlayer(playerid); доработать
+		SetPlayerSkinEx(playerid, GetSkinOfPlayer(playerid));
 	}
 	return 0;
 }
@@ -376,41 +376,23 @@ public OnPlayerText(playerid, text[])
 {
 	if !IsPlayerLogged{playerid} *then return false;
 
- 	if(GetString(text, "xD"))
+
+	for(new i; i < 5; i++)
 	{
-		f(global_str, 18 + MAX_PLAYER_NAME, "%s валяется от смеха", PN(playerid));
-		ProxDetector(25, playerid, global_str, COLOR_PURPLE);
-		return 0;
-	}
-	if(GetString(text, "("))
-	{
-		f(global_str, 36, "%s грустит", PN(playerid));
-		ProxDetector(25, playerid, global_str, COLOR_PURPLE);
-		return 0;
-	}
-	if(GetString(text, "(("))
-	{
-		f(global_str, 50, "%s сильно расстроился", PN(playerid));
-		ProxDetector(25, playerid, global_str, COLOR_PURPLE);
-		return 0;
-	}
-	if(GetString(text, "чВ"))
-	{
-		f(global_str, 48, "%s валяется от смеха", PN(playerid));
-		ProxDetector(25, playerid, global_str, COLOR_PURPLE);
-		return 0;
-	}
-	if(GetString(text, ")"))
-	{
-		f(global_str, 39, "%s улыбается", PN(playerid));
-		ProxDetector(25, playerid, global_str, COLOR_PURPLE);
-		return 0;
-	}
-	if(GetString(text, "))"))
-	{
-		f(global_str, 39, "%s смеётся", PN(playerid));
-		ProxDetector(25, playerid, global_str, COLOR_PURPLE);
-		return 0;
+		if(GetString(text, sInfo[i][smInput]))
+		{
+			if(PI[playerid][pSex] == 1)
+			{
+			    f(global_str, 48, "%s %s", PN(playerid), sInfo[i][smOutput_M]);
+				ProxDetector(25, playerid, global_str, COLOR_PURPLE);
+			}
+			else
+			{
+				f(global_str, 48, "%s %s", PN(playerid), sInfo[i][smOutput_F]);
+				ProxDetector(25, playerid, global_str, COLOR_PURPLE);
+			}
+			return 0;
+		}
 	}
 
 	f(global_str, 300, "- %s {FF0000}(%s)[%d]", text, PN(playerid), playerid);
@@ -601,11 +583,7 @@ stock SettingSpawn(playerid)
 	    UpdatePlayerHealth(playerid, 25);
 	    return 1;
 	}
-	else if PI[playerid][pSpawnSetting] == 1 && !IsAArmy(playerid) *then // дом/квартира
-	{
-		return 1;
-	}
-	else if PI[playerid][pSpawnSetting] == 2 && !IsAArmy(playerid) *then // вокзал
+	else if PI[playerid][pSpawnSetting] == 0 && !IsAArmy(playerid) *then // вокзал
 	{
 		if PI[playerid][pLevel] < 3 *then
 		{
@@ -635,7 +613,11 @@ stock SettingSpawn(playerid)
 		}
 		return 1;
 	}
-	else if PI[playerid][pSpawnSetting] == 3 && GetTeamID(playerid) != 0 *then // орга
+	else if PI[playerid][pSpawnSetting] == 1 && !IsAArmy(playerid) *then // дом/квартира
+	{
+		return 1;
+	}
+	else if PI[playerid][pSpawnSetting] == 2 && GetTeamID(playerid) != 0 *then // орга
 	{
 		SetPlayerFacingAngle(playerid,SpawnInfo[PI[playerid][pMember]][3]);
 		SetPlayerInterior(playerid,SpawnIntWorld[PI[playerid][pMember]][0]);
