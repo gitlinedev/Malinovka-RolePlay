@@ -108,7 +108,8 @@ new const AdminCommandList[][AdminCommand] = {
 	{"freeze", 1, 1, "Заморозить игрока"},
 	{"unfreeze", 1, 1, "Разморозить игрока"},
 	{"flip", 1, 1, "Починить транспорт игрока"},
-	{"ans", 1, 1, "Ответить игроку"},
+	{"ask", 1, 1, "Ответить игроку"},
+	{"tpg", 1, 1, "Телепортироваться по метке в GPS"},
 
 	//level 2
 	{"slap", 2, 1, "Подбросить игрока в воздух"},
@@ -150,6 +151,17 @@ new const AdminCommandList[][AdminCommand] = {
 
 new Iterator:Admin<MAX_PLAYERS>;
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+cmd:tpg(playerid)
+{
+	if(!CheckAccess(playerid, 1, 1)) 
+        return false;
+
+	if !IsPlayerOnline(playerid) *then return false;
+
+	if pTemp[playerid][pMarker] == 0 *then return SCM(playerid, COLOR_LIGHTGREY, !"У Вас не установлен маркер в GPS");
+
+	return SetPlayerPosEx(playerid, pTemp[playerid][pMarkerX], pTemp[playerid][pMarkerY], pTemp[playerid][pMarkerZ]);
+}
 cmd:jail(playerid, params[])
 {
 	if(!CheckAccess(playerid, 2, 3)) 
@@ -528,7 +540,7 @@ cmd:gethere(playerid, params[])
     GetPlayerFacingAngle(playerid, A);
     ShiftCords(0, X, Y, A, 3.0);
 
-    SetPlayerVirtualWorld(id,GetPlayerVirtualWorld(playerid)), SetPlayerInterior(id,GetPlayerInterior(playerid));
+    SetPlayerVirtualWorld(id,GetPlayerVirtualWorld(playerid)), SetPlayerInteriorEx(id,GetPlayerInterior(playerid));
 
     if(GetPlayerState(id) != 2) UpdatePlayerPos(id, X, Y, Z);
     else SetVehiclePos(GetPlayerVehicleID(id), X, Y, Z);
@@ -579,7 +591,7 @@ cmd:flip(playerid, params[])
 	return SCMF(params[0], -1, "%s починил Вам транспорт", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
 }
 
-cmd:ans(playerid,params[]) 
+cmd:ask(playerid,params[]) 
 {
     if(!CheckAccess(playerid, 1, 1)) 
         return false;
@@ -620,7 +632,7 @@ cmd:slap(playerid, params[])
 		return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 
 	new Float:X,Float:Y,Float:Z;
-	GetPlayerPos(params[0],X,Y,Z), SetPlayerPos(params[0],X,Y,Z+3);
+	GetPlayerPos(params[0],X,Y,Z), SetPlayerPosEx(params[0],X,Y,Z+3);
 	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] подбросил игрока %s[%d]", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[0]);
 	return SCMF(params[0], -1, "%s подкинул Вас", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
 }
@@ -755,7 +767,7 @@ cmd:goto(playerid, params[])
 
 	new Float:X, Float:Z, Float:Y;
     GetPlayerPos(target, X, Y, Z);
-    SetPlayerVirtualWorld(playerid, GetPlayerVirtualWorld(target)), SetPlayerInterior(playerid, GetPlayerInterior(target));
+    SetPlayerVirtualWorld(playerid, GetPlayerVirtualWorld(target)), SetPlayerInteriorEx(playerid, GetPlayerInterior(target));
     if(GetPlayerState(playerid) != 2) UpdatePlayerPos(playerid, X+2, Y+2, Z);
     else SetVehiclePos(GetPlayerVehicleID(playerid), X+2, Y+2, Z);
 

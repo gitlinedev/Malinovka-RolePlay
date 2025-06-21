@@ -43,14 +43,25 @@ public: OnPlayerLoadData(playerid)
 	PI[playerid][pSpawnSetting] = cache_get_row_int(0, 31, mysql);
 	PI[playerid][pDemorgan] = cache_get_row_int(0, 32, mysql);
 	PI[playerid][pDemorganTime] = cache_get_row_int(0, 33, mysql);
+	PI[playerid][pShowFPS] = cache_get_row_int(0, 34, mysql);
+
+	IsPlayerLogged{playerid} = true;
+
+	SCMF(playerid, -1, "fps : %d | count : %d", PI[playerid][pShowFPS], GetPlayerFPS(playerid));
+
+	cef_emit_event(playerid, "execute.event:hud:active", CEFINT(2));
+	cef_emit_event(playerid, "execute.event:radars-active", CEFINT(true));
+
+	f(global_str, 96, "malinovka.fun (v39/1, #%i/[%s], %i/%i/%d)", playerid, StaffTag(playerid), PI[playerid][pID], PI[playerid][pMember], PI[playerid][pSkin]);
+	cef_emit_event(playerid, "execute.event:client", CEFSTR(global_str));
+
+	if PI[playerid][pShowFPS] == 1 *then cef_emit_event(playerid, "execute.event:show-fps", CEFINT(true));
 
 	SetPlayerScore(playerid, PI[playerid][pLevel]);
 	GivePlayerMoney(playerid, PI[playerid][pMoney]);
 
 	if(GetTeamID(playerid) != 0) SetPlayerColor(playerid, TeamColors[GetTeamID(playerid)]);
 	else SetPlayerColor(playerid, 0xFFFFFFFF);
-
-	IsPlayerLogged{playerid} = true;
 
 	//---------
 	GetPlayerIp(playerid, PI[playerid][pLastIP], 16);
@@ -142,8 +153,7 @@ public: MysqlCheckBanOnLogin(playerid, namez[])
 	//			База организации";
 //
 	//SPDF(playerid, 18, DIALOG_STYLE_TABLIST_HEADERS, !"{ee3366}Выход", !"Войти", !"", global_str);
-    
-	
+
 	f(global_str, 100, "SELECT * FROM `accounts` WHERE `ID` = '%i' LIMIT 1", PI[playerid][pID]);
 	mysql_tquery(mysql, global_str, "OnPlayerLoadData", "d", playerid);
 	return true;

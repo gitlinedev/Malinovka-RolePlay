@@ -147,17 +147,17 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
             {
                 switch (listitem)
                 {
-                    case 0: ShowPlayerStats(playerid);
+					case 0: return 1;
 					case 1: return 1;
-					case 2: return 1;
-                    case 3: ShowServerCommands(playerid);
-                    case 4: ShowHotKeys(playerid);
-                    case 5: ShowHelpDialog(playerid);
-                    case 6: ShowPlayerSettings(playerid);
-                    case 7: ShowServerRules(playerid);
-                    case 8: ShowServerResources(playerid);
-                    case 9: ChangePlayerName(playerid);
-                    case 10: ShowBlacklistDialog(playerid);
+                    case 2: ShowServerCommands(playerid);
+                    case 3: ShowHotKeys(playerid);
+                    case 4: ShowHelpDialog(playerid);
+                    case 5: ShowPlayerSettings(playerid);
+                    case 6: ShowServerRules(playerid);
+                    case 7: ShowServerResources(playerid);
+                    case 8: ChangePlayerName(playerid);
+                    case 9: ShowBlacklistDialog(playerid);
+					case 10: ShowActivePunishments(playerid);
                     case 11: ShowDonate(playerid);
                 }
             }
@@ -363,6 +363,9 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
 					SetPlayerCheckpoint(playerid, GPS_Positions[cat][item][0], GPS_Positions[cat][item][1], GPS_Positions[cat][item][2], 3.0);
 					SCMF(playerid, -1, "Установлен маршрут: %s", GPS_Items[cat][item]);
 
+					cef_emit_event(playerid, "show-notifications:radar", CEFINT(100), CEFINT(5), CEFSTR("icon-green"), CEFSTR("Пункт назначения отмечен у Вас на мини-карте"), CEFSTR(""), CEFINT(18));
+					if PI[playerid][pAdmin] || PI[playerid][pModer] *then SCM(playerid, COLOR_LIGHTGREY, !"Используйте /tpg, чтобы телепортироваться по установленной GPS метке");
+
 					pTemp[playerid][pMarker] = 1;
 					pTemp[playerid][pMarkerX] = GPS_Positions[cat][item][0];
 					pTemp[playerid][pMarkerY] = GPS_Positions[cat][item][1];
@@ -394,7 +397,8 @@ CMD:gps(playerid, params[])
 		
 
         SPDF(playerid, dGPS, DIALOG_STYLE_LIST, !"{EE3366}Навигатор", !"Далее", !"Закрыть", "{FFFF99}Информация\n\
-		%s{66CC99}8. Найти АЗС\n\
+		%s7. Бизнесы\n\
+		{66CC99}8. Найти АЗС\n\
 		{66CC99}9. Найти банкомат\n\
 		{66CC99}10. Найти автобусную остановку\n\
 		{66CC99}11. Найти столовую\n\
@@ -408,7 +412,9 @@ CMD:gps(playerid, params[])
 	{
         cat--; item--;
         SetPlayerCheckpoint(playerid, GPS_Positions[cat][item][0], GPS_Positions[cat][item][1], GPS_Positions[cat][item][2], 3.0);
-        SCM(playerid, -1, !"Местоположение отмечено на карте.");
+
+        cef_emit_event(playerid, "show-notifications:radar", CEFINT(100), CEFINT(5), CEFSTR("icon-green"), CEFSTR("Пункт назначения отмечен у Вас на мини-карте"), CEFSTR(""), CEFINT(18));
+		if PI[playerid][pAdmin] || PI[playerid][pModer] *then SCM(playerid, COLOR_LIGHTGREY, !"Используйте /tpg, чтобы телепортироваться по установленной GPS метке");
     } 
 
     return 1;

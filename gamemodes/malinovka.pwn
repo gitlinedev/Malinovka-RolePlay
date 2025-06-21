@@ -130,6 +130,9 @@ new PlayerDialogList[MAX_PLAYERS][64];
 
 main()	
 {
+	cef_subscribe("execute.emit:dialog-responce", "InterfaceDialogResponce");
+	cef_subscribe("execute.emit:radial-responce", "RadialResponce");
+	cef_subscribe("execute.emit:select-clothes", "SelectClothesResponce");
 	return 1;
 }
 
@@ -479,6 +482,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 
 public OnPlayerUpdate(playerid)
 {
+	if PI[playerid][pShowFPS] == 1 *then cef_emit_event(playerid, "execute.event:fps", CEFINT(GetPlayerFPS(playerid)));
 	return 1;
 }
 
@@ -529,7 +533,7 @@ public: PlayerSpawn(playerid)
 	{
 	    new Float:X, Float:Y, Float:Z;
 	    GetPlayerPos(playerid, X, Y, Z);
-		SetPlayerPos(playerid, X ,Y, Z);
+		SetPlayerPosEx(playerid, X ,Y, Z);
 	}
  	SettingSpawn(playerid);
 	if pTemp[playerid][SpectPlayer] == true *then SpecPl(playerid, false);
@@ -550,7 +554,7 @@ stock SettingSpawn(playerid)
 	{	
 		SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000, 0.0);
 						
-		SetPlayerInterior(playerid, 0);
+		SetPlayerInteriorEx(playerid, 0);
 		UpdatePlayerHealth(playerid, 100);
 		return 1;
 	}
@@ -558,7 +562,7 @@ stock SettingSpawn(playerid)
 	{
 		SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000, 180.0);
 		UpdatePlayerHealth(playerid, 100);
-		SetPlayerInterior(playerid, 6);
+		SetPlayerInteriorEx(playerid, 6);
 		SetPlayerVirtualWorld(playerid, 6);
 		SetPlayerSkin(playerid, 100);
 		return 1;
@@ -573,13 +577,13 @@ stock SettingSpawn(playerid)
 				case 1: SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000,90.000); // казарма спавн 2
 			}
 			SetPlayerVirtualWorld(playerid, 2);
-			SetPlayerInterior(playerid, 2);
+			SetPlayerInteriorEx(playerid, 2);
         }
 		else
 		{
 			SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000,90.000); // дефолт болька для всех
 			SetPlayerVirtualWorld(playerid, 1);
-  			SetPlayerInterior(playerid, 2);
+  			SetPlayerInteriorEx(playerid, 2);
 			return 1;
 		}
 	    UpdatePlayerHealth(playerid, 25);
@@ -594,7 +598,7 @@ stock SettingSpawn(playerid)
 				case 0: SetSpawnInfoEx(playerid, skin, 1802.0438, 2505.7705, 15.8725, 304.8401); // спавн 1 (батырево)
 				case 1: SetSpawnInfoEx(playerid, skin, 1802.0438, 2505.7705, 15.8725, 304.8401); // спавн 2 (батырево)
 			}
-			SetPlayerInterior(playerid, 0);
+			SetPlayerInteriorEx(playerid, 0);
 			SetPlayerVirtualWorld(playerid, 0);
 			return true;
 		}
@@ -602,14 +606,14 @@ stock SettingSpawn(playerid)
 		else if(PI[playerid][pLevel] >= 3 && PI[playerid][pLevel] < 8)
 		{
 			SetSpawnInfoEx(playerid, skin, 1802.0438, 2505.7705, 15.8725, 304.8401); // спавн 1 (бусаево)
-			SetPlayerInterior(playerid, 0);
+			SetPlayerInteriorEx(playerid, 0);
 			SetPlayerVirtualWorld(playerid, 0);
 			return 1;
 		}
 		else if(PI[playerid][pLevel] >= 5 && PI[playerid][pLevel] < 20)
 		{
 			SetSpawnInfoEx(playerid, skin, 1802.0438, 2505.7705, 15.8725, 304.8401); // спавн 1 (южка)
-			SetPlayerInterior(playerid, 0);
+			SetPlayerInteriorEx(playerid, 0);
 			SetPlayerVirtualWorld(playerid, 0);
 			return 1;
 		}
@@ -622,7 +626,7 @@ stock SettingSpawn(playerid)
 	else if PI[playerid][pSpawnSetting] == 2 && GetTeamID(playerid) != 0 *then // орга
 	{
 		SetPlayerFacingAngle(playerid,SpawnInfo[PI[playerid][pMember]][3]);
-		SetPlayerInterior(playerid,SpawnIntWorld[PI[playerid][pMember]][0]);
+		SetPlayerInteriorEx(playerid,SpawnIntWorld[PI[playerid][pMember]][0]);
 		SetPlayerVirtualWorld(playerid,SpawnIntWorld[PI[playerid][pMember]][1]);
 		SetSpawnInfoEx(playerid, skin, SpawnInfo[PI[playerid][pMember]][0], SpawnInfo[PI[playerid][pMember]][1], SpawnInfo[PI[playerid][pMember]][2], SpawnInfo[PI[playerid][pMember]][3]);
 		return 1;
@@ -630,7 +634,7 @@ stock SettingSpawn(playerid)
 
 	// если нет спавна то спавним на дефолт респе
 	SetSpawnInfoEx(playerid, skin, 1802.0438, 2505.7705, 15.8725, 304.8401); // батырево вокзал
-	SetPlayerInterior(playerid, 0);
+	SetPlayerInteriorEx(playerid, 0);
 	SetPlayerVirtualWorld(playerid, 0);
 	return true;
 }
@@ -986,4 +990,62 @@ public OnPlayerEnterCheckpoint(playerid)
      	return SCM(playerid, COLOR_GREEN, !"Вы достигли точки назначения");
 	}
 	return 1;
+}
+stock SetPlayerInteriorEx(playerid, int = 0)
+{
+	new old = GetPlayerInterior(playerid);
+
+	if int != 0 *then cef_emit_event(playerid, "execute.event:radar-int", CEFINT(true));
+	else if old != 0 *then cef_emit_event(playerid, "execute.event:radar-int", CEFINT(false));
+
+	SetPlayerInterior(playerid, int);
+}
+stock GetPlayerFPS(playerid)
+{
+	SetPVarInt(playerid, "DrunkL", GetPlayerDrunkLevel(playerid));
+	if(GetPVarInt(playerid, "DrunkL") < 100) SetPlayerDrunkLevel(playerid, 2000);
+	else
+	{
+		if(GetPVarInt(playerid, "LDrunkL") != GetPVarInt(playerid, "DrunkL"))
+		{
+			SetPVarInt(playerid, "FPS", (GetPVarInt(playerid, "LDrunkL") - GetPVarInt(playerid, "DrunkL")));
+			SetPVarInt(playerid, "LDrunkL", GetPVarInt(playerid, "DrunkL"));
+			return GetPVarInt(playerid, "FPS") - 1;
+		}
+	}
+	return 0;
+}
+cmd:test(playerid)
+{
+	SCMF(playerid, -1, "fps %d", GetPlayerFPS(playerid));
+	SCMF(playerid, -1, "fps2 %d", GetPlayerFPS2(playerid));
+}
+stock GetPlayerFPS2(playerid)
+{
+	new DrunkLevel, FPS, LDrunkL;
+
+	DrunkLevel = GetPlayerDrunkLevel(playerid);
+
+	if(DrunkLevel < 100)
+	{
+		SetPlayerDrunkLevel(playerid, 2000);
+	}
+	else
+	{
+		if(LDrunkL != DrunkLevel)
+		{
+			FPS = LDrunkL - DrunkLevel;
+			LDrunkL = DrunkLevel;
+
+			if(FPS > 0 && FPS < 256)
+			{
+				return FPS - 1;
+			}
+		}
+	}
+	return 0;
+}
+stock SetPlayerPosEx(playerid, Float:x, Float:y, Float:z)
+{
+	return SetPlayerPos(playerid, x, y, z);
 }

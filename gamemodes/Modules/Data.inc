@@ -196,6 +196,7 @@ enum PlayerInfo {
 	pWarnsTime,
 	pJail,
 	pJailTime,
+    pShowFPS,
 
 	pHospital,
 	pSkin,
@@ -241,6 +242,7 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pJail] =
 	PI[playerid][pDemorgan] =
 	PI[playerid][pMute] =
+    PI[playerid][pShowFPS] =
 	PI[playerid][pWanted] =
 	PI[playerid][pRang] =
 	PI[playerid][pMember] =
