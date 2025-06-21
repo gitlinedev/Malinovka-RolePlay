@@ -730,7 +730,7 @@ cmd:skin(playerid, params[])
 	if !IsPlayerOnline(params[0]) *then 
 		return SCM(playerid, COLOR_GREY, !"»грок не в сети");
 
-	if(params[1] > 300) 
+	if(PI[playerid][pAdmin] < 6 && params[1] > 311) 
 		return false;
 
 	if(params[2] < 0 || params[2] > 1) return 0;

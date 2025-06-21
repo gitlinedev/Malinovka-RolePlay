@@ -104,12 +104,12 @@ new PlayerDialogList[MAX_PLAYERS][64];
 
 #include Modules/dialogData // ид диалогов
 #include Modules/Data // массивы и цвета
+#include Modules/VoiceChat // голосовой чат
 #include Modules/AntiCheat // анти-чит
 #include Modules/Accounts // авторизация и регистрация
 #include Modules/DefaultCMD // команды по умолчанию
 #include Modules/Admin // система админов
 #include Modules/SQL // работа с базой данных
-#include Modules/VoiceChat // работа с базой данных
 #include Modules/CEFClient // цеф
 #include Modules/Session // сессии игроков
 #include Modules/Moderators // модераторы
@@ -281,16 +281,16 @@ public OnPlayerConnect(playerid)
 
 	if SvGetVersion(playerid) == SV_NULL *then SCM(playerid, 0xEE83F0AA, !"[VoiceChat] {FFFFFF}загрузка плагина произошла {FFFF33}неуспешно (NULL)");
     else if SvHasMicro(playerid) == SV_FALSE *then SCM(playerid, 0xEE83F0AA, !"[VoiceChat] {FFFFFF}загрузка плагина произошла {FFFF33}c ошибкой (MIC)");
-    else if ((lstream[playerid] = SvCreateDLStreamAtPlayer(40.0, 0xEE83F0AA, playerid, 0xff0000ff, !"")))
+    else if ((LocalStream[playerid] = SvCreateDLStreamAtPlayer(30.0, 0xEE83F0AA, playerid, 0xff0000ff, !"")))
     {
-        if (gstream) SvAttachListenerToStream(gstream, playerid);
+        if (GlobalStream) SvAttachListenerToStream(GlobalStream, playerid);
         SvAddKey(playerid, 0x58);
     }
 
 	f(global_str, 150, "SELECT `ID`, `Mail` FROM accounts WHERE NickName = '%s' LIMIT 1;", PlayerName[playerid]);
     mysql_tquery(mysql, global_str, "GetPlayerDataMysql", "d", playerid);
 
-	//RemoveBuildings(playerid);
+	RemoveBuildings(playerid);
 
 	return 1;
 }
@@ -492,7 +492,7 @@ public OnPlayerUpdate(playerid)
 	{
 		if PI[playerid][pShowFPS] == 1 *then 
 		{
-			new getFPS = GetPlayerFPS(playerid);
+			new getFPS = GetPlayerFPS2(playerid);
 
 			if(getFPS >= 1) pTemp[playerid][pCurrentFPS] = getFPS;
 			cef_emit_event(playerid, "execute.event:fps", CEFINT(pTemp[playerid][pCurrentFPS]));
@@ -1021,16 +1021,51 @@ stock GetPlayerFPS(playerid)
         return 0;
     }
 
-    if (pTemp[playerid][pLastDrunkLevel] != drunkLevel)
+    else 
     {
-        pTemp[playerid][pCurrentFPS] = (pTemp[playerid][pLastDrunkLevel] - drunkLevel);
-        pTemp[playerid][pLastDrunkLevel] = drunkLevel;
-        return pTemp[playerid][pCurrentFPS] - 1;
+		if(pTemp[playerid][pLastDrunkLevel] != drunkLevel)
+		{
+			pTemp[playerid][pCurrentFPS] = (pTemp[playerid][pLastDrunkLevel] - drunkLevel);
+        	pTemp[playerid][pLastDrunkLevel] = drunkLevel;
+        	return pTemp[playerid][pCurrentFPS] - 1;
+		}
     }
-
+	
     return 0;
+}
+stock GetPlayerFPS2(playerid)
+{
+	SetPVarInt(playerid, "DrunkL", GetPlayerDrunkLevel(playerid));
+	if(GetPVarInt(playerid, "DrunkL") < 100) SetPlayerDrunkLevel(playerid, 2000);
+	else
+	{
+		if(GetPVarInt(playerid, "LDrunkL") != GetPVarInt(playerid, "DrunkL"))
+		{
+			SetPVarInt(playerid, "FPS", (GetPVarInt(playerid, "LDrunkL") - GetPVarInt(playerid, "DrunkL")));
+			SetPVarInt(playerid, "LDrunkL", GetPVarInt(playerid, "DrunkL"));
+			return GetPVarInt(playerid, "FPS") - 1;
+		}
+	}
+	return 0;
 }
 stock SetPlayerPosEx(playerid, Float:x, Float:y, Float:z)
 {
 	return SetPlayerPos(playerid, x, y, z);
+}
+
+public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
+{
+	SCMF(playerid, -1, "x %f, y %f, z %f", fX, fY, fZ);
+	if(PI[playerid][pAdmin] >= 1)
+	{
+		if(GetPlayerState(playerid) == PLAYER_STATE_DRIVER) 
+		{
+			SetVehiclePos(GetPlayerVehicleID(playerid), fX, fY, fZ);
+		}
+		else 
+		{
+			SetPlayerPosEx(playerid, fX, fY, fZ); 
+		}
+	}
+    return 1;
 }

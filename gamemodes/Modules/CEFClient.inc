@@ -39,6 +39,8 @@ public OnCefBrowserCreated(player_id, browser_id, status_code)
         f(global_str, 100, "Игрок %s[%d] успешно подключился к серверу CEF", PN(player_id), player_id);
         SendDebugMessage(global_str);
 
+        cef_emit_event(player_id, "execute.event:hud:active", CEFINT(1));
+
         if IsPlayerLogged{player_id} *then
         {
             cef_emit_event(player_id, "execute.event:hud:active", CEFINT(2));

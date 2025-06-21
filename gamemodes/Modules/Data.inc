@@ -197,19 +197,21 @@ enum PlayerInfo {
 	pSpawnSetting,
 	pDemorgan,
 	pDemorganTime,
-	//
+    pShowNameTags,
+    pCinemaMode,
 	pMute,
 	pMuteTime,
+    pVoiceChat,
 	pWarns,
 	pWarnsTime,
 	pJail,
 	pJailTime,
     pShowFPS,
-
+    pDamageMP3,
+    pShowRain,
 	pHospital,
 	pSkin,
 	pWanted,
-
 	pHWID[35],
 	pUUID[70],
 	pPath[150],
@@ -233,6 +235,8 @@ stock ClearPlayerData(playerid)
 
 	PI[playerid][pWarnsTime] =
 	PI[playerid][pJailTime] =
+    PI[playerid][pShowRain] =
+    PI[playerid][pDamageMP3] =
 	PI[playerid][pDemorganTime] =
 	PI[playerid][pMuteTime] = 0;
 	
@@ -248,11 +252,14 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pSkin] =
 	PI[playerid][pWarns] =
 	PI[playerid][pJail] =
+    PI[playerid][pShowNameTags] =
     pTemp[playerid][pLastDrunkLevel] =
     pTemp[playerid][pCurrentFPS] =
 	PI[playerid][pDemorgan] =
 	PI[playerid][pMute] =
     PI[playerid][pShowFPS] =
+    PI[playerid][pCinemaMode] =
+    PI[playerid][pVoiceChat] =
 	PI[playerid][pWanted] =
 	PI[playerid][pRang] =
 	PI[playerid][pMember] =

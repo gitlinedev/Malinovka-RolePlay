@@ -85,20 +85,6 @@ stock ShowHelpDialog(playerid)
 
 	return SPD(playerid, dHelp, DIALOG_STYLE_LIST, !"{EE3366}Выберите тип", !"1. Вопрос или помощь\n2. Жалоба на игрока", !"Далее", !"Назад");
 }
-stock ShowPlayerSettings(playerid)
-{
-	return SPDF(playerid, dSettings, 4, !"{EE3366}Настройки аккаунта", !"Изменить ", !"Назад",
-	"1. Размер HUD\t{FFFF99}...\n\
-	2. Ники других игроков\t{FFFF99}Включены\n\
-	3. Кинематографический режим\t{FFFF99}Отключён\n\
-	4. Голосовой чат\t{FFFF99}Включён\n\
-	5. Счетчик кадров в сек (FPS)\t{FFFF99}Включён\n\
-	6. Отображение дождя\t{FFFF99}Включено\n\
-	7. Рабочая голосовая рация\t{FFFF99}Включена\n\
-	8. Шум в голосовой рации\t{FFFF99}Включен\n\
-	9. Звук при нанесении урона\t{FFFF99}Включен\n\
-	10. Индикатор источника урона\t{FFFF99}Включен");
-}
 stock ShowServerResources(playerid)
 {
 	return SPD(playerid, dResources, 4, !"{EE3366}Ресурсы игры", !"Сайт\t{FFFF99}malinovka.org\nФорум\t{FFFF99}malinovka.org/forum\nТех. поддержка\t{FFFF99}malinovka.org/help\nРеферальная система\t{FFFF99}malinovka.org/ref\nНовости и обновления\t{FFFF99}t.me/malinovka_game\nМалиновый сад\t{FFFF99}vk.com/malinovka_free", !"Перейти ", !"Назад ");
@@ -135,8 +121,23 @@ cmd:menu(playerid)
 		11. Активные наказания\n\
 		{66CCFF}12. Дополнительные услуги", !"Выбрать ", !"Закрыть ");
 }
+stock ShowPlayerSettings(playerid)
+{
+	return SPDF(playerid, dSettings, 4, !"{EE3366}Настройки аккаунта", !"Изменить ", !"Назад",
+	"1. Ники других игроков\t{FFFF99}%s\n\
+	2. Кинематографический режим\t{FFFF99}%s\n\
+	3. Счетчик кадров в сек (FPS)\t{FFFF99}%s\n\
+	4. Отображение дождя\t{FFFF99}%s\n\
+	5. Звук при нанесении урона\t{FFFF99}%s", 
+	(PI[playerid][pShowNameTags] == 0) ? ("Отключены") : ("Включены"),
+	(PI[playerid][pCinemaMode] == 0) ? ("Отключён") : ("Включён"),
+	(PI[playerid][pShowFPS] == 0) ? ("Отключён") : ("Включён"),
+	(PI[playerid][pShowRain] == 0) ? ("Отключено") : ("Включено"),
+	(PI[playerid][pDamageMP3] == 0) ? ("Отключен") : ("Включен"));
+}
 cmd:help(playerid) return ShowServerCommands(playerid);
 cmd:report(playerid) return ShowHelpDialog(playerid);
+cmd:settings(playerid) return ShowPlayerSettings(playerid);
 stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[])
 {
     switch dialogid do
@@ -162,6 +163,55 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
                 }
             }
         }
+		case dSettings:
+		{
+			if(!response) callcmd::menu(playerid);
+			if(response) 
+			{
+				switch(listitem)
+				{
+					case 0:
+					{
+						PI[playerid][pShowNameTags] = !PI[playerid][pShowNameTags];
+						foreach(new i: Player) ShowPlayerNameTagForPlayer(playerid, i, PI[playerid][pShowNameTags]);
+						
+						callcmd::settings(playerid);
+					}
+					case 1:
+					{
+						PI[playerid][pCinemaMode] = !PI[playerid][pCinemaMode];
+						
+						if PI[playerid][pCinemaMode] == 1 *then 
+							cef_emit_event(playerid, "execute.event:hud:active", CEFINT(1));
+
+						else cef_emit_event(playerid, "execute.event:hud:active", CEFINT(2));
+
+						callcmd::settings(playerid);
+					}
+					case 2:
+					{
+						PI[playerid][pShowFPS] = !PI[playerid][pShowFPS];
+
+						cef_emit_event(playerid, "execute.event:show-fps", CEFINT(PI[playerid][pShowFPS]));
+
+						callcmd::settings(playerid);
+					}
+					case 3:
+					{
+						PI[playerid][pShowRain] = !PI[playerid][pShowRain];
+
+						callcmd::settings(playerid);
+					}
+					case 4:
+					{
+						PI[playerid][pDamageMP3] = !PI[playerid][pDamageMP3];
+
+						callcmd::settings(playerid);
+					}
+				}
+				SaveAccount(playerid);
+			}
+		}
 		case dCommands:
 		{
 			if(!response) callcmd::help(playerid);
@@ -198,43 +248,38 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
 		}
 		case dStats:
 		{
-			if(response) return 1;
 			if(!response) callcmd::menu(playerid);
+			if(response) return 1;
 		}
 		case dActivePunishment:
 		{
-			if(response) return 1;
 			if(!response) callcmd::menu(playerid);
+			if(response) return 1;
 		}
 		case dBlackListMenu:
 		{
-			if(response) return 1;
 			if(!response) callcmd::menu(playerid);
+			if(response) return 1;
 		}
 		case dResources:
 		{
-			if(response) return 1;
 			if(!response) callcmd::menu(playerid);
+			if(response) return 1;
 		}
 		case dChangeName:
 		{
-			if(response) return 1;
 			if(!response) callcmd::menu(playerid);
+			if(response) return 1;
 		}
 		case dHotKeys:
 		{
-			if(response) return 1;
 			if(!response) callcmd::menu(playerid);
-		}
-		case dSettings:
-		{
 			if(response) return 1;
-			if(!response) callcmd::menu(playerid);
 		}
 		case dDonate:
 		{
-			if(response) return 1;
 			if(!response) callcmd::menu(playerid);
+			if(response) return 1;
 		}
 		case dRules: // открытие ссылки
 		{

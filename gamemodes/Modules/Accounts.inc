@@ -44,6 +44,11 @@ public: OnPlayerLoadData(playerid)
 	PI[playerid][pDemorgan] = cache_get_row_int(0, 32, mysql);
 	PI[playerid][pDemorganTime] = cache_get_row_int(0, 33, mysql);
 	PI[playerid][pShowFPS] = cache_get_row_int(0, 34, mysql);
+	PI[playerid][pShowNameTags] = cache_get_row_int(0, 39, mysql);
+	PI[playerid][pCinemaMode] = cache_get_row_int(0, 40, mysql);
+	PI[playerid][pVoiceChat] = cache_get_row_int(0, 41, mysql);
+	PI[playerid][pShowRain] = cache_get_row_int(0, 42, mysql);
+	PI[playerid][pDamageMP3] = cache_get_row_int(0, 43, mysql);
 
 	IsPlayerLogged{playerid} = true;
 
@@ -52,9 +57,16 @@ public: OnPlayerLoadData(playerid)
 
 	f(global_str, 96, "malinovka.fun (v39/1, #%i/[%s], %i/%i/%d)", playerid, StaffTag(playerid), PI[playerid][pID], PI[playerid][pMember], PI[playerid][pSkin]);
 	cef_emit_event(playerid, "execute.event:client", CEFSTR(global_str));
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+	if PI[playerid][pShowFPS] == 1 *then cef_emit_event(playerid, "execute.event:show-fps", CEFINT(1));
 
-	if PI[playerid][pShowFPS] == 1 *then cef_emit_event(playerid, "execute.event:show-fps", CEFINT(true));
+	if PI[playerid][pCinemaMode] == 1 *then 
+		cef_emit_event(playerid, "execute.event:hud:active", CEFINT(1));
 
+	else cef_emit_event(playerid, "execute.event:hud:active", CEFINT(2));
+
+	foreach(new i: Player) ShowPlayerNameTagForPlayer(playerid, i, PI[playerid][pShowNameTags]);
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 	f(global_str, 150, "UPDATE `accounts` SET `OldIP` = '%s',`OnlineStatus`='1',`LastLogin` = NOW(), `PlayerID` = '%d' WHERE `ID` = '%i'", PlayerIp[playerid], playerid, PI[playerid][pID]);
     mysql_tquery(mysql, global_str);
 
@@ -404,7 +416,20 @@ stock SaveAccount(playerid)
 	orm_addvar_int(orm, PI[playerid][pSkin], "Skin");
 	orm_addvar_int(orm, PI[playerid][pWanted], "Wanted");
 	orm_addvar_int(orm, PI[playerid][pAdminNumber], "AdminNumber");
-	
+	orm_addvar_int(orm, PI[playerid][pLeader], "Leader");
+	orm_addvar_int(orm, PI[playerid][pMember], "Member");
+	orm_addvar_int(orm, PI[playerid][pOrgSkin], "OrgSkin");
+	orm_addvar_int(orm, PI[playerid][pRang], "Rang");
+	orm_addvar_int(orm, PI[playerid][pSpawnSetting], "SpawnSetting");
+	orm_addvar_int(orm, PI[playerid][pDemorgan], "Demorgan");
+	orm_addvar_int(orm, PI[playerid][pDemorganTime], "DemorganTime");
+	orm_addvar_int(orm, PI[playerid][pVoiceChat], "VoiceChat");
+	orm_addvar_int(orm, PI[playerid][pShowFPS], "ShowFPS");
+	orm_addvar_int(orm, PI[playerid][pShowNameTags], "ShowNameTags");
+	orm_addvar_int(orm, PI[playerid][pCinemaMode], "CinemaMode");
+	orm_addvar_int(orm, PI[playerid][pDamageMP3], "DamageMP3");
+	orm_addvar_int(orm, PI[playerid][pShowRain], "ShowRain");
+
 	//Float
 	orm_addvar_float(orm, PI[playerid][pHealth], "Health");
 	orm_addvar_float(orm, PI[playerid][pArmour], "Armour");
