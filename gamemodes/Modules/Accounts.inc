@@ -55,6 +55,9 @@ public: OnPlayerLoadData(playerid)
 
 	if PI[playerid][pShowFPS] == 1 *then cef_emit_event(playerid, "execute.event:show-fps", CEFINT(true));
 
+	f(global_str, 150, "UPDATE `accounts` SET `OldIP` = '%s',`OnlineStatus`='1',`LastLogin` = NOW(), `PlayerID` = '%d' WHERE `ID` = '%i'", PlayerIp[playerid], playerid, PI[playerid][pID]);
+    mysql_tquery(mysql, global_str);
+
 	SetPlayerScore(playerid, PI[playerid][pLevel]);
 	GivePlayerMoney(playerid, PI[playerid][pMoney]);
 
@@ -179,7 +182,7 @@ public: OnPlayerRegister(playerid, const password[])
 	
 	f(mysql_string, 12, "%d-%d-%d", y, m, d);
 
-	f(global_str, 1024, "INSERT INTO `accounts` (`NickName`,`Password`,`RegIP`,`Score`,`Sex`,`Referal`,`Mail`,`Money`, \
+	f(global_str, 1024, "INSERT INTO `accounts` (`NickName`,`Password`,`RegIP`,`Level`,`Sex`,`Referal`,`Mail`,`Money`, \
 	`Bank`,`Donate`,`DataReg`) VALUE ('%s', '%s', '%s', '1', '%i', '%s', \
 	'No Mail Adress', '1000000', '0', '0', '%s')",\
 	PN(playerid), MD5_Hash(password), PlayerIP(playerid), RegSex[playerid], RegReferal[playerid], mysql_string);
@@ -384,7 +387,7 @@ stock SaveAccount(playerid)
 	// Integer
 	orm_addvar_int(orm, PI[playerid][pID], "ID");
 	
-	orm_addvar_int(orm, PI[playerid][pLevel], "Score");
+	orm_addvar_int(orm, PI[playerid][pLevel], "Level");
 	orm_addvar_int(orm, PI[playerid][pExp], "Exp");
 	orm_addvar_int(orm, PI[playerid][pSex], "Sex");
 	orm_addvar_int(orm, PI[playerid][pAdmin], "Admin");

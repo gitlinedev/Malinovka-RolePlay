@@ -140,17 +140,17 @@ public: OnCheatDetected(playerid, const ip_address[], type, code)
         Kick(playerid);
         return 1;
     }
-    
+    SCMF(playerid, -1, "%s -> %03d", AC_CODE_NAME[code], code);
     switch AC_CODE_TRIGGER_TYPE[code] do
     {
         case AC_CODE_TRIGGER_TYPE_WARNING:
         {
             pTemp[playerid][ACWarnings]++;
-            SAMF(COLOR_ADMINCHAT, "[Анти-чит] Подозрение %s[%d] (#%d/%d: %s).", PN(playerid), playerid, type, code, AC_CODE_NAME[code]);
+            SAMF(COLOR_ADMINCHAT, "[Анти-чит] Подозрение %s[%d] (#%03d/%d: %s [IP: %s]).", PN(playerid), playerid, code, GetPlayerVehicleID(playerid), AC_CODE_NAME[code], ip_address);
         }
         case AC_CODE_TRIGGER_TYPE_KICK: 
 		{
-            SAMF(COLOR_ADMINCHAT, "[Анти-чит] %s[%d] кикнут (%s #%d/%d).", PN(playerid), playerid, AC_CODE_NAME[code], type, code);
+            SAMF(COLOR_ADMINCHAT, "[Анти-чит] %s[%d] кикнут (%s #%03d/%d [IP: %s]).", PN(playerid), playerid, AC_CODE_NAME[code], code, GetPlayerVehicleID(playerid), ip_address);
 			SCMF(playerid, COLOR_BLACK, "Вы были кикнуты по подозрению в читерстве (#%03d)", code);
 			return Kick(playerid);
 		}

@@ -697,7 +697,7 @@ cmd:veh(playerid, params[])
     CarInfo[VehID][cCreate] = 1;
 
 	new VehModel = GetVehicleModel(VehID);
-    SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] создал %s[%d] (id: %d, цвет: %d, %d)", StaffTag(playerid), PI[playerid][pAdminNumber], PI[playerid][pAdminNumber], PN(playerid), playerid, Vehicle_Names[VehModel-400], VehID, params[1], params[2], params[3]);
+    SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] создал %s[%d] (id: %d, цвет: %d, %d)", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, Vehicle_Names[VehModel-400], VehID, params[1], params[2], params[3]);
 	return 1;
 }
 

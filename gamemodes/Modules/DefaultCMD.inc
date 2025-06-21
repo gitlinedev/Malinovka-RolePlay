@@ -275,8 +275,22 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
   				if strlen(inputtextsave) < 1 || strlen(inputtextsave) > 100 *then 
 					return SCM(playerid, COLOR_GREY, !"Не менее 1 и не более 100 символов"), ShowHelpDialog(playerid);
 
-   				SAMF(COLOR_LIGHTYELLOW, "Вопрос от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
-				SCMF(playerid, COLOR_LIGHTYELLOW, "Вопрос от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
+				if IsPlayerInAnyVehicle(playerid) *then
+				{
+					SAMF(COLOR_LIGHTYELLOW, "Вопрос от %s[%d] (%d):{FFFFFF} %s",\
+						PN(playerid), playerid, GetPlayerVehicleID(playerid), inputtextsave);
+
+					SCMF(playerid, COLOR_LIGHTYELLOW, "Вопрос от %s[%d] (%d):{FFFFFF} %s", 
+						PN(playerid), playerid, GetPlayerVehicleID(playerid), inputtextsave);
+				}
+   				else
+				{
+					SAMF(COLOR_LIGHTYELLOW, "Вопрос от %s[%d]:{FFFFFF} %s",\
+						PN(playerid), playerid, inputtextsave);
+
+					SCMF(playerid, COLOR_LIGHTYELLOW, "Вопрос от %s[%d]:{FFFFFF} %s", 
+						PN(playerid), playerid, inputtextsave);
+				}
 
 				SetPVarInt(playerid, !"report", Global_Time + 60);
 			}
@@ -291,8 +305,22 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
   				if strlen(inputtextsave) < 1 || strlen(inputtextsave) > 100 *then 
 					return SCM(playerid, COLOR_GREY, !"Не менее 1 и не более 100 символов"), ShowHelpDialog(playerid);
 
-	   			SAMF(COLOR_REPORT, "Жалоба от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
-				SCMF(playerid,COLOR_REPORT, "Жалоба от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
+				if IsPlayerInAnyVehicle(playerid) *then
+				{
+					SAMF(COLOR_REPORT, "Жалоба от %s[%d] (%d):{FFFFFF} %s",\
+						PN(playerid), playerid, GetPlayerVehicleID(playerid), inputtextsave);
+
+					SCMF(playerid,COLOR_REPORT, "Жалоба от %s[%d] (%d):{FFFFFF} %s", 
+						PN(playerid), playerid, GetPlayerVehicleID(playerid), inputtextsave);
+				}
+				else 
+				{
+					SAMF(COLOR_REPORT, "Жалоба от %s[%d]:{FFFFFF} %s",\
+						PN(playerid), playerid, inputtextsave);
+
+					SCMF(playerid,COLOR_REPORT, "Жалоба от %s[%d]:{FFFFFF} %s", 
+						PN(playerid), playerid, inputtextsave);
+				}
 				SCM(playerid, COLOR_REPORT, !"Вы можете заблокировать голосовой чат игрока {FFFF99}O{FF8877}");
 
 				SetPVarInt(playerid, !"report", Global_Time + 60);

@@ -1,5 +1,3 @@
-// доработать
-
 @include_a_samp_();
 @include_a_samp_()
 {
@@ -32,25 +30,24 @@ new
 #include <a_samp>
 
 #undef MAX_PLAYERS
-#define MAX_PLAYERS 100
+#define MAX_PLAYERS 50
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include streamer
 #include Pawn.CMD
 #include a_mysql
 #include sscanf2
-//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#include foreach
+#include fmt 
+#include sampvoice
+#include cef
+#include md5
+
 #define DEBUG
 #include nex-ac_ru.lang
 #include nex-ac
-//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#include foreach
-#include sampvoice
-#include md5
-#include cef
-#include fmt
+
 #include mapandreas
 #include UnixConvertor
-#include sampp
 
 new mysql;
 //======================================[ macro ]================================================//
@@ -119,6 +116,7 @@ new PlayerDialogList[MAX_PLAYERS][64];
 
 #include Modules/RemoveBuild // удаление зданий
 #include Modules/Test // тестовый модуль
+
 //=====================================[ global server settings ]==================================//
 
 #define Mode_Names 					   "Malinovka"
@@ -149,8 +147,6 @@ public OnGameModeInit()
 	Global_Time = gettime();
 	MapAndreas_Init(MAP_ANDREAS_MODE_MINIMAL);
 
-    SetTimer("CheckGrassSpeed", 500, true);
-
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	mysql = mysql_connect(DB_HOST, DB_USER, DB_TABLE, DB_PASSWORD, DB_PORT);
 
@@ -162,7 +158,7 @@ public OnGameModeInit()
 	mysql_log(LOG_ERROR | LOG_WARNING);
 	mysql_set_charset("cp1251", mysql);
 
-	EnableAntiCheat(39, 0);
+	EnableAntiCheat(39, 0); // отключил dialog hack 
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 	format(global_str, 256, "hostname %s",  Mode_HostName);
@@ -321,6 +317,9 @@ public OnPlayerDisconnect(playerid, reason)
 
 		SaveAccount(playerid);
 		IsPlayerLogged{playerid} = false;
+
+		f(global_str, 110, "UPDATE `accounts` SET `OnlineStatus` = '0', `PlayerID` = '65535' WHERE `ID` = '%d'", PI[playerid][pID]);
+		mysql_tquery(mysql, global_str);
 	}
 	PlayerName[playerid][0] = EOS;
 	
@@ -488,12 +487,16 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 
 public OnPlayerUpdate(playerid)
 {
-	if PI[playerid][pShowFPS] == 1 *then 
+	if !IsPlayerLogged{playerid} *then return false;
+	else if IsPlayerLogged{playerid} && IsPlayerConnected(playerid) *then
 	{
-		new getFPS = GetPlayerFPS(playerid);
+		if PI[playerid][pShowFPS] == 1 *then 
+		{
+			new getFPS = GetPlayerFPS(playerid);
 
-		if(getFPS >= 1) pTemp[playerid][pFPS] = getFPS;
-		cef_emit_event(playerid, "execute.event:fps", CEFINT(pTemp[playerid][pFPS]));
+			if(getFPS >= 1) pTemp[playerid][pCurrentFPS] = getFPS;
+			cef_emit_event(playerid, "execute.event:fps", CEFINT(pTemp[playerid][pCurrentFPS]));
+		}
 	}
 	return 1;
 }
@@ -882,10 +885,10 @@ stock IsWordsInvalid(playerid, const text[])
     return false;
 }
 
-stock SendDebug(playerid, text[])
+stock SendDebugMessage(const debugMsg[])
 {
-	printf("[DEBUG]: %s", text);
-	SCMF(playerid, -1, "[DEBUG]: %s", text);
+	SAMF(COLOR_ADMINCHAT, "[Откладка] %s", debugMsg);
+	printf("[Откладка]: %s", debugMsg);
 }
 
 stock _GiveGun(playerid, weaponid, ammo)
@@ -1010,18 +1013,22 @@ stock SetPlayerInteriorEx(playerid, int = 0)
 }
 stock GetPlayerFPS(playerid)
 {
-	SetPVarInt(playerid, "DrunkL", GetPlayerDrunkLevel(playerid));
-	if(GetPVarInt(playerid, "DrunkL") < 100) SetPlayerDrunkLevel(playerid, 2000);
-	else
-	{
-		if(GetPVarInt(playerid, "LDrunkL") != GetPVarInt(playerid, "DrunkL"))
-		{
-			SetPVarInt(playerid, "FPS", (GetPVarInt(playerid, "LDrunkL") - GetPVarInt(playerid, "DrunkL")));
-			SetPVarInt(playerid, "LDrunkL", GetPVarInt(playerid, "DrunkL"));
-			return GetPVarInt(playerid, "FPS") - 1;
-		}
-	}
-	return 0;
+    new drunkLevel = GetPlayerDrunkLevel(playerid);
+
+    if (drunkLevel < 100)
+    {
+        SetPlayerDrunkLevel(playerid, 2000);
+        return 0;
+    }
+
+    if (pTemp[playerid][pLastDrunkLevel] != drunkLevel)
+    {
+        pTemp[playerid][pCurrentFPS] = (pTemp[playerid][pLastDrunkLevel] - drunkLevel);
+        pTemp[playerid][pLastDrunkLevel] = drunkLevel;
+        return pTemp[playerid][pCurrentFPS] - 1;
+    }
+
+    return 0;
 }
 stock SetPlayerPosEx(playerid, Float:x, Float:y, Float:z)
 {

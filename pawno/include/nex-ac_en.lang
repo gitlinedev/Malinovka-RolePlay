@@ -6,8 +6,6 @@
 #define _nex_ac_lang_included
 
 new
-	SUSPICION_1[] =			"[Nex-AC] Срабатывание на %d ID. Код причины: %03d%s",
-	SUSPICION_2[] =			"[Nex-AC] Срабатывание на IP %s. Код причины: %03d%s",
 	VERSION_WARNING[] =		"[Nex-AC] Данная версия античита не подходит для версии сервера",
 	CFG_OPENING_ERROR[] =	"[Nex-AC] Ошибка создания/открытия %s!",
 
@@ -18,7 +16,6 @@ new
 	DEBUG_CODE_4[] =		"[Nex-AC debug] Неудачный вход в RCON с IP %s используя пароль %s",
 	DEBUG_CODE_5[] =		"[Nex-AC debug] ID %d использовал NOP %s",
 #endif
-
 	LOADED_MSG_1[] =		" Античит Nex-AC загружен!",
 	LOADED_MSG_2[] =		" Версия античита: %s",
 	LOADED_MSG_3[] =		" Автор: Nexius",

@@ -168,7 +168,8 @@ enum _temp_
 	ACWarnings,
 	dialogListItem,
     pMarker,
-    pFPS,
+    pLastDrunkLevel,
+    pCurrentFPS,
     Float:pMarkerX,
     Float:pMarkerY,
     Float:pMarkerZ
@@ -247,7 +248,8 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pSkin] =
 	PI[playerid][pWarns] =
 	PI[playerid][pJail] =
-    pTemp[playerid][pFPS] =
+    pTemp[playerid][pLastDrunkLevel] =
+    pTemp[playerid][pCurrentFPS] =
 	PI[playerid][pDemorgan] =
 	PI[playerid][pMute] =
     PI[playerid][pShowFPS] =

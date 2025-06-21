@@ -16,7 +16,6 @@ stock GetPlayerUUID()
 stock LoadSession(playerid)
 {
     f(global_str, 150, "SELECT `NickName`, `UUID`, `HWID`, `Path` FROM client WHERE `NickName` = '%s' LIMIT 1;", PlayerName[playerid]);
-    print(global_str);
     mysql_tquery(mysql, global_str, "GetPlayerSessionData", "d", playerid);
     return 1;
 }
@@ -27,12 +26,12 @@ public: GetPlayerSessionData(playerid)
 
     	SCM(playerid, COLOR_BLACKBLUE, !"Добро пожаловать на Малиновка!"),
 	    SCM(playerid, COLOR_LIGHTYELLOW, !"Загружаем данные сессии. Пожалуйства подождите..."),
-        printf("loaded session for %s", PlayerName[playerid]),
+        printf("*[Sessions]* Player %s has gained access", PlayerName[playerid]),
 		cache_get_row(0, 1, PI[playerid][pUUID], mysql, 70),
         cache_get_row(0, 2, PI[playerid][pHWID], mysql, 35),
         cache_get_row(0, 3, PI[playerid][pPath], mysql, 150);
 	else {
-        printf("session no loaded for %s", PlayerName[playerid]);
+        printf("*[Sessions]* Player %s did not receive access", PlayerName[playerid]),
         global_str = "{FFFFFF}Не удалось получить данные сессии (#11). Попробуйте зайти позже.\n\
                     Если проблема повторяется, обратитесь к игровым мастерам.\n\n\
                     Выберите {FFFFFF}'{3377cc}Закрыть{FFFFFF}', чтобы выйти из игры.";
