@@ -43,14 +43,31 @@ public OnCefBrowserCreated(player_id, browser_id, status_code)
 
         if IsPlayerLogged{player_id} *then
         {
-            cef_emit_event(player_id, "execute.event:hud:active", CEFINT(2));
-            cef_emit_event(player_id, "execute.event:radars-active", CEFINT(true));
-
-            f(global_str, 96, "malinovka.fun (v39/1, #%i/[%s], %i/%i/%d)", player_id, StaffTag(player_id), PI[player_id][pID], PI[player_id][pMember], PI[player_id][pSkin]);
-            cef_emit_event(player_id, "execute.event:client", CEFSTR(global_str));
-
-            if PI[player_id][pShowFPS] == 1 *then cef_emit_event(player_id, "execute.event:show-fps", CEFINT(true));
+            ShowInterface(player_id, true);
         }
     }
     return true;
+}
+stock ShowInterface(playerid, bool:Show = false)
+{
+    if Show *then
+    {
+        cef_emit_event(playerid, "execute.event:hud:active", CEFINT(2));
+        cef_emit_event(playerid, "execute.event:radars-active", CEFINT(true));
+
+        f(global_str, 96, "malinovka.fun (v39/1, #%i/[%s], %i/%i/%d)", playerid, StaffTag(playerid), PI[playerid][pID], PI[playerid][pMember], PI[playerid][pSkin]);
+        cef_emit_event(playerid, "execute.event:client", CEFSTR(global_str));
+
+        if PI[playerid][pShowFPS] == 1 *then cef_emit_event(playerid, "execute.event:show-fps", CEFINT(1));
+
+        if PI[playerid][pCinemaMode] == 1 *then 
+            cef_emit_event(playerid, "execute.event:hud:active", CEFINT(1));
+
+        else cef_emit_event(playerid, "execute.event:hud:active", CEFINT(2));
+    }
+    else
+    {
+        cef_emit_event(playerid, "execute.event:hud:active", CEFINT(0));
+        cef_emit_event(playerid, "execute.event:radars-active", CEFINT(false));
+    }
 }

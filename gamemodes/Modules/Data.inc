@@ -98,9 +98,9 @@ enum WeatherData {
 };
 new Weather[][WeatherData] = {
 	{"ясная погода", 18, 31},
-	{"облачная погода", 18, 16},
-	{"гром", 18, 17},
-	{"сильный ветер", 18, 21},
+	{"облачная погода", 7, 16},
+	{"гром", 9, 17},
+	{"сильный ветер", 8, 21},
 	{"ясная погода", 18, 36}
 };
 
@@ -161,6 +161,19 @@ new RegPass[MAX_PLAYERS][30];
 new RegSex[MAX_PLAYERS];
 new RegReferal[MAX_PLAYERS][24];
 
+enum eventSettings
+{
+	bool:IsEventStart,
+    bool:TeleportEnable,
+    bool:ResetWeapons,
+	Float:TeleportX,
+	Float:TeleportY,
+	Float:TeleportZ,
+    TeleportInt,
+    TeleportVW
+}
+new eSettings[eventSettings];
+
 enum _temp_
 {
 	bool:SpectPlayer,
@@ -172,7 +185,12 @@ enum _temp_
     pCurrentFPS,
     Float:pMarkerX,
     Float:pMarkerY,
-    Float:pMarkerZ
+    Float:pMarkerZ,
+    pTestDrive,
+    pOnEvent,
+    Float:pOldX,
+    Float:pOldY,
+    Float:pOldZ,
 }
 new pTemp[MAX_PLAYERS][_temp_];
 
@@ -240,6 +258,12 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pDemorganTime] =
 	PI[playerid][pMuteTime] = 0;
 	
+
+    pTemp[playerid][pLastDrunkLevel] =
+    pTemp[playerid][pCurrentFPS] =
+    pTemp[playerid][pMarker] =
+    pTemp[playerid][pOnEvent] =
+    pTemp[playerid][pTestDrive] =
     PI[playerid][pAdmin] =
 	PI[playerid][pAdminNumber] =
     PI[playerid][pMoney] =
@@ -253,8 +277,6 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pWarns] =
 	PI[playerid][pJail] =
     PI[playerid][pShowNameTags] =
-    pTemp[playerid][pLastDrunkLevel] =
-    pTemp[playerid][pCurrentFPS] =
 	PI[playerid][pDemorgan] =
 	PI[playerid][pMute] =
     PI[playerid][pShowFPS] =
@@ -266,11 +288,13 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pLeader] =
 	PI[playerid][pSex] = 0;
 	PI[playerid][pModer] =
-    pTemp[playerid][pMarker] =
     PI[playerid][pExp] = 0;
 
 	PI[playerid][pArmour] =
 	PI[playerid][pHealth] =
+    pTemp[playerid][pOldX] =
+    pTemp[playerid][pOldY] =
+    pTemp[playerid][pOldZ] =
     pTemp[playerid][pMarkerX] =
     pTemp[playerid][pMarkerY] =
     pTemp[playerid][pMarkerZ] = 0.0;

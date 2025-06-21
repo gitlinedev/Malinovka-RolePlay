@@ -50,20 +50,27 @@ public: OnPlayerLoadData(playerid)
 	PI[playerid][pShowRain] = cache_get_row_int(0, 42, mysql);
 	PI[playerid][pDamageMP3] = cache_get_row_int(0, 43, mysql);
 
+	if (WeatherServer >= 7 && WeatherServer <= 9)
+	{
+		if (PI[playerid][pShowRain] == 1)
+		{
+			SCM(playerid, COLOR_GREEN, !"[Подсказка] Вы можете отключить дождь в /mn > Настройки аккаунта, если он снижает производительность и FPS");
+			SetPlayerWeather(playerid, WeatherServer);
+		}
+		else
+		{
+			SetPlayerWeather(playerid, 18);
+		}
+	}
+	else
+	{
+		SetPlayerWeather(playerid, WeatherServer);
+	}
+
 	IsPlayerLogged{playerid} = true;
 
-	cef_emit_event(playerid, "execute.event:hud:active", CEFINT(2));
-	cef_emit_event(playerid, "execute.event:radars-active", CEFINT(true));
-
-	f(global_str, 96, "malinovka.fun (v39/1, #%i/[%s], %i/%i/%d)", playerid, StaffTag(playerid), PI[playerid][pID], PI[playerid][pMember], PI[playerid][pSkin]);
-	cef_emit_event(playerid, "execute.event:client", CEFSTR(global_str));
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-	if PI[playerid][pShowFPS] == 1 *then cef_emit_event(playerid, "execute.event:show-fps", CEFINT(1));
-
-	if PI[playerid][pCinemaMode] == 1 *then 
-		cef_emit_event(playerid, "execute.event:hud:active", CEFINT(1));
-
-	else cef_emit_event(playerid, "execute.event:hud:active", CEFINT(2));
+	ShowInterface(playerid, true);
 
 	foreach(new i: Player) ShowPlayerNameTagForPlayer(playerid, i, PI[playerid][pShowNameTags]);
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -106,7 +113,7 @@ stock OnPlayerLogin(playerid, Reg = 0)
     if IsPlayerLogged{playerid} || PI[playerid][pID] == -1 *then	
 		return Kick(playerid);
 
-	SCM(playerid, COLOR_LIGHTYELLOW, !"Меню помощи - /help, стандартное управление голосовым чатом: X (англ) - говорить");
+	SCM(playerid, COLOR_LIGHTYELLOW, !"Меню помощи - /help, стандартное управление голосовым чатом: X (англ) - говорить, O (англ) - настройки");
 
 	if(Reg == 1)
 	{

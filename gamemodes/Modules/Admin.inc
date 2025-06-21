@@ -134,6 +134,8 @@ new const AdminCommandList[][AdminCommand] = {
 	//level 4
 	{"atw", 4, 0, "Забрать оружие у игроков в радиусе"},
 	{"ahp", 4, 0, "Выдать ХП игрокам в радиусе"},
+	{"setmp", 4, 0, "Установить точку телепорта на мероприятие"},
+	{"editmp", 4, 0, "Настроить мероприятие"},
 
 	//level 5
 	{"msg", 5, 0, "Написать на весь сервер"},
@@ -150,7 +152,41 @@ new const AdminCommandList[][AdminCommand] = {
 };
 
 new Iterator:Admin<MAX_PLAYERS>;
+new Iterator:Event<MAX_PLAYERS>;
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+cmd:editmp(playerid) 
+{
+    if(!CheckAccess(playerid, 4)) 
+        return false;
+
+	if(eSettings[IsEventStart] == false) return SCM(playerid, COLOR_LIGHTGREY, !"Мероприятие не создано. Запустите мероприятие используя команду /setmp");
+	
+	f(global_str, 512, "1. Изменить позицию телепорта\t{FFFF99}...\n\
+						2. Телепорт на мероприятие:\t\t{FFFF99}%s\n\
+						3. Завершить мероприятие\t\t{FFFF99}...\n\
+						{FFFF99}Игроков на мероприятии: %d", eSettings[TeleportEnable] ? ("Включен") : ("Выключен"), Iter_Count(Event));
+    return SPD(playerid, dEventSettings, DIALOG_STYLE_LIST, !"{EE3366}Настройки МП", global_str, !"Далее", !"Закрыть");
+}
+cmd:setmp(playerid)
+{
+    if(!CheckAccess(playerid, 4)) 
+        return false;
+
+	if(eSettings[IsEventStart] == false) 
+	{
+        eSettings[IsEventStart] = true;
+		eSettings[TeleportEnable] = false;
+
+		GetPlayerPos(playerid, eSettings[TeleportX], eSettings[TeleportY], eSettings[TeleportZ]);
+		eSettings[TeleportInt] = GetPlayerInterior(playerid);
+		eSettings[TeleportVW] = GetPlayerVirtualWorld(playerid);
+
+		SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] создал место для телепорта на мероприятие", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid);
+	}
+	else SCM(playerid, COLOR_LIGHTGREY, !"Точка телепорта уже создана, для управления мероприятием используйте: /editmp");
+
+	return 1;
+}
 cmd:tpg(playerid)
 {
 	if(!CheckAccess(playerid, 1, 1)) 
@@ -168,7 +204,7 @@ cmd:jail(playerid, params[])
         return false;
 
     new time;
-    if(sscanf(params,"uds[100]",params[0],time,params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используй: /jail [ID игрока] [время] [причина]");
+    if(sscanf(params,"uds[100]", params[0], time, params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используй: /jail [ID игрока] [время] [причина]");
 
 	if !IsPlayerOnline(params[0]) *then return false;
 
@@ -182,12 +218,12 @@ cmd:jail(playerid, params[])
 		return SCM(playerid, COLOR_LIGHTGREY,!"Этот игрок уже в ДеМоргане!");
 
     if(time == 0) 
-		return SCM(playerid, COLOR_LIGHTGREY, "Нельзя посадить на 0 минут");
+		return SCM(playerid, COLOR_LIGHTGREY, !"Нельзя посадить на 0 минут");
 
     if(time> 900) 
-		return SCM(playerid, COLOR_LIGHTGREY, "Нельзя посадить больше чем на 900 минут");
+		return SCM(playerid, COLOR_LIGHTGREY, !"Нельзя посадить больше чем на 900 минут");
 
-    if(PI[params[0]][pDemorgan]>0 && PI[playerid][pAdmin] < 4) return SCM(playerid, COLOR_LIGHTGREY, !"Ваш уровень не дает возможность менять время отсидки этого игрока.");
+    if(PI[params[0]][pDemorgan] > 0 && PI[playerid][pAdmin] < 4) return SCM(playerid, COLOR_LIGHTGREY, !"Ваш уровень не дает возможность менять время отсидки этого игрока.");
 	//
 	SetSpawnInfo(params[0], 255, 8, 100.000, 100.000, 100.000, 90.0, 6, 6, 6, 6, 6, 6);
 
@@ -201,6 +237,8 @@ cmd:jail(playerid, params[])
 	PI[params[0]][pHospital] = 0;
 	UpdatePlayerHealth(params[0], 100);
 	PlayerSpawn(params[0]);
+
+	cef_emit_event(playerid, "show-notifications:hud", CEFINT(101), CEFSTR("red-time"), CEFSTR("Осталось времени чтобы выйти из ДеМоргана"), CEFINT(time*60));
 	return 1;
 }
 cmd:setsex(playerid, params[])
@@ -865,6 +903,54 @@ stock admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 {
     switch dialogid do
     {
+		case dEventSettings:
+		{
+			if(!response) return 1;
+			if(response)
+			{
+				switch(listitem)
+				{
+					case 0:
+					{
+						GetPlayerPos(playerid, eSettings[TeleportX], eSettings[TeleportY], eSettings[TeleportZ]);
+						eSettings[TeleportInt] = GetPlayerInterior(playerid);
+						eSettings[TeleportVW] = GetPlayerVirtualWorld(playerid);
+
+
+						SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] изменил место телепорта на мероприятие", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid);
+
+						callcmd::editmp(playerid);
+					}
+					case 1:
+					{
+						eSettings[TeleportEnable] = !eSettings[TeleportEnable];
+
+						SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] %s телепорт на мероприятие", StaffTag(playerid), PI[playerid][pAdminNumber], eSettings[TeleportEnable] ? ("включил") : ("выключил"), PN(playerid), playerid);
+
+						callcmd::editmp(playerid);
+					}
+					case 2:
+					{
+						eSettings[IsEventStart] = false;
+						eSettings[TeleportEnable] = false;
+
+						foreach(new i: Event)
+						{
+							pTemp[i][pOnEvent] = 0;
+							SetPlayerPosEx(i, pTemp[i][pOldX], pTemp[i][pOldY], pTemp[i][pOldZ] + 1.5);
+							SetPlayerInterior(i, 0);
+							SetPlayerVirtualWorld(i, 0);
+
+							SCM(i, COLOR_BLACKRED, !"Игровой мастер завершил мероприятие");
+						}
+
+						SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] завершил мероприятие", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid);
+
+						Iter_Free(Event);
+					}
+				}
+			}
+		}
         case dALogin: 
 		{
 			if !response *then

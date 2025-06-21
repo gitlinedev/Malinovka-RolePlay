@@ -31,6 +31,7 @@ new
 
 #undef MAX_PLAYERS
 #define MAX_PLAYERS 50
+
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #include streamer
 #include Pawn.CMD
@@ -107,8 +108,8 @@ new PlayerDialogList[MAX_PLAYERS][64];
 #include Modules/VoiceChat // голосовой чат
 #include Modules/AntiCheat // анти-чит
 #include Modules/Accounts // авторизация и регистрация
-#include Modules/DefaultCMD // команды по умолчанию
 #include Modules/Admin // система админов
+#include Modules/DefaultCMD // команды по умолчанию
 #include Modules/SQL // работа с базой данных
 #include Modules/CEFClient // цеф
 #include Modules/Session // сессии игроков
@@ -157,6 +158,8 @@ public OnGameModeInit()
 
 	mysql_log(LOG_ERROR | LOG_WARNING);
 	mysql_set_charset("cp1251", mysql);
+
+	#include Modules/MysqlLoad
 
 	EnableAntiCheat(39, 0); // отключил dialog hack 
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -276,7 +279,7 @@ public OnPlayerConnect(playerid)
 
 	GetPlayerIp(playerid, PlayerIp[playerid], 16);
 	SetPlayerVirtualWorld(playerid, 1228);
-	SetPlayerWeather(playerid, WeatherServer);
+	SetPlayerWeather(playerid, 18);
 	//ClearChatForPlayer(playerid);
 
 	if SvGetVersion(playerid) == SV_NULL *then SCM(playerid, 0xEE83F0AA, !"[VoiceChat] {FFFFFF}загрузка плагина произошла {FFFF33}неуспешно (NULL)");
@@ -305,13 +308,30 @@ public: SetRandomWeather()
 	new rand = random(sizeof Weather);
 	SendClientMessageToAllf(COLOR_GREEN, "[Прогноз погоды] в области ожидается %s (+%d °С)", Weather[rand][WeatherName], Weather[rand][WeatherDegrees]);
     WeatherServer = Weather[rand][WeatherId];
-	return SetWeather(WeatherServer);
+
+	foreach(new i: Player)
+	{
+		if(IsPlayerLogged{i})
+		{
+			if(PI[i][pShowRain] == 1 && (WeatherServer == 9 || WeatherServer == 8 || WeatherServer == 7))
+			{
+				SCM(i, COLOR_GREEN, !"[Подсказка] Вы можете отключить дождь в /mn > Настройки аккаунта, если он снижает производительность и FPS");
+				SetPlayerWeather(i, WeatherServer);
+			}
+			else
+			{
+				SetPlayerWeather(i, 18);
+			}
+		}
+	}
+	return 1;
 }
 public OnPlayerDisconnect(playerid, reason)
 {
 	if IsPlayerLogged{playerid} *then
 	{
 		if Iter_Contains(Admin, playerid) *then Iter_Remove(Admin, playerid);
+		if Iter_Contains(Event, playerid) *then Iter_Remove(Event, playerid);
 
 		DPlayerData(playerid, !"vr");
 
@@ -319,6 +339,9 @@ public OnPlayerDisconnect(playerid, reason)
 		IsPlayerLogged{playerid} = false;
 
 		f(global_str, 110, "UPDATE `accounts` SET `OnlineStatus` = '0', `PlayerID` = '65535' WHERE `ID` = '%d'", PI[playerid][pID]);
+		mysql_tquery(mysql, global_str);
+
+		f(global_str, 120, "DELETE FROM `client` WHERE `NickName` = '%s'", PN(playerid));
 		mysql_tquery(mysql, global_str);
 	}
 	PlayerName[playerid][0] = EOS;
@@ -1053,19 +1076,32 @@ stock SetPlayerPosEx(playerid, Float:x, Float:y, Float:z)
 	return SetPlayerPos(playerid, x, y, z);
 }
 
+stock IsPlayerInAir(playerid)
+{
+	new Float:X, Float:Y, Float:Z, Float:CZ;
+	GetPlayerPos(playerid, X, Y, Z);
+	MapAndreas_FindZ_For2DCoord(X, Y, CZ);
+	if(Z-1.2 > CZ) return 1;
+	return 0;
+}
+
+stock SetPlayerPosAirX(playerid, Float:X, Float:Y)
+{
+    new Float:Z;
+	MapAndreas_FindZ_For2DCoord(X, Y, Z);
+	return UpdatePlayerPos(playerid, X, Y, Z + 1);
+}
+
 public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
 {
-	SCMF(playerid, -1, "x %f, y %f, z %f", fX, fY, fZ);
-	if(PI[playerid][pAdmin] >= 1)
-	{
-		if(GetPlayerState(playerid) == PLAYER_STATE_DRIVER) 
-		{
-			SetVehiclePos(GetPlayerVehicleID(playerid), fX, fY, fZ);
-		}
-		else 
-		{
-			SetPlayerPosEx(playerid, fX, fY, fZ); 
-		}
-	}
+	if PI[playerid][pAdmin] *then
+ 	{
+ 	    SetPlayerVirtualWorld(playerid, 0);
+		SetPlayerInterior(playerid, 0);
+  		if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER)
+	   		SetVehiclePos(GetPlayerVehicleID(playerid), fX, fY, fZ+2.0);
+
+    	else SetPlayerPosAirX(playerid, fX, fY);
+    }
     return 1;
 }

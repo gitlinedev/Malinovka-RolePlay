@@ -24,8 +24,8 @@ public: GetPlayerSessionData(playerid)
 {	
 	if( cache_get_row_count(mysql) > 0 ) 
 
-    	SCM(playerid, COLOR_BLACKBLUE, !"Добро пожаловать на Малиновка!"),
-	    SCM(playerid, COLOR_LIGHTYELLOW, !"Загружаем данные сессии. Пожалуйства подождите..."),
+    	SCM(playerid, COLOR_BLACKBLUE, !"Добро пожаловать в Малиновку!"),
+	    SCM(playerid, COLOR_LIGHTYELLOW, !"Загружаем данные сессии. Пожалуйста, подождите..."),
         printf("*[Sessions]* Player %s has gained access", PlayerName[playerid]),
 		cache_get_row(0, 1, PI[playerid][pUUID], mysql, 70),
         cache_get_row(0, 2, PI[playerid][pHWID], mysql, 35),

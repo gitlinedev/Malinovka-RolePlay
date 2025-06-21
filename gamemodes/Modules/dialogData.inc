@@ -21,7 +21,11 @@ enum
     dAdminCMD,
     dAdminCMDList,
     dBlackListMenu,
+    dReturnFromEvent,
+    dReturnFromTestDrive,
     dGPS,
     dGPSSub,
-    dGPSInfo
+    dGPSInfo,
+    dGoToEvent,
+    dEventSettings
 };

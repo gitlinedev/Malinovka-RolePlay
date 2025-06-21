@@ -1,10 +1,7 @@
-// if !IsPlayerLogged{playerid} *then return false;
-// #define COLOR_PURPLE           	 	0xFF99CCFF
-
 cmd:me(playerid, params[])
 {
 	if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
-	if sscanf(params,"s[100]",params[0]) *then return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /me [текст]");
+	if sscanf(params,"s[100]",params[0]) *then return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /me [Сообщение]");
 	if IsAIP(params[0]) *then return 0;
 	f(global_str, 300,"%s %s",PN(playerid),params[0]);
 	ProxDetector(25,playerid,global_str,COLOR_PURPLE);
@@ -14,7 +11,7 @@ cmd:me(playerid, params[])
 cmd:do(playerid, params[])
 {
 	if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
-	if sscanf(params,"s[100]",params[0]) *then return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /do [текст]");
+	if sscanf(params,"s[100]",params[0]) *then return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /do [Сообщение]");
 	if IsAIP(params[0]) *then return 0;
 	f(global_str, 300,"%s %s",params[0], PN(playerid));
 	ProxDetector(25,playerid,global_str,COLOR_PURPLE);
@@ -23,43 +20,83 @@ cmd:do(playerid, params[])
 }
 cmd:todo(playerid, params[])
 {
-	if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
-	if sscanf(params,"p<*>s[128]s[128]",params[0],params[1]) *then return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /todo [Сообщение]*[Действие]");
+	if PI[playerid][pMuteTime] *then 
+		return SendMuteMessage(playerid);
+
+	if sscanf(params,"p<*>s[128]s[128]",params[0],params[1]) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /todo [Сообщение]*[Действие]");
+		
 	if IsAIP(params[0]) *then return 0;
 	f(global_str, 400,"\"%s\", - сказал %s,{FF99FF} %s.",params[0], PN(playerid), params[1]);
 	ProxDetector(25,playerid,global_str,COLOR_PURPLE);
 	SetPlayerChatBubble(playerid, params[0], COLOR_PURPLE, 10.0, 5000);
 	return 1;
 }
-cmd:c(playerid, params[])
+
+CMD:try(playerid, params[])
 {
-	if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
-	if sscanf(params,"s[100]",global_str) *then return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /c [текст]");
+	if PI[playerid][pMuteTime] *then 
+		return SendMuteMessage(playerid);
+
+	if sscanf(params,"s[100]", global_str) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /try [Сообщение]");
+
+	f(global_str, 200, "%s %s %s", PN(playerid), global_str, !random(2) ? ("{33DD66}(удачно)") : ("{FF5511}(неудачно)"));
+	ProxDetector(25,playerid, global_str, COLOR_PURPLE);
+	return 1;
+}
+
+cmd:w(playerid, params[])
+{
+	if PI[playerid][pLevel] < 2 *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Эта команда доступна со 2 уровня");
+
+	if PI[playerid][pMuteTime] *then 
+		return SendMuteMessage(playerid);
+
+	if sscanf(params,"s[100]",global_str) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /w [Сообщение]");
+
 	if IsAIP(global_str) *then return 0;
-	f(global_str,150, "%s[%d] говорит шепотом: {FFFFFF}%s",PN(playerid),playerid,global_str);
+	f(global_str,150, "%s[%d] говорит шепотом: {FFFFFF}%s",PN(playerid), playerid, global_str);
 	ProxDetector(2,playerid, global_str, COLOR_BLUE);
 	return 1;
 }
+
 cmd:b(playerid, params[])
 {
-	if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
-	if sscanf(params,"s[100]",global_str) *then return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /b [OOC (nonRP) сообщение]");
+	if PI[playerid][pMuteTime] *then 
+		return SendMuteMessage(playerid);
+
+	if sscanf(params,"s[100]",global_str) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /b [OOC (nonRP) сообщение]");
+
 	if IsAIP(global_str) *then return 0;
 	f(global_str,150, "(( %s[%d]: %s ))", PN(playerid), playerid, global_str);
 	ProxDetector(2,playerid, global_str, COLOR_BLUE);
 	return 1;
 }
+
 cmd:s(playerid, params[])
 {
-    if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);
-	if sscanf(params,"s[100]",global_str) *then return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /s [текст]");
+	if PI[playerid][pLevel] < 2 *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Эта команда доступна со 2 уровня");
+
+    if PI[playerid][pMuteTime] *then 
+		return SendMuteMessage(playerid);
+
+	if sscanf(params,"s[100]",global_str) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /s [Сообщение]");
+
     if IsAIP(global_str) *then return 0;
+
 	SetPlayerChatBubble(playerid, params[0], -1, 25.0, 5000);
     f(global_str, 200, "%s[%d] крикнул: %s", PN(playerid), playerid, params[0]);
 	ProxDetector(25, playerid, global_str, -1);
 	if(!IsPlayerInAnyVehicle(playerid))	ApplyAnimationEx(playerid, "ON_LOOKERS", "shout_01",1000.0,0,0,0,0,0,1);
 	return 1;
 }
+
 stock ShowPlayerStats(playerid)
 {
 	return SPD(playerid, dStats, 2, !"{EE3366}Стата игрока лол", !"Моя стата типа", !"Назад", !"Закрыть");
@@ -135,6 +172,77 @@ stock ShowPlayerSettings(playerid)
 	(PI[playerid][pShowRain] == 0) ? ("Отключено") : ("Включено"),
 	(PI[playerid][pDamageMP3] == 0) ? ("Отключен") : ("Включен"));
 }
+cmd:id(playerid, params[])
+{
+    if (isnull(params)) return SCM(playerid, COLOR_GREY, !"Используйте: /id [ID или часть ника]");
+
+    new targetid;
+    if (sscanf(params, "d", targetid) == 0)
+    {
+        if (IsPlayerConnected(targetid)) SCMF(playerid, COLOR_LIGHTGREY, "ID %d принадлежит игроку %s", targetid, PN(targetid));
+        else SCM(playerid, COLOR_GREY, !"Игрок не в сети");
+
+        return 1;
+    }
+
+    new count = 0, Status[24];
+
+	global_str[0] = EOS;
+	
+
+    for (new i = 0; i < MAX_PLAYERS; i++)
+    {
+        if (!IsPlayerConnected(i)) continue;
+        if (strfind(PN(i), params, true) != -1)
+        {
+			Status[0] = EOS;
+			f(Status, sizeof(Status), "Играет");
+            f(global_str, 60, "%s%d\t%s\t%s\n", global_str, i, PN(i), Status);
+            count++;
+        }
+    }
+
+    if (count == 0) return SCM(playerid, COLOR_GREY, !"Совпадений не найдено");
+
+	f(global_str, 512, "ID\tИмя\tСостояние\n%s\n\nКоличество: %d", global_str, count);
+
+    SPD(playerid, 0, DIALOG_STYLE_TABLIST_HEADERS, !"{EE3366}Совпадения по имени", global_str, !"Закрыть", !"");
+    return 1;
+}
+
+cmd:mp(playerid)
+{
+	if(eSettings[IsEventStart] == false) return 
+		SCM(playerid, COLOR_GREY, !"Игровые мастера не установили метку для телепорта");
+
+	if(eSettings[TeleportEnable] == false) return 
+		SCM(playerid, COLOR_GREY, !"Игровые мастера не включили телепорт");
+
+	if(PI[playerid][pJail] != 0) 
+		return SCM(playerid, COLOR_GREY, !"Нельзя телепортироваться на мероприятие в КПЗ");
+
+	if(PI[playerid][pDemorgan] != 0) 
+		return SCM(playerid, COLOR_GREY, !"Нельзя телепортироваться на мероприятие в деморгане");
+
+	if(GetPlayerState(playerid) == PLAYER_STATE_DRIVER) 
+		return SCM(playerid, COLOR_GREY, !"Нельзя телепортироваться на мероприятие в машине");
+
+	if(GetPlayerInterior(playerid) != 0) 
+		return SCM(playerid, COLOR_GREY, !"Попасть на мероприятие можно только на улице");
+
+	return SPD(playerid, dGoToEvent, DIALOG_STYLE_MSGBOX, !"{EE3366}Телепортация на мероприятие", !"{FFFFFF}Вы действительно хотите телепортитоватся на мероприятие?\n{FFFF99}Если Вы захотите покинуть мероприятие досрочно, используйте /back", !"Да", !"Нет");
+}
+cmd:back(playerid) 
+{
+	if(pTemp[playerid][pOnEvent] == 0 && pTemp[playerid][pTestDrive] == 0) return SCM(playerid, COLOR_GREY, !"Вы не телепортировались на мероприятие и не участвовали в тест-драйве");
+	
+	if pTemp[playerid][pOnEvent] == 1 *then 
+		SPD(playerid, dReturnFromEvent, DIALOG_STYLE_MSGBOX, !"{EE3366}Покинуть мероприятие", "{FFFFFF}Вы действительно хотите покинуть мероприятие?", "Да", "Нет");
+	else SPD(playerid, dReturnFromTestDrive, DIALOG_STYLE_MSGBOX, !"{EE3366}Покинуть тест-драйв", "{FFFFFF}Вы действительно хотите завершить тест-драйв?", "Да", "Нет");
+
+	return 1;
+}
+
 cmd:help(playerid) return ShowServerCommands(playerid);
 cmd:report(playerid) return ShowHelpDialog(playerid);
 cmd:settings(playerid) return ShowPlayerSettings(playerid);
@@ -142,8 +250,50 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
 {
     switch dialogid do
 	{
+		case dGoToEvent:
+		{
+			if(!response) return 1;
+			if (response)
+            {
+				Iter_Add(Event, playerid);
+
+				GetPlayerPos(playerid, pTemp[playerid][pOldX], pTemp[playerid][pOldY], pTemp[playerid][pOldZ]);
+
+				SetPlayerPosEx(playerid, eSettings[TeleportX], eSettings[TeleportY], eSettings[TeleportZ] + 1.5);
+
+				SetPlayerInterior(playerid, eSettings[TeleportInt]);
+				SetPlayerVirtualWorld(playerid, eSettings[TeleportVW]);
+
+				pTemp[playerid][pOnEvent] = 1;
+			}
+		}
+		case dReturnFromEvent:
+		{
+			if(!response) return 1;
+			if (response)
+            {
+				Iter_Remove(Event, playerid);
+
+				pTemp[playerid][pOnEvent] = 0;
+				SetPlayerPosEx(playerid, pTemp[playerid][pOldX], pTemp[playerid][pOldY], pTemp[playerid][pOldZ] + 1.5);
+				SetPlayerInterior(playerid, 0);
+				SetPlayerVirtualWorld(playerid, 0);
+			}
+		}
+		case dReturnFromTestDrive:
+		{
+			if(!response) return 1;
+			if (response)
+            {
+				pTemp[playerid][pTestDrive] = 0;
+				SetPlayerPosEx(playerid, 100.00, 100.00, 100.00 + 1.5);
+				SetPlayerInterior(playerid, 0);
+				SetPlayerVirtualWorld(playerid, 0);
+			}
+		}
         case dMenu:
         {
+			if(!response) return 1;
             if (response)
             {
                 switch (listitem)
@@ -200,6 +350,15 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
 					{
 						PI[playerid][pShowRain] = !PI[playerid][pShowRain];
 
+						if (WeatherServer >= 7 && WeatherServer <= 9)
+						{
+							SetPlayerWeather(playerid, PI[playerid][pShowRain] == 1 ? WeatherServer : 18);
+						}
+						else
+						{
+							SetPlayerWeather(playerid, WeatherServer);
+						}
+
 						callcmd::settings(playerid);
 					}
 					case 4:
@@ -214,7 +373,7 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
 		}
 		case dCommands:
 		{
-			if(!response) callcmd::help(playerid);
+			if(!response) callcmd::menu(playerid);
 			if(response) 
 			{
 				switch (listitem)

@@ -34,7 +34,7 @@ public: InterfaceDialogResponce(playerid, callback[])
 {
     new id, responce, listitem, inputtext[144];
     sscanf(callback, "ddds[144]", id, responce, listitem, inputtext);
-    SendClientMessagef(playerid, -1, "OnDialogResponse(%d, %d, %d, %d, %s)", playerid, id, responce, listitem, inputtext);
+    //SendClientMessagef(playerid, -1, "OnDialogResponse(%d, %d, %d, %d, %s)", playerid, id, responce, listitem, inputtext);
     OnDialogResponse(playerid, id, responce, listitem, inputtext);
     return RemovePlayerDialog_CEF(playerid);
 }
