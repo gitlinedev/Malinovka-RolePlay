@@ -10,7 +10,7 @@ public OnCefInitialize(player_id, success)
     else 
     {
         f(global_str, 100, "CEF initialization error %s[%d] (success: %d)", PN(player_id), player_id, success);
-        SendDebug(player_id, global_str, 1);
+        SendDebug(player_id, global_str);
     }
     return true;
 }
@@ -21,18 +21,19 @@ public OnCefBrowserCreated(player_id, browser_id, status_code)
     {
         cef_load_url(player_id, CEF_MAIN, PI[player_id][pPath]);
         f(global_str, 100, "CEF client error at player %s[%d] (code: %d)", PN(player_id), player_id, status_code);
-        SendDebug(player_id, global_str, 1);
+        SendDebug(player_id, global_str);
     }
     else if status_code == 500 *then
     {
         cef_load_url(player_id, CEF_MAIN, PI[player_id][pPath]);
         f(global_str, 100, "CEF server error at player %s (code: %d)", PN(player_id), player_id, status_code);
-        SendDebug(player_id, global_str, 1);
+        SendDebug(player_id, global_str);
     }
     else if status_code == 200 or status_code == 299 *then 
     {
         f(global_str, 100, "Player %s[%d] has successfully connected to the CEF server", PN(player_id), player_id);
-
+        SendDebug(player_id, global_str);
+        
         if IsPlayerLogged{player_id} *then
         {
             cef_emit_event(player_id, "execute.event:hud:active", CEFINT(2));
@@ -43,8 +44,6 @@ public OnCefBrowserCreated(player_id, browser_id, status_code)
 
             if PI[player_id][pShowFPS] == 1 *then cef_emit_event(player_id, "execute.event:show-fps", CEFINT(true));
         }
-
-        SendDebug(player_id, global_str, 1);
     }
     return true;
 }

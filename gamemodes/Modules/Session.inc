@@ -24,6 +24,9 @@ stock LoadSession(playerid)
 public: GetPlayerSessionData(playerid)
 {	
 	if( cache_get_row_count(mysql) > 0 ) 
+
+    	SCM(playerid, COLOR_BLACKBLUE, !"Добро пожаловать на Малиновка!"),
+	    SCM(playerid, COLOR_LIGHTYELLOW, !"Загружаем данные сессии. Пожалуйства подождите..."),
         printf("loaded session for %s", PlayerName[playerid]),
 		cache_get_row(0, 1, PI[playerid][pUUID], mysql, 70),
         cache_get_row(0, 2, PI[playerid][pHWID], mysql, 35),
@@ -39,9 +42,9 @@ public: GetPlayerSessionData(playerid)
         return Kick(playerid);
     }
 	
-    SCMF(playerid, -1, "Path -> %s", PI[playerid][pPath]);
-    SCMF(playerid, -1, "HWID -> %s", PI[playerid][pHWID]);
-    SCMF(playerid, -1, "UUID -> %s", PI[playerid][pUUID]);
+    //SCMF(playerid, -1, "Path -> %s", PI[playerid][pPath]);
+    //SCMF(playerid, -1, "HWID -> %s", PI[playerid][pHWID]);
+    //SCMF(playerid, -1, "UUID -> %s", PI[playerid][pUUID]);
 	
 	return true;
 }

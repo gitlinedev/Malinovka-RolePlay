@@ -45,16 +45,22 @@ new Float:SpawnInfo[8][4] =
 	{582.7991,1473.3457,1900.7980,94.9175}				//Int:  16 | World: 16 | GOPOTA
 };
 
-new TeamColors[8]=
+enum TeamColor
 {
-	0xFFFFFFFF, //None
-    0xffEB9CFF, //GOV
-    0x009900FF, //ARMY
-    0xFF99CCFF, //MEDIC
-	0x2222FFFF, //POLICE
-    0x663399BB, //SKINHEAD
-    0x339933AA, //KAVKAZ
-    0x66CCFFFF //GOPOTA
+    ColorInt,
+    ColorStr[8]
+};
+
+new TeamColors[][TeamColor] =
+{
+    {0xFFFFFFFF, "FFFFFF"}, //None
+    {0xFFEB9CFF, "FFEB9C"}, //GOV
+    {0x009900FF, "009900"}, //ARMY
+    {0xFF99CCFF, "FF99CC"}, //MEDIC
+    {0x2222FFFF, "2222FF"}, //POLICE
+    {0x663399BB, "663399"}, //SKINHEAD
+    {0x339933AA, "339933"}, //KAVKAZ
+    {0x66CCFFFF, "66CCFF"}  //GOPOTA
 };
 
 new SpawnIntWorld[8][2] =
@@ -162,6 +168,7 @@ enum _temp_
 	ACWarnings,
 	dialogListItem,
     pMarker,
+    pFPS,
     Float:pMarkerX,
     Float:pMarkerY,
     Float:pMarkerZ
@@ -240,6 +247,7 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pSkin] =
 	PI[playerid][pWarns] =
 	PI[playerid][pJail] =
+    pTemp[playerid][pFPS] =
 	PI[playerid][pDemorgan] =
 	PI[playerid][pMute] =
     PI[playerid][pShowFPS] =

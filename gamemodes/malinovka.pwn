@@ -50,6 +50,7 @@ new
 #include fmt
 #include mapandreas
 #include UnixConvertor
+#include sampp
 
 new mysql;
 //======================================[ macro ]================================================//
@@ -80,7 +81,12 @@ new mysql;
 #define DPlayerData(%0,%1) DeletePVar(%0, %1)
 
 public: PlayKick(playerid)
+{
+	SpecPl(playerid, true);
+	InterpolateCameraPos(playerid, 1864.6229, 2067.9146, 25.7431, 1864.6229, 2067.9146, 25.7431, 10000000);
+	InterpolateCameraLookAt(playerid, 1821.6516, 2095.7375, 16.1631, 1821.6516, 2095.7375, 16.1631, 1000);
 	return Kick(playerid);
+}
 
 #define Kick(%0) CallTimeOutFunction("PlayKick", 1000, false, "d", %0)
 
@@ -400,7 +406,7 @@ public OnPlayerText(playerid, text[])
 		}
 	}
 
-	f(global_str, 300, "- %s {FF0000}(%s)[%d]", text, PN(playerid), playerid);
+	f(global_str, 300, "- %s {%s}(%s)[%d]", text, TeamColors[GetTeamID(playerid)][ColorStr], PN(playerid), playerid);
 	ProxDetector(30.0, playerid, global_str, -1);
 
 	if(GetPlayerState(playerid) == PLAYER_STATE_ONFOOT && !AnimPlayed{playerid})
@@ -482,7 +488,13 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 
 public OnPlayerUpdate(playerid)
 {
-	if PI[playerid][pShowFPS] == 1 *then cef_emit_event(playerid, "execute.event:fps", CEFINT(GetPlayerFPS(playerid)));
+	if PI[playerid][pShowFPS] == 1 *then 
+	{
+		new getFPS = GetPlayerFPS(playerid);
+
+		if(getFPS >= 1) pTemp[playerid][pFPS] = getFPS;
+		cef_emit_event(playerid, "execute.event:fps", CEFINT(pTemp[playerid][pFPS]));
+	}
 	return 1;
 }
 
@@ -870,14 +882,10 @@ stock IsWordsInvalid(playerid, const text[])
     return false;
 }
 
-stock SendDebug(playerid, const text[], type = 0)
+stock SendDebug(playerid, text[])
 {
-	if(type == 1)
-	{
-		printf("[DEBUG] %s", text), SCM(playerid, -1, text);
-		return 1;
-	}
-	return 1;
+	printf("[DEBUG]: %s", text);
+	SCMF(playerid, -1, "[DEBUG]: %s", text);
 }
 
 stock _GiveGun(playerid, weaponid, ammo)
@@ -1011,36 +1019,6 @@ stock GetPlayerFPS(playerid)
 			SetPVarInt(playerid, "FPS", (GetPVarInt(playerid, "LDrunkL") - GetPVarInt(playerid, "DrunkL")));
 			SetPVarInt(playerid, "LDrunkL", GetPVarInt(playerid, "DrunkL"));
 			return GetPVarInt(playerid, "FPS") - 1;
-		}
-	}
-	return 0;
-}
-cmd:test(playerid)
-{
-	SCMF(playerid, -1, "fps %d", GetPlayerFPS(playerid));
-	SCMF(playerid, -1, "fps2 %d", GetPlayerFPS2(playerid));
-}
-stock GetPlayerFPS2(playerid)
-{
-	new DrunkLevel, FPS, LDrunkL;
-
-	DrunkLevel = GetPlayerDrunkLevel(playerid);
-
-	if(DrunkLevel < 100)
-	{
-		SetPlayerDrunkLevel(playerid, 2000);
-	}
-	else
-	{
-		if(LDrunkL != DrunkLevel)
-		{
-			FPS = LDrunkL - DrunkLevel;
-			LDrunkL = DrunkLevel;
-
-			if(FPS > 0 && FPS < 256)
-			{
-				return FPS - 1;
-			}
 		}
 	}
 	return 0;

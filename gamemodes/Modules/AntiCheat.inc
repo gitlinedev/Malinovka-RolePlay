@@ -147,8 +147,6 @@ public: OnCheatDetected(playerid, const ip_address[], type, code)
         {
             pTemp[playerid][ACWarnings]++;
             SAMF(COLOR_ADMINCHAT, "[Анти-чит] Подозрение %s[%d] (#%d/%d: %s).", PN(playerid), playerid, type, code, AC_CODE_NAME[code]);
-            
-            SCMF(playerid, -1, "[Анти-чит] Подозрение %s[%d] (#%d/%d: %s).", PN(playerid), playerid, type, code, AC_CODE_NAME[code]);
         }
         case AC_CODE_TRIGGER_TYPE_KICK: 
 		{
