@@ -100,7 +100,7 @@ new PlayerDialogList[MAX_PLAYERS][64];
 #define gpdList(%0,%1) PlayerDialogList[%0][%1]
 
 //======================================[ limits ]================================================//
-#define Max_Cars 					   2000
+//
 //======================================[ modules ]================================================//
 
 #include Modules/dialogData // ид диалогов
@@ -505,6 +505,13 @@ public OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid)
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
 	AC_OnPlayerKeyStateChange(playerid, newkeys);
+
+	SCMF(playerid, -1, "%d", KEY_CTRL_BACK);
+
+	if (newkeys == KEY_CTRL_BACK)
+	{
+		callcmd::engine(playerid);
+	}
 	return 1;
 }
 
@@ -888,12 +895,22 @@ stock ShiftCords(style, &Float:x, &Float:y, Float:a, Float:distance)
 	}
 	return 1;
 }
-stock ClearCarData(car) 
+stock ClearCarData(CarID) 
 {
-	CarInfo[car][cID] = INVALID_VEHICLE_ID;
+	VehicleInfo[CarID][vID] = INVALID_VEHICLE_ID;
 
-	CarInfo[car][cFuel] =
-	CarInfo[car][cCreate] = 0;
+	VehicleInfo[CarID][vFuel] = 
+	VehicleInfo[CarID][vPos_X] = 
+	VehicleInfo[CarID][vPos_Y] = 
+	VehicleInfo[CarID][vPos_Z] = 
+	VehicleInfo[CarID][vPos_A] = 0.0;
+
+	VehicleInfo[CarID][vModel] = -1;
+	
+	VehicleInfo[CarID][vColor_1] =
+	VehicleInfo[CarID][vColor_2] =
+	VehicleInfo[CarID][vKey] =
+	VehicleInfo[CarID][vAdminCar] = 0;
 }
 
 stock IsWordsInvalid(playerid, const text[])
@@ -1104,4 +1121,39 @@ public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
     	else SetPlayerPosAirX(playerid, fX, fY);
     }
     return 1;
+}
+
+stock IsAVelik(vehID) 
+{
+	new model = GetVehicleModel(vehID);
+	if(model == 481 || model == 510 || model == 509 || model == 484 || model == 454) return 1;
+	return 0;
+}
+
+stock IsAPlane(vehID) 
+{
+	new model = GetVehicleModel(vehID);
+	if(model == 417 || model == 425 || model == 447 || model == 460 || model == 469 || model == 476 || model == 487 || model == 488 || model == 497 || model == 511 || model == 512 || model == 513 || 
+		model == 519 || model == 520 || model == 548 || model == 553 || model == 563 || model == 577 || model == 592 || model == 593 || model == 441 || model == 464 || model == 465 || model == 501 || model == 564) return 1;
+	return 0;
+}
+
+stock GetVehicleID(vehID)
+{
+	if(VehicleInfo[vehID][vID] != -1 && IsValidVehicle(vehID)) return VehicleInfo[vehID][vID];
+	return -1;
+}
+stock IsAOwnableCar(carid)
+{
+	if !(VehicleInfo[carid][vID] == -1) *then return 1;
+	return 0;
+}
+
+stock SetEngineStatus(vehID, status, playerid)
+{
+	GetVehicleParamsEx(vehID,Engine,Lights,Alarm,Doors,Bonnet,Boot,Objective);
+    SetVehicleParamsEx(vehID,status,Lights,Alarm,Doors,Bonnet,Boot,Objective);
+    VehicleInfo[GetVehicleID(vehID)][vEngine] = status;
+
+	if playerid != INVALID_PLAYER_ID *then SCM(playerid, -1, !"Двигатель чик чирик бам бах готово");
 }

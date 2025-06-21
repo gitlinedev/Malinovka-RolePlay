@@ -1,3 +1,34 @@
+cmd:engine(playerid)
+{
+	new vehID = GetPlayerVehicleID(playerid);
+	if (!IsValidVehicle(vehID)) return 0;
+
+	if (IsAVelik(vehID)) return 0;
+
+	new Float:health;
+	GetVehicleHealth(vehID, health);
+	if (health <= 351.0) return 1;
+
+	if (!IsAOwnableCar(vehID) && VehicleInfo[GetVehicleID(vehID)][vKey] == 0 && VehicleInfo[GetVehicleID(vehID)][vAdminCar] == 0)
+		return SCM(playerid, COLOR_LIGHTGREY, !"Ключ зажигания не вставлен.");
+
+	if (VehicleInfo[GetVehicleID(vehID)][vFuel] <= 0)
+		return SCM(playerid, COLOR_LIGHTGREY, !"В машине нет топлива, купите канистру в ближайшей АЗС");
+
+	switch (VehicleInfo[vehID][vEngine]) 
+	{
+		case 0: 
+		{
+			SetEngineStatus(vehID, true, playerid);
+		}
+		case 1: 
+		{
+			SetEngineStatus(vehID, true, playerid);
+		}
+		default: return 0;
+	}
+	return 1;
+}
 cmd:me(playerid, params[])
 {
 	if PI[playerid][pMuteTime] *then return SendMuteMessage(playerid);

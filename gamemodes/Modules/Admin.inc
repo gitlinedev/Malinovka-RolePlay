@@ -451,7 +451,7 @@ cmd:setfuel(playerid,params[])
     if(IsPlayerInAnyVehicle(playerid) && GetPlayerState(playerid) == PLAYER_STATE_DRIVER) 
 	{
 		new VehId = GetPlayerVehicleID(playerid);
-		CarInfo[VehId][cFuel] = dd;
+		VehicleInfo[VehId][vFuel] = dd;
 		SCM(playerid, -1, !"Уровень топлива в автомобиле изменен");
 	}
 	else SCM(playerid, COLOR_LIGHTGREY, !"Нужно находиться на водительском месте");
@@ -731,8 +731,8 @@ cmd:veh(playerid, params[])
 	PutPlayerInVehicle(params[0], VehID, 0);
 
     ClearCarData(VehID);
-    CarInfo[VehID][cFuel] = 100.0;
-    CarInfo[VehID][cCreate] = 1;
+    VehicleInfo[VehID][vFuel] = 100.0;
+    VehicleInfo[VehID][vAdminCar] = 1;
 
 	new VehModel = GetVehicleModel(VehID);
     SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] создал %s[%d] (id: %d, цвет: %d, %d)", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, Vehicle_Names[VehModel-400], VehID, params[1], params[2], params[3]);
@@ -749,7 +749,7 @@ cmd:dveh(playerid)
 
     new CarID = GetPlayerVehicleID(playerid);
 	
-	if CarInfo[CarID][cCreate] == 0 *then 
+	if VehicleInfo[CarID][vAdminCar] == 0 *then 
 		return SCM(playerid, COLOR_LIGHTGREY, !"Данный транспорт нельзя удалить");
 	
 	ClearCarData(CarID);

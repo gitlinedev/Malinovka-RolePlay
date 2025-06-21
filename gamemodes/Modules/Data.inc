@@ -137,13 +137,30 @@ new InvalidWords[MAX_INWORDS][20] = {
     "форум",
 };
 
-enum cInfo
+enum vInfo
 {
-    cID,
- 	Float:cFuel,
-	cCreate,
+    vID,
+    vModel,
+ 	Float:vFuel,
+	Float:vPos_X,
+	Float:vPos_Y,
+	Float:vPos_Z,
+	Float:vPos_A,
+    vEngine,
+	vLights,
+	vAlarm,
+	vDoors,
+	vBonnet,
+	vBoot,
+    vColor_1,
+	vColor_2,
+    vLock,
+	vAdminCar,
+    vKey
 };
-new CarInfo[Max_Cars][cInfo];
+new VehicleInfo[MAX_VEHICLES][vInfo];
+
+new Engine, Lights, Alarm, Doors, Bonnet, Boot, Objective;
 
 new gPlayerLogTries[MAX_PLAYERS char],
 	bool:ALogin[MAX_PLAYERS char],
