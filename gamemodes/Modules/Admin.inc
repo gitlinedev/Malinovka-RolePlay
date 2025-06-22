@@ -224,13 +224,23 @@ cmd:jail(playerid, params[])
 		return SCM(playerid, COLOR_LIGHTGREY, !"Нельзя посадить больше чем на 900 минут");
 
     if(PI[params[0]][pDemorgan] > 0 && PI[playerid][pAdmin] < 4) return SCM(playerid, COLOR_LIGHTGREY, !"Ваш уровень не дает возможность менять время отсидки этого игрока.");
-	//
-	SetSpawnInfo(params[0], 255, 8, 100.000, 100.000, 100.000, 90.0, 6, 6, 6, 6, 6, 6);
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	SetSpawnInfoEx(params[0], GetSkinOfPlayer(playerid), -1764.1515, -2889.2085, 14.3141, 240.8832);
 
-	SCMF(playerid, COLOR_TOMATO, "Вы посадили в тюрьму игрока %s на %d минут. Причина: %s", PN(params[0]), time, params[1]);
-	SCMF(params[0], COLOR_TOMATO, "%s посадил Вас в тюрьму на %d минут. Причина: %s", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор", time, params[1]);
+	SCMF(playerid, COLOR_TOMATO, "Вы посадили в тюрьму игрока %s на %d минут. Причина: %s",\
+		PN(params[0]), time, params[1]);
+	
+	SCMF(params[0], COLOR_TOMATO, "%s посадил Вас в тюрьму на %d минут. Причина: %s",\
+		PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор", time, params[1]);
+
+	new punishmentID = CreatePunishment(params[0], playerid, 1, time, params[1]);
+
+	SCMF(params[0], COLOR_LIGHTGREY, "Номер наказания: {00912D}#%d{CCCCCC} (для обжалования на {F87031}forum.m-bonus.com{CCCCCC})", punishmentID);
+	
+	SCM(params[0], COLOR_LIGHTGREY, !"Время до выхода из тюрьмы отображается в правом верхнем углу");
+	
 	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] посадил игрока %s в тюрьму на %d минут. Причина: %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid),playerid, PN(params[0]), time,params[1]);
-	//
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	_ResetPlayerWeapons(params[0]);
 	PI[params[0]][pDemorgan] = time*60;
 	PI[params[0]][pWanted] = 0;
@@ -238,7 +248,8 @@ cmd:jail(playerid, params[])
 	UpdatePlayerHealth(params[0], 100);
 	PlayerSpawn(params[0]);
 
-	cef_emit_event(playerid, "show-notifications:hud", CEFINT(101), CEFSTR("red-time"), CEFSTR("Осталось времени чтобы выйти из ДеМоргана"), CEFINT(time*60));
+	cef_emit_event(params[0], "show-notifications:hud", CEFINT(101), CEFSTR("red-time"), CEFSTR("Заключение"), CEFINT(PI[params[0]][pDemorgan]));
+
 	return 1;
 }
 cmd:setsex(playerid, params[])
@@ -294,7 +305,7 @@ cmd:banip(playerid, params[])
 	PI[id][pWarns] = 0;
     BanIP(PlayerIP(id));
     BanName(PN(id), PN(playerid), 666, reason);
-    Kick(id);
+    PrepareKickCamera(id);
 
 	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s заблокировал IP адрес игрока %s [%s]. Причина: %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), PN(id), PlayerIP(id), reason);
 	return 1;
@@ -495,7 +506,7 @@ cmd:kick(playerid,params[])
 
 	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] кикнул игрока %s. Причина: %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[1]);
 	SCMF(params[0], COLOR_TOMATO, "%s кикнул Вас. Причина: %d", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор", params[1]);
-	return Kick(params[0]);
+	return PrepareKickCamera(params[0]);
 }
 
 cmd:as(playerid)
@@ -731,6 +742,7 @@ cmd:veh(playerid, params[])
 	PutPlayerInVehicle(params[0], VehID, 0);
 
     ClearCarData(VehID);
+
     VehicleInfo[VehID][vFuel] = 100.0;
     VehicleInfo[VehID][vAdminCar] = 1;
 
@@ -1045,7 +1057,7 @@ public: AloginAuth(playerid, password)
         SCM(playerid, -1, !"Вы ввели неверный пароль от {EE3366}админ-панели{FFFFFF}!");
         f(global_str, 128, "[%s #%d] %s[%d] ввел неверный пароль от админ-панели", Admin_Names[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PN(playerid), playerid);
         SendAdminsMessage(-1, global_str);
-        return Kick(playerid);
+        return PrepareKickCamera(playerid);
     }
 	return 1;
 }

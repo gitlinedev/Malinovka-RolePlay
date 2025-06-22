@@ -38,7 +38,7 @@ public: GetPlayerSessionData(playerid)
 
         SPD(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ff5511}Критическая ошибка", global_str, !"Лаунчер", !"Закрыть");
         
-        return Kick(playerid);
+        return PrepareKickCamera(playerid);
     }
 	
     //SCMF(playerid, -1, "Path -> %s", PI[playerid][pPath]);

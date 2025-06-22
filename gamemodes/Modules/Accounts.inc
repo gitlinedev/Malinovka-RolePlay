@@ -3,10 +3,10 @@ public: OnPlayerLoadData(playerid)
 	if !CheckPlayerLogged(playerid, PlayerName[playerid]) *then
 	{
 		SCM(playerid, -1, "Внутриигровая ошибка. Вы отключены от сервера ( Данный аккаунт уже авторизован ).");
-		return Kick(playerid);
+		return PrepareKickCamera(playerid);
 	}
 	else if !cache_get_row_count() *then
-		return Kick(playerid);
+		return PrepareKickCamera(playerid);
 
 	cache_get_row(0, 1, PlayerName[playerid], mysql, MAX_PLAYER_NAME);
 
@@ -42,13 +42,20 @@ public: OnPlayerLoadData(playerid)
 	PI[playerid][pRang] = cache_get_row_int(0, 30, mysql);
 	PI[playerid][pSpawnSetting] = cache_get_row_int(0, 31, mysql);
 	PI[playerid][pDemorgan] = cache_get_row_int(0, 32, mysql);
-	PI[playerid][pDemorganTime] = cache_get_row_int(0, 33, mysql);
+	//PI[playerid][pDemorganTime] = cache_get_row_int(0, 33, mysql);
 	PI[playerid][pShowFPS] = cache_get_row_int(0, 34, mysql);
 	PI[playerid][pShowNameTags] = cache_get_row_int(0, 39, mysql);
 	PI[playerid][pCinemaMode] = cache_get_row_int(0, 40, mysql);
 	PI[playerid][pVoiceChat] = cache_get_row_int(0, 41, mysql);
 	PI[playerid][pShowRain] = cache_get_row_int(0, 42, mysql);
 	PI[playerid][pDamageMP3] = cache_get_row_int(0, 43, mysql);
+	PI[playerid][pVMute] = cache_get_row_int(0, 44, mysql);
+	PI[playerid][pVMuteTime] = cache_get_row_int(0, 45, mysql);
+
+	SetPlayerTeam(playerid, 4);
+
+	if PI[playerid][pDemorgan] >= 1 *then
+		cef_emit_event(playerid, "show-notifications:hud", CEFINT(101), CEFSTR("red-time"), CEFSTR("Заключение"), CEFINT(PI[playerid][pDemorgan]));
 
 	if (WeatherServer >= 7 && WeatherServer <= 9)
 	{
@@ -111,7 +118,7 @@ stock CheckPlayerLogged(playerid, Name[])
 stock OnPlayerLogin(playerid, Reg = 0)
 {
     if IsPlayerLogged{playerid} || PI[playerid][pID] == -1 *then	
-		return Kick(playerid);
+		return PrepareKickCamera(playerid);
 
 	SCM(playerid, COLOR_LIGHTYELLOW, !"Меню помощи - /help, стандартное управление голосовым чатом: X (англ) - говорить, O (англ) - настройки");
 
@@ -157,7 +164,7 @@ public: MysqlCheckBanOnLogin(playerid, namez[])
 
 			SPDF(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Блокировка аккаунта", !"Закрыть", !"", global_str, SQL_GET_ROW_STR[1], SQL_GET_ROW_STR[2], SQL_GET_ROW_STR[0], SQL_GET_ROW_STR[4], SQL_GET_ROW_STR[3], UNIX_TO_DAY(seconds));
 			
-			return Kick(playerid);
+			return PrepareKickCamera(playerid);
 		}
 		else
 			SQL("UPDATE `accounts` SET `Warns` = '0' WHERE `ID` = '%d' LIMIT 1", PI[playerid][pID]),
@@ -192,7 +199,7 @@ public: OnPlayerRegister(playerid, const password[])
 	{
 		SCM(playerid, -1, !"Регистрация аккаунта прервана. Выберите другой никнейм");
 
-		return Kick(playerid);
+		return PrepareKickCamera(playerid);
 	}
 
 	new y, m, d;
@@ -236,7 +243,7 @@ public: LoginDialogMysql(playerid, inputtext[])
 		gPlayerLogTries{playerid} --;
 		
 		if (gPlayerLogTries{playerid} <= 0)
-			return SCM(playerid, -1, !"Вы исчерпали количество попыток. Вы отключены от сервера"), Kick(playerid);
+			return SCM(playerid, -1, !"Вы исчерпали количество попыток. Вы отключены от сервера"), PrepareKickCamera(playerid);
 			
 	    f(global_str, 270,"\
 	    {FFFFFF}Добро пожаловать на игровой сервер {EE3366}Malinovka RolePlay{FFFFFF}\nВведите свой пароль чтобы зайти на сервер:\n\n{FFFFFF}Попыток для ввода пароля: {EE3366}%d",gPlayerLogTries{playerid});
@@ -308,7 +315,7 @@ public: MysqlCheckPlayerBanIP(playerid)
 	if(cache_get_row_count(mysql) > 0)
 	{
 	    SCM(playerid, COLOR_RED, !"Вы заблокированы на сервере!");
-		Kick(playerid);
+		PrepareKickCamera(playerid);
 		return 1;
 	}
 	return 1;
@@ -358,7 +365,7 @@ stock accounts_OnDialogResponse(playerid, dialogid, response, inputtextsave[])
 		}
 		case dLogin:
 		{
-			if !response *then return Kick(playerid);
+			if !response *then return PrepareKickCamera(playerid);
 			else if !strlen(inputtextsave) *then  return ShowLoginDialog(playerid);
 
 			f(global_str, 150, "SELECT `Password` FROM `accounts` WHERE `NickName` = '%s' LIMIT 1", PN(playerid));
@@ -429,13 +436,15 @@ stock SaveAccount(playerid)
 	orm_addvar_int(orm, PI[playerid][pRang], "Rang");
 	orm_addvar_int(orm, PI[playerid][pSpawnSetting], "SpawnSetting");
 	orm_addvar_int(orm, PI[playerid][pDemorgan], "Demorgan");
-	orm_addvar_int(orm, PI[playerid][pDemorganTime], "DemorganTime");
+	//orm_addvar_int(orm, PI[playerid][pDemorganTime], "DemorganTime");
 	orm_addvar_int(orm, PI[playerid][pVoiceChat], "VoiceChat");
 	orm_addvar_int(orm, PI[playerid][pShowFPS], "ShowFPS");
 	orm_addvar_int(orm, PI[playerid][pShowNameTags], "ShowNameTags");
 	orm_addvar_int(orm, PI[playerid][pCinemaMode], "CinemaMode");
 	orm_addvar_int(orm, PI[playerid][pDamageMP3], "DamageMP3");
 	orm_addvar_int(orm, PI[playerid][pShowRain], "ShowRain");
+	orm_addvar_int(orm, PI[playerid][pVMute], "VMute");
+	orm_addvar_int(orm, PI[playerid][pVMuteTime], "VMuteTime");
 
 	//Float
 	orm_addvar_float(orm, PI[playerid][pHealth], "Health");

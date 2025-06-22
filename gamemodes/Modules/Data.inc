@@ -33,6 +33,12 @@
 #define MAX_CATEGORY_NAME 32
 #define MAX_GPS_ITEM_LENGTH 96
 
+new JailZone, gGangZoneId;
+
+new Float:JailZonePos[] = {
+	-1817.0,-2745.0,-1663.0,-2833.0,-1730.0,-2961.0,-1890.0,-2879.0,-1817.0,-2745.0
+};
+
 new Float:SpawnInfo[8][4] =
 {
 	{1874.8156,2228.1123,1036.3204, 90.0},				//Int:  0 | World: 0 | None
@@ -231,7 +237,6 @@ enum PlayerInfo {
 	pRang,
 	pSpawnSetting,
 	pDemorgan,
-	pDemorganTime,
     pShowNameTags,
     pCinemaMode,
 	pMute,
@@ -250,6 +255,8 @@ enum PlayerInfo {
 	pHWID[35],
 	pUUID[70],
 	pPath[150],
+    pVMute,
+    pVMuteTime
 };
 new PI[MAX_PLAYERS][PlayerInfo];
 
@@ -270,9 +277,9 @@ stock ClearPlayerData(playerid)
 
 	PI[playerid][pWarnsTime] =
 	PI[playerid][pJailTime] =
+    PI[playerid][pVMuteTime] =
     PI[playerid][pShowRain] =
     PI[playerid][pDamageMP3] =
-	PI[playerid][pDemorganTime] =
 	PI[playerid][pMuteTime] = 0;
 	
 
@@ -293,6 +300,7 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pSkin] =
 	PI[playerid][pWarns] =
 	PI[playerid][pJail] =
+    PI[playerid][pVMute] =
     PI[playerid][pShowNameTags] =
 	PI[playerid][pDemorgan] =
 	PI[playerid][pMute] =

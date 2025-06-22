@@ -65,6 +65,10 @@ new mysql;
 #define SPD ShowPlayerDialog
 #define SPDF ShowPlayerDialogf
 
+#define PRESSED(%0) (((newkeys & (%0)) == (%0)) && ((oldkeys & (%0)) != (%0)))
+#define RELEASED(%0) (((newkeys & (%0)) != (%0)) && ((oldkeys & (%0)) == (%0)))
+#define HOLDING(%0) (((newkeys & (%0)) != (%0)) && ((oldkeys & (%0)) == (%0)))
+
 #define IsPlayerOnline(%0) (!(%0 == INVALID_PLAYER_ID) && IsPlayerLogged{%0} && IsPlayerConnected(%0))
 #define SAMF(%0,%1,%2) format(global_str, 256, %1,%2), SendAdminsMessage(%0, global_str)
 #define SQL(%0,%1) format(SQL_STRING, sizeof SQL_STRING, %0, %1), mysql_tquery(mysql, SQL_STRING)
@@ -80,13 +84,17 @@ new mysql;
 
 public: PlayKick(playerid)
 {
+	return Kick(playerid);
+}
+stock PrepareKickCamera(playerid)
+{
+	cef_emit_event(playerid, "execute.event:hud:active", CEFINT(1));
 	SpecPl(playerid, true);
 	InterpolateCameraPos(playerid, 1864.6229, 2067.9146, 25.7431, 1864.6229, 2067.9146, 25.7431, 10000000);
 	InterpolateCameraLookAt(playerid, 1821.6516, 2095.7375, 16.1631, 1821.6516, 2095.7375, 16.1631, 1000);
-	return Kick(playerid);
-}
 
-#define Kick(%0) CallTimeOutFunction("PlayKick", 1000, false, "d", %0)
+	return CallTimeOutFunction("PlayKick", 1000, false, "d", playerid);
+}
 
 stock sql_get_row(id_0, _:id_1[], array_size = sizeof(id_1)) 
 {
@@ -188,6 +196,9 @@ public OnGameModeInit()
     SetTimer("ServerTimer", 1000, true);
     SetTimer("UpdatePlayer", 250, true);
 
+	// ЗОНЫ
+	JailZone = CreateDynamicPolygon(JailZonePos);
+
 	printf("[Game Mode]: Инициализация успешно завершена! [ %d MS ]", GetTickCount() - inittime);
 	return 1;
 }
@@ -275,7 +286,7 @@ public OnPlayerConnect(playerid)
 	GetPlayerName(playerid, PlayerName[playerid], MAX_PLAYER_NAME);
 
 	if !IsValidNickName(PlayerName[playerid]) *then
-		return Kick(playerid);
+		return PrepareKickCamera(playerid);
 
 	GetPlayerIp(playerid, PlayerIp[playerid], 16);
 	SetPlayerVirtualWorld(playerid, 1228);
@@ -506,11 +517,10 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
 	AC_OnPlayerKeyStateChange(playerid, newkeys);
 
-	SCMF(playerid, -1, "%d", KEY_CTRL_BACK);
-
-	if (newkeys == KEY_CTRL_BACK)
+	if(PRESSED(KEY_NO))
 	{
-		callcmd::engine(playerid);
+		callcmd::engine(playerid,"");
+		return 1;
 	}
 	return 1;
 }
@@ -522,9 +532,12 @@ public OnPlayerUpdate(playerid)
 	{
 		if PI[playerid][pShowFPS] == 1 *then 
 		{
-			new getFPS = GetPlayerFPS2(playerid);
+			new getFPS = GetPlayerFPS(playerid);
 
-			if(getFPS >= 1) pTemp[playerid][pCurrentFPS] = getFPS;
+			if (getFPS >= 0)
+			{
+				pTemp[playerid][pCurrentFPS] = getFPS;
+			}
 			cef_emit_event(playerid, "execute.event:fps", CEFINT(pTemp[playerid][pCurrentFPS]));
 		}
 	}
@@ -580,6 +593,8 @@ public: PlayerSpawn(playerid)
 	    GetPlayerPos(playerid, X, Y, Z);
 		SetPlayerPosEx(playerid, X ,Y, Z);
 	}
+	GangZoneShowForPlayer(playerid, gGangZoneId, 0xFFFF0096);
+
  	SettingSpawn(playerid);
 	if pTemp[playerid][SpectPlayer] == true *then SpecPl(playerid, false);
 	else SpawnPlayer(playerid);
@@ -605,10 +620,10 @@ stock SettingSpawn(playerid)
 	}
 	else if PI[playerid][pDemorgan] > 0 *then // отправка в деморган
 	{
-		SetSpawnInfoEx(playerid, skin, 100.000, 100.000, 100.000, 180.0);
+		SetSpawnInfoEx(playerid, skin, -1764.1515, -2889.2085, 14.3141, 240.8832);
 		UpdatePlayerHealth(playerid, 100);
-		SetPlayerInteriorEx(playerid, 6);
-		SetPlayerVirtualWorld(playerid, 6);
+		SetPlayerInteriorEx(playerid, 0);
+		SetPlayerVirtualWorld(playerid, 0);
 		SetPlayerSkin(playerid, 100);
 		return 1;
 	}
@@ -980,16 +995,37 @@ stock UpdatePlayers()
 		{
 			if(!IsPlayerNPC(playerid))
 	    	{
-				if(PI[playerid][pDemorgan] > 0)
+				if PI[playerid][pDemorgan] > 0 *then
 				{
 					PI[playerid][pDemorgan] --;
-
-					if(!IsPlayerInRangeOfPoint(playerid, 50.0, 100.000, 100.000, 100.000)) PlayerSpawn(playerid); // проверка что игрок не убежал с деморгана
 					
 					if !PI[playerid][pDemorgan] *then
 					{
-						SCM(playerid, COLOR_LIGHTGREY, !"Вы отсидели свое время в ДеМоргане.");
-						SetPlayerSkinEx(playerid, GetSkinOfPlayer(playerid));
+						SCM(playerid, COLOR_LIGHTGREY, !"Срок заключения истек, вы были автоматически освобождены");
+						RemoveActivePunishment(playerid, 1);
+						PlayerSpawn(playerid);
+						UpdatePlayerDataInt(playerid, "Demorgan", 0);
+					}
+				}
+				if PI[playerid][pMuteTime] > 0 *then
+				{
+					PI[playerid][pMuteTime] --;
+
+					if !PI[playerid][pMuteTime] *then 
+					{
+						SCM(playerid, COLOR_LIGHTGREY, !"Блокировка текстового чата истекла.");
+						UpdatePlayerDataInt(playerid, "MuteTime", 0);
+					}
+				}
+				if PI[playerid][pVMuteTime] > 0 *then
+				{
+					PI[playerid][pVMuteTime] --;
+
+					if !PI[playerid][pVMuteTime] *then 
+					{
+						SCM(playerid, COLOR_LIGHTGREY, !"Блокировка голосового чата истекла.");
+						SvMutePlayerDisable(playerid);
+						UpdatePlayerDataInt(playerid, "VMuteTime", 0);
 					}
 				}
 			}
@@ -1151,9 +1187,74 @@ stock IsAOwnableCar(carid)
 
 stock SetEngineStatus(vehID, status, playerid)
 {
-	GetVehicleParamsEx(vehID,Engine,Lights,Alarm,Doors,Bonnet,Boot,Objective);
-    SetVehicleParamsEx(vehID,status,Lights,Alarm,Doors,Bonnet,Boot,Objective);
-    VehicleInfo[GetVehicleID(vehID)][vEngine] = status;
+	GetVehicleParamsEx(vehID, Engine, Lights, Alarm, Doors, Bonnet, Boot, Objective);
+    SetVehicleParamsEx(vehID, status, Lights, Alarm, Doors, Bonnet, Boot, Objective);
+    VehicleInfo[vehID][vEngine] = status;
 
 	if playerid != INVALID_PLAYER_ID *then SCM(playerid, -1, !"Двигатель чик чирик бам бах готово");
+}
+
+stock CreatePunishment(playerid, adminID, Type, Time, Reason[])
+{
+	global_str[0] = EOS;
+
+	f(global_str, 200, "INSERT INTO `punishment` ( `NickName`, `Admin`, `Type`, `Time`, `Reason`, `Date`) VALUES ( '%s', '%s', '%d', '%d', '%s', NOW())",\
+		PN(playerid), PN(adminID), Type, Time, Reason);
+
+	new Cache:result = mysql_query(mysql, global_str, true);
+
+    if (!result)
+    {
+        printf("[MySQL Error] Не удалось вставить наказание для %s", PN(playerid));
+        return 0;
+    }
+	else printf("[MySQL] Вставил наказание для %s | ID -> %d", PN(playerid), cache_insert_id(mysql));
+
+	new insertID = cache_insert_id(mysql);
+
+    cache_delete(result);
+
+    return insertID;
+}
+
+stock RemoveActivePunishment(playerid, Type)
+{
+	global_str[0] = EOS;
+
+	f(global_str, 200, "SELECT `ID` FROM `punishment` WHERE `NickName` = '%s' AND `Type` = '%d' AND `Status` = '1' LIMIT 1",\
+		PN(playerid), Type);
+
+	new Cache:result = mysql_query(mysql, global_str, true);
+
+	new id;
+
+	if (cache_get_row_count(mysql))
+	{
+		id = cache_get_row_int(0, 0);
+
+		SQL("UPDATE `punishment` SET `Status` = '0' WHERE `ID` = '%d' LIMIT 1", id);
+		printf("[MySQL] Сделал наказание ID: %d, неактивным", id);
+	}
+	else
+	{
+		print("[MySQL Error] Наказание не найдено.");
+	}
+	cache_delete(result);
+
+	return id;
+}
+
+public OnPlayerLeaveDynamicArea(playerid, areaid) 
+{ 
+    if(areaid == JailZone) 
+	{
+		if PI[playerid][pDemorgan] > 0 *then
+		{
+			SaveAccount(playerid);
+
+			SCM(playerid, COLOR_BLACK, !"Вы были кикнуты по подозрению в читерстве (#001)"),
+       		return PrepareKickCamera(playerid);
+		}
+	}
+    return 1; 
 }

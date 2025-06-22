@@ -1,4 +1,4 @@
-cmd:engine(playerid)
+cmd:engine(playerid, params[])
 {
 	new vehID = GetPlayerVehicleID(playerid);
 	if (!IsValidVehicle(vehID)) return 0;
@@ -9,10 +9,10 @@ cmd:engine(playerid)
 	GetVehicleHealth(vehID, health);
 	if (health <= 351.0) return 1;
 
-	if (!IsAOwnableCar(vehID) && VehicleInfo[GetVehicleID(vehID)][vKey] == 0 && VehicleInfo[GetVehicleID(vehID)][vAdminCar] == 0)
+	if (IsAOwnableCar(vehID) && VehicleInfo[vehID][vKey] == 0 && VehicleInfo[vehID][vAdminCar] == 0)
 		return SCM(playerid, COLOR_LIGHTGREY, !"Ключ зажигания не вставлен.");
 
-	if (VehicleInfo[GetVehicleID(vehID)][vFuel] <= 0)
+	if (VehicleInfo[vehID][vFuel] <= 0)
 		return SCM(playerid, COLOR_LIGHTGREY, !"В машине нет топлива, купите канистру в ближайшей АЗС");
 
 	switch (VehicleInfo[vehID][vEngine]) 
@@ -23,7 +23,7 @@ cmd:engine(playerid)
 		}
 		case 1: 
 		{
-			SetEngineStatus(vehID, true, playerid);
+			SetEngineStatus(vehID, false, playerid);
 		}
 		default: return 0;
 	}
