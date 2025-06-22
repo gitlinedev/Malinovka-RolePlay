@@ -1283,7 +1283,7 @@ stock ShowPlayerSpeedometer(playerid)
 	SpeedometerUpdate[playerid] = SetTimerEx("OnPlayerDriver", 350, true, "d", playerid);
 
 	pTemp[playerid][pDriver] = 1;
-	return 1;
+	return true;
 }
 stock HidePlayerSpeedometer(playerid) 
 {
