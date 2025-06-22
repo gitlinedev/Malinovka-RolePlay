@@ -57,6 +57,9 @@ public: OnPlayerLoadData(playerid)
 	if PI[playerid][pDemorgan] >= 1 *then
 		cef_emit_event(playerid, "show-notifications:hud", CEFINT(101), CEFSTR("red-time"), CEFSTR("Заключение"), CEFINT(PI[playerid][pDemorgan]));
 
+	if PI[playerid][pWanted] >= 1 *then 
+		cef_emit_event(playerid, "execute.event:search", CEFINT(PI[playerid][pWanted]), CEFSTR("none"));
+
 	if (WeatherServer >= 7 && WeatherServer <= 9)
 	{
 		if (PI[playerid][pShowRain] == 1)
@@ -162,7 +165,7 @@ public: MysqlCheckBanOnLogin(playerid, namez[])
 			{d6d886}Советуем сделать скриншот (клавиша F8), чтобы иметь\n\
 			{d6d886}возможность обжаловать бан на forum.m-bonus.com";
 
-			SPDF(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Блокировка аккаунта", !"Закрыть", !"", global_str, SQL_GET_ROW_STR[1], SQL_GET_ROW_STR[2], SQL_GET_ROW_STR[0], SQL_GET_ROW_STR[4], SQL_GET_ROW_STR[3], UNIX_TO_DAY(seconds));
+			SPDF(playerid, 0, DIALOG_STYLE_MSGBOX, !"{EE3366}Блокировка аккаунта", !"Закрыть", !"", global_str, SQL_GET_ROW_STR[1], SQL_GET_ROW_STR[2], SQL_GET_ROW_STR[0], SQL_GET_ROW_STR[4], SQL_GET_ROW_STR[3], UNIX_TO_DAY(seconds));
 			
 			return PrepareKickCamera(playerid);
 		}
@@ -263,22 +266,15 @@ public: GetPlayerDataMysql(playerid)
 		
 	else PI[playerid][pID] = -1;
 	
-	if(PI[playerid][pID] != -1)
-	{
-		LoadSession(playerid);
-		// Если игрок уже зарегистрирован, то сразу показываем диалог авторизации
-		ShowLoginDialog(playerid);
-    }
-	else
-	{
-		RegisterState[playerid] = 1;
-	   	ShowRegisterDialog(playerid, RegisterState[playerid]);
-	}
+	LoadSession(playerid);
 	
 	SpecPl(playerid, true);
 	InterpolateCameraPos(playerid, 1864.6229, 2067.9146, 25.7431, 1864.6229, 2067.9146, 25.7431, 10000000);
 	InterpolateCameraLookAt(playerid, 1821.6516, 2095.7375, 16.1631, 1821.6516, 2095.7375, 16.1631, 1000);
 	
+	SCM(playerid, COLOR_BLACKBLUE, !"Добро пожаловать в Малиновку!");
+	SCM(playerid, COLOR_LIGHTYELLOW, !"Загружаем данные сессии. Пожалуйста, подождите...");
+
 	f(global_str, 150, "SELECT * FROM `banip` WHERE `IP` = '%s' LIMIT 1", PlayerIp[playerid]);
     mysql_tquery(mysql, global_str, "MysqlCheckPlayerBanIP", "d", playerid);
 	

@@ -178,7 +178,8 @@ new PlayerMail[MAX_PLAYERS][50],
 	PlayerReferal[MAX_PLAYERS][24],
 	PlayerRegIP[MAX_PLAYERS][16],
 	PlayerIp[MAX_PLAYERS][16],
-    RegisterState[MAX_PLAYERS];
+    RegisterState[MAX_PLAYERS],
+    SpeedometerUpdate[MAX_PLAYERS];
 
 new RegPass[MAX_PLAYERS][30];
 new RegSex[MAX_PLAYERS];
@@ -214,6 +215,7 @@ enum _temp_
     Float:pOldX,
     Float:pOldY,
     Float:pOldZ,
+    pDriver
 }
 new pTemp[MAX_PLAYERS][_temp_];
 
@@ -285,6 +287,7 @@ stock ClearPlayerData(playerid)
 
     pTemp[playerid][pLastDrunkLevel] =
     pTemp[playerid][pCurrentFPS] =
+    pTemp[playerid][pDriver] =
     pTemp[playerid][pMarker] =
     pTemp[playerid][pOnEvent] =
     pTemp[playerid][pTestDrive] =

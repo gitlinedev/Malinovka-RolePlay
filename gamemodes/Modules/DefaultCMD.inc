@@ -19,11 +19,11 @@ cmd:engine(playerid, params[])
 	{
 		case 0: 
 		{
-			SetEngineStatus(vehID, true, playerid);
+			SetEngineStatus(vehID, true);
 		}
 		case 1: 
 		{
-			SetEngineStatus(vehID, false, playerid);
+			SetEngineStatus(vehID, false);
 		}
 		default: return 0;
 	}
@@ -682,3 +682,6 @@ CMD:gps(playerid, params[])
 
     return 1;
 }
+//=-=-=-=-=-=-=-=-=-=-=-=-=[ alias ]=-=-=-=-=-=-=-=-=-=-=-=-=//
+alias:b("n")
+alias:menu("mn", "mm", "mainmenu", "openmenu")

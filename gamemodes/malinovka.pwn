@@ -83,18 +83,9 @@ new mysql;
 #define DPlayerData(%0,%1) DeletePVar(%0, %1)
 
 public: PlayKick(playerid)
-{
 	return Kick(playerid);
-}
-stock PrepareKickCamera(playerid)
-{
-	cef_emit_event(playerid, "execute.event:hud:active", CEFINT(1));
-	SpecPl(playerid, true);
-	InterpolateCameraPos(playerid, 1864.6229, 2067.9146, 25.7431, 1864.6229, 2067.9146, 25.7431, 10000000);
-	InterpolateCameraLookAt(playerid, 1821.6516, 2095.7375, 16.1631, 1821.6516, 2095.7375, 16.1631, 1000);
 
-	return CallTimeOutFunction("PlayKick", 1000, false, "d", playerid);
-}
+#define Kick(%0,%1) CallTimeOutFunction("PlayKick", %1, false, "d", %0)
 
 stock sql_get_row(id_0, _:id_1[], array_size = sizeof(id_1)) 
 {
@@ -125,6 +116,8 @@ new PlayerDialogList[MAX_PLAYERS][64];
 
 #include Modules/RemoveBuild // удаление зданий
 #include Modules/Test // тестовый модуль
+
+#include Modules/KeyListener // тестовый модуль
 
 //=====================================[ global server settings ]==================================//
 
@@ -174,6 +167,8 @@ public OnGameModeInit()
 
 	format(global_str, 256, "hostname %s",  Mode_HostName);
     SendRconCommand(global_str);
+
+	SvDebug(false);
 
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     ManualVehicleEngineAndLights();
@@ -243,6 +238,7 @@ stock MinuteTimer()
 
 public OnGameModeExit()
 {
+	print("*server call* -> OnGameModeExit");
 	mysql_close(mysql);
 	return 1;
 }
@@ -354,6 +350,8 @@ public OnPlayerDisconnect(playerid, reason)
 
 		f(global_str, 120, "DELETE FROM `client` WHERE `NickName` = '%s'", PN(playerid));
 		mysql_tquery(mysql, global_str);
+
+		if pTemp[playerid][pDriver] == 1 *then KillTimer(SpeedometerUpdate[playerid]);
 	}
 	PlayerName[playerid][0] = EOS;
 	
@@ -480,6 +478,23 @@ public OnPlayerExitVehicle(playerid, vehicleid)
 
 public OnPlayerStateChange(playerid, newstate, oldstate)
 {
+	new vehID = GetPlayerVehicleID(playerid);
+
+    if (newstate == PLAYER_STATE_DRIVER)
+	{
+		if (vehID != INVALID_VEHICLE_ID && !IsAPlane(vehID) && !IsAVelik(vehID))
+		{
+			ShowPlayerSpeedometer(playerid);
+		}
+	}
+	else if (oldstate == PLAYER_STATE_DRIVER || oldstate == PLAYER_STATE_PASSENGER)
+	{
+		if (vehID != INVALID_VEHICLE_ID && !IsAPlane(vehID) && !IsAVelik(vehID))
+		{
+			HidePlayerSpeedometer(playerid);
+		}
+	}
+
 	return 1;
 }
 
@@ -516,12 +531,6 @@ public OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid)
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
 	AC_OnPlayerKeyStateChange(playerid, newkeys);
-
-	if(PRESSED(KEY_NO))
-	{
-		callcmd::engine(playerid,"");
-		return 1;
-	}
 	return 1;
 }
 
@@ -534,7 +543,7 @@ public OnPlayerUpdate(playerid)
 		{
 			new getFPS = GetPlayerFPS(playerid);
 
-			if (getFPS >= 0)
+			if (getFPS >= 1)
 			{
 				pTemp[playerid][pCurrentFPS] = getFPS;
 			}
@@ -1185,13 +1194,11 @@ stock IsAOwnableCar(carid)
 	return 0;
 }
 
-stock SetEngineStatus(vehID, status, playerid)
+stock SetEngineStatus(vehID, status)
 {
 	GetVehicleParamsEx(vehID, Engine, Lights, Alarm, Doors, Bonnet, Boot, Objective);
     SetVehicleParamsEx(vehID, status, Lights, Alarm, Doors, Bonnet, Boot, Objective);
     VehicleInfo[vehID][vEngine] = status;
-
-	if playerid != INVALID_PLAYER_ID *then SCM(playerid, -1, !"Двигатель чик чирик бам бах готово");
 }
 
 stock CreatePunishment(playerid, adminID, Type, Time, Reason[])
@@ -1253,8 +1260,69 @@ public OnPlayerLeaveDynamicArea(playerid, areaid)
 			SaveAccount(playerid);
 
 			SCM(playerid, COLOR_BLACK, !"Вы были кикнуты по подозрению в читерстве (#001)"),
-       		return PrepareKickCamera(playerid);
+       		PrepareKickCamera(playerid);
+			return 1;
 		}
 	}
     return 1; 
+}
+
+stock PrepareKickCamera(playerid, delay = 1000)
+{
+	cef_emit_event(playerid, "execute.event:hud:active", CEFINT(1));
+	SpecPl(playerid, true);
+	InterpolateCameraPos(playerid, 1864.6229, 2067.9146, 25.7431, 1864.6229, 2067.9146, 25.7431, 10000000);
+	InterpolateCameraLookAt(playerid, 1821.6516, 2095.7375, 16.1631, 1821.6516, 2095.7375, 16.1631, 1000);
+
+	return CallTimeOutFunction("PlayKick", delay, false, "d", playerid);
+}
+
+stock ShowPlayerSpeedometer(playerid) 
+{
+	cef_emit_event(playerid, "execute.event:speedometer", CEFINT(true));
+	SpeedometerUpdate[playerid] = SetTimerEx("OnPlayerDriver", 350, true, "d", playerid);
+
+	pTemp[playerid][pDriver] = 1;
+	return 1;
+}
+stock HidePlayerSpeedometer(playerid) 
+{
+	cef_emit_event(playerid, "execute.event:speedometer", CEFINT(false));
+    KillTimer(SpeedometerUpdate[playerid]);
+
+	pTemp[playerid][pDriver] = 0;
+    return 1;
+}
+
+public: OnPlayerDriver(playerid)
+{
+	new vehID = GetPlayerVehicleID(playerid);
+    if (vehID == INVALID_VEHICLE_ID) return 0;
+
+    new Float:Health;
+    const Float:MinHP = 350.0;
+    const Float:MaxHP = 750.0;
+
+    GetVehicleHealth(vehID, Health);
+
+    if (Health < MinHP)
+        Health = 0.0;
+    else if (Health > MaxHP)
+        Health = 100.0;
+    else
+        Health = ((Health - MinHP) / (MaxHP - MinHP)) * 100.0;
+
+    GetVehicleHealth(vehID, Health);
+	
+	cef_emit_event(playerid, "execute.event:fuel", CEFINT(floatround(VehicleInfo[vehID][vFuel], floatround_round)));
+	cef_emit_event(playerid, "execute.event:health", CEFINT(floatround(Health / 100, floatround_round)));
+
+	cef_emit_event(playerid, "execute.event:speedometer-icon",
+        CEFINT(VehicleInfo[vehID][vEngine]), 
+        CEFINT(VehicleInfo[vehID][vLights]), 
+        CEFINT(VehicleInfo[vehID][vLock]), 
+        CEFINT(VehicleInfo[vehID][vAdminCar] ? 1 : VehicleInfo[vehID][vKey]), 
+        CEFINT(1));
+
+	return 1;
 }

@@ -35,7 +35,9 @@ public OnCefBrowserCreated(player_id, browser_id, status_code)
         SendDebugMessage(global_str);
     }
     else if status_code == 200 or status_code == 0 or status_code == 299 *then 
-    {
+    {   
+        //cef_toggle_dev_tools(player_id, CEF_MAIN, true);
+
         f(global_str, 100, "Игрок %s[%d] успешно подключился к серверу CEF", PN(player_id), player_id);
         SendDebugMessage(global_str);
 

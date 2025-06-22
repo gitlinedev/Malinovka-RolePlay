@@ -929,7 +929,7 @@ stock admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 						eSettings[TeleportVW] = GetPlayerVirtualWorld(playerid);
 
 
-						SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] изменил место телепорта на мероприятие", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid);
+						SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] изменил место для телепорта на мероприятие", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid);
 
 						callcmd::editmp(playerid);
 					}
@@ -937,7 +937,7 @@ stock admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 					{
 						eSettings[TeleportEnable] = !eSettings[TeleportEnable];
 
-						SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] %s телепорт на мероприятие", StaffTag(playerid), PI[playerid][pAdminNumber], eSettings[TeleportEnable] ? ("включил") : ("выключил"), PN(playerid), playerid);
+						SAMF(COLOR_ADMINCHAT, "[%s #%d] %s телепорт на мероприятие", StaffTag(playerid), PI[playerid][pAdminNumber], eSettings[TeleportEnable] ? ("включил") : ("выключил"));
 
 						callcmd::editmp(playerid);
 					}
@@ -1095,6 +1095,24 @@ stock BanName(const name[], const namez[], days, reason[])
 public: @BanName(player_name[], ban_admin[], days, reason[])
 {
 	mysql_tquery(mysql, !cache_get_row_count() ? (str_f("INSERT INTO `bans` (`Name`, `BanAdmin`, `BanSeconds`, `BanReason`) VALUE ('%s', '%s', '%d', '%s')", player_name, ban_admin, Global_Time+days*60*60*24, reason)):(str_f("UPDATE `bannames` SET `BanAdmin` = '%s', `BanSeconds` = %d, `BanReason` = '%s' WHERE `Name` = BINARY('%s') LIMIT 1;", ban_admin, Global_Time+days*60*60*24, reason, player_name)));
+	
+    return true;
+}
+
+stock BanPlayerPC(const NickName[], const HWID[], const UUID[], const BanCode[])
+{
+	mysql_tquery(mysql, (str_f("SELECT * FROM banpc WHERE BINARY `NickName` = '%s' LIMIT 1;", name)), "@BanPlayerPC", "ssss", NickName, HWID, UUID, BanCode);
+
+	return true;
+}
+
+public: @BanPlayerPC(NickName[], HWID[], UUID[], BanCode[])
+{
+	mysql_tquery(mysql, !cache_get_row_count() 
+			? 
+	(str_f("INSERT INTO `banpc` (`NickName`, `HWID`, `UUID`, `BanCode`, `Date`) VALUE ('%s', '%s', '%s', '%s', NOW())", NickName, HWID, UUID, BanCode))
+			:
+	(str_f("UPDATE `banpc` SET `HWID` = '%s', `UUID` = '%s' WHERE `NickName` = BINARY('%s') LIMIT 1;", HWID, UUID, NickName)));
 	
     return true;
 }
