@@ -27,5 +27,8 @@ enum
     dGPSSub,
     dGPSInfo,
     dGoToEvent,
-    dEventSettings
+    dEventSettings,
+    dHouseOwned,
+    dHouseSelling,
+    dHouseMenu
 };

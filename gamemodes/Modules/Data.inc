@@ -33,7 +33,9 @@
 #define MAX_CATEGORY_NAME 32
 #define MAX_GPS_ITEM_LENGTH 96
 
-new JailZone, gGangZoneId;
+new JailZone, 
+    gGangZoneId,
+    SaveServer = 1800;
 
 new Float:JailZonePos[] = {
 	-1817.0,-2745.0,-1663.0,-2833.0,-1730.0,-2961.0,-1890.0,-2879.0,-1817.0,-2745.0
@@ -249,6 +251,7 @@ enum PlayerInfo {
 	pJail,
 	pJailTime,
     pShowFPS,
+    pHouseKey,
     pDamageMP3,
     pShowRain,
 	pHospital,
@@ -275,6 +278,7 @@ stock ClearPlayerData(playerid)
 
 
     PI[playerid][pID] = 
+    PI[playerid][pHouseKey] =
 	pTemp[playerid][dialogListItem] = -1;
 
 	PI[playerid][pWarnsTime] =

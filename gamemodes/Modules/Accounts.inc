@@ -51,6 +51,7 @@ public: OnPlayerLoadData(playerid)
 	PI[playerid][pDamageMP3] = cache_get_row_int(0, 43, mysql);
 	PI[playerid][pVMute] = cache_get_row_int(0, 44, mysql);
 	PI[playerid][pVMuteTime] = cache_get_row_int(0, 45, mysql);
+	PI[playerid][pHouseKey] = cache_get_row_int(0, 46, mysql);
 
 	SetPlayerTeam(playerid, 4);
 
@@ -441,6 +442,7 @@ stock SaveAccount(playerid)
 	orm_addvar_int(orm, PI[playerid][pShowRain], "ShowRain");
 	orm_addvar_int(orm, PI[playerid][pVMute], "VMute");
 	orm_addvar_int(orm, PI[playerid][pVMuteTime], "VMuteTime");
+	orm_addvar_int(orm, PI[playerid][pHouseKey], "HouseKey");
 
 	//Float
 	orm_addvar_float(orm, PI[playerid][pHealth], "Health");

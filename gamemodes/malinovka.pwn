@@ -33,6 +33,7 @@ new
 #define MAX_PLAYERS 50
 
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#include crashdetect
 #include streamer
 #include Pawn.CMD
 #include a_mysql
@@ -82,6 +83,10 @@ new mysql;
 
 #define DPlayerData(%0,%1) DeletePVar(%0, %1)
 
+#if !defined isnull
+	#define isnull(%0)  ((!(%0[0])) || (((%0[0]) == '\1') && (!(%0[1]))))
+#endif
+
 public: PlayKick(playerid)
 	return Kick(playerid);
 
@@ -99,7 +104,11 @@ new PlayerDialogList[MAX_PLAYERS][64];
 #define gpdList(%0,%1) PlayerDialogList[%0][%1]
 
 //======================================[ limits ]================================================//
-//
+const 
+	MAX_ORGS = 8,
+	MAX_HOUSES = 100;
+
+new LoadedHouses;
 //======================================[ modules ]================================================//
 
 #include Modules/dialogData // ид диалогов
@@ -117,7 +126,8 @@ new PlayerDialogList[MAX_PLAYERS][64];
 #include Modules/RemoveBuild // удаление зданий
 #include Modules/Test // тестовый модуль
 
-#include Modules/KeyListener // тестовый модуль
+#include Modules/KeyListener // тестовый модул
+#include Modules/Houses // дома
 
 //=====================================[ global server settings ]==================================//
 
@@ -161,7 +171,12 @@ public OnGameModeInit()
 	mysql_set_charset("cp1251", mysql);
 
 	#include Modules/MysqlLoad
-
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	print("----------------------------------------------------------------------------");
+	printf("  Загружено домов     ->  %d/%d", LoadedHouses, MAX_HOUSES);
+	print("  Malinovka RolePlay mode by -> [vk.com/gitline]");
+	print("----------------------------------------------------------------------------");
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	EnableAntiCheat(39, 0); // отключил dialog hack 
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -177,6 +192,7 @@ public OnGameModeInit()
 	LimitPlayerMarkerRadius(70.0);
 	SetNameTagDrawDistance(25.0);
    	ShowPlayerMarkers(2);
+   	SetGravity(0.008);
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 	SetGameModeText(Mode_Names);
@@ -228,6 +244,9 @@ public: ServerTimer()
 	{
 		MinuteTimer();
 	}
+
+	SaveServer --;
+	if !SaveServer *then SaveServerData(), SaveServer = 1800;
 	
 	UpdatePlayers();
 }
@@ -569,6 +588,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	accounts_OnDialogResponse(playerid, dialogid, response, inputtextsave);
 	admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave);
 	k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave);
+	house_OnDialogResponse(playerid, dialogid, response, listitem);
 
 	switch dialogid do
 	{
@@ -1326,3 +1346,67 @@ public: OnPlayerDriver(playerid)
 
 	return 1;
 }
+
+public OnPlayerEnterDynamicArea(playerid, areaid)
+{
+	for (new i = 0; i <= LoadedHouses; i++)
+	{
+		//printf("Checking house %d, areaid = %d, house_area = %d", i, areaid, HouseInfo[i][H_AREA_ID]);
+		if(areaid == HouseInfo[i][H_AREA_ID])
+		{
+			ShowInfoMenu(playerid, i, 1);
+			return 1;
+		}
+	}
+	//printf("No match found, checked %d houses", LoadedHouses);
+	return 1;
+}
+
+stock SaveServerData()
+{
+	print("Сохранение серверных данных");
+
+	for new i; i < 300; i++ do
+		CallLocalFunction("UpdateDataServer", "d", i);
+	
+	return true;
+}
+
+public: UpdateDataServer(i)
+{
+	if(i <= LoadedHouses) SaveHouse(i);
+	
+	if Iter_Contains(Player, i) && IsPlayerLogged{i} *then
+		SaveAccount(i);
+
+	return true;
+}
+
+stock LoadOther()
+{
+	for new i; i <= LoadedHouses; i++ do
+	{
+		CreateHouse(i);
+	}
+}
+
+stock CreateHouse(i)
+{
+	if !IsValidHouse(i) *then return false;
+
+	if(GetString(HouseInfo[i][hOwner], "The State")) {
+		HouseIcon[i] = CreateDynamicMapIcon(HouseInfo[i][hEnter_X], HouseInfo[i][hEnter_Y], HouseInfo[i][hEnter_Z], 31, 0, 0, 0);
+	}
+	
+	//printf("EnterXYZ -> %.4f , %.4f, %.4f | HouseID -> %i | LoadHouses %d", HouseInfo[i][hEnter_X], HouseInfo[i][hEnter_Y], HouseInfo[i][hEnter_Z], i, LoadedHouses);
+
+	return UpdateHouse(i);
+}
+
+stock FreezePlayer(playerid) 
+{
+	TogglePlayerControllable(playerid, 0);
+	cef_emit_event(playerid, "show-notifications:center", CEFINT(3000), CEFINT(4), CEFSTR("Пожалуйста, подождите..."));
+	return SetTimerEx("unFreezePlayer", 3000, 0, "%d", playerid);
+}
+public: unFreezePlayer(playerid) TogglePlayerControllable(playerid, 1);
