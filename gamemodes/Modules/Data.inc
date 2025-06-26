@@ -217,7 +217,8 @@ enum _temp_
     Float:pOldX,
     Float:pOldY,
     Float:pOldZ,
-    pDriver
+    pDriver,
+    pShowDialog
 }
 new pTemp[MAX_PLAYERS][_temp_];
 
@@ -295,6 +296,7 @@ stock ClearPlayerData(playerid)
     pTemp[playerid][pMarker] =
     pTemp[playerid][pOnEvent] =
     pTemp[playerid][pTestDrive] =
+    pTemp[playerid][pShowDialog] =
     PI[playerid][pAdmin] =
 	PI[playerid][pAdminNumber] =
     PI[playerid][pMoney] =

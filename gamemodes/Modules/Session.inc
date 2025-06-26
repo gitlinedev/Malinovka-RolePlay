@@ -15,7 +15,7 @@ stock GetPlayerUUID()
 
 stock LoadSession(playerid)
 {
-    f(global_str, 150, "SELECT `NickName`, `UUID`, `HWID`, `Path` FROM client WHERE `NickName` = '%s' LIMIT 1;", PlayerName[playerid]);
+    f(global_str, 150, "SELECT `NickName`, `UUID`, `HWID`, `Path` FROM client WHERE `NickName` = '%s' AND `Used` = '0' LIMIT 1;", PlayerName[playerid]);
     mysql_tquery(mysql, global_str, "GetPlayerSessionData", "d", playerid);
     return 1;
 }

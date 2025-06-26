@@ -176,6 +176,8 @@ public OnGameModeInit()
 	printf("  Загружено домов     ->  %d/%d", LoadedHouses, MAX_HOUSES);
 	print("  Malinovka RolePlay mode by -> [vk.com/gitline]");
 	print("----------------------------------------------------------------------------");
+
+	mysql_tquery(mysql, "TRUNCATE TABLE client;");
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	EnableAntiCheat(39, 0); // отключил dialog hack 
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -223,7 +225,7 @@ public: ServerTimer()
 {
 	new year,month,day,minuite,second,hour;
    	getdate(year,month,day);
-   	Global_Time = gettime(hour,minuite,second);
+   	Global_Time = gettime(hour, minuite, second);
 
 	if minuite == 45 && second == 0 *then
 	{
@@ -1349,16 +1351,19 @@ public: OnPlayerDriver(playerid)
 
 public OnPlayerEnterDynamicArea(playerid, areaid)
 {
+	if Int_GetPlayerData(playerid, !"EnterDynamicArea") > Global_Time *then
+		return 1;
+
+	SetPVarInt(playerid, !"EnterDynamicArea", Global_Time + 3);
+
 	for (new i = 0; i <= LoadedHouses; i++)
-	{
-		//printf("Checking house %d, areaid = %d, house_area = %d", i, areaid, HouseInfo[i][H_AREA_ID]);
-		if(areaid == HouseInfo[i][H_AREA_ID])
+	{	
+		if(areaid == HouseInfo[i][H_AREA_ID] && pTemp[playerid][pShowDialog] == 0)
 		{
 			ShowInfoMenu(playerid, i, 1);
 			return 1;
 		}
 	}
-	//printf("No match found, checked %d houses", LoadedHouses);
 	return 1;
 }
 
@@ -1406,7 +1411,22 @@ stock CreateHouse(i)
 stock FreezePlayer(playerid) 
 {
 	TogglePlayerControllable(playerid, 0);
-	cef_emit_event(playerid, "show-notifications:center", CEFINT(3000), CEFINT(4), CEFSTR("Пожалуйста, подождите..."));
-	return SetTimerEx("unFreezePlayer", 3000, 0, "%d", playerid);
+	cef_emit_event(playerid, "show-notifications:center", CEFINT(2), CEFINT(4), CEFSTR("Пожалуйста, подождите..."));
+	return SetTimerEx("unFreezePlayer", 2000, 0, "%d", playerid);
 }
 public: unFreezePlayer(playerid) TogglePlayerControllable(playerid, 1);
+
+stock GivePlayerMoneyLog(playerid, value, log[]) 
+{
+    if Iter_Contains(Player, playerid) && IsPlayerLogged{playerid} *then
+	{
+	    GivePlayerMoney(playerid, value);
+	    PI[playerid][pMoney] += value;
+		UpdatePlayerDataInt(playerid, "Money", PI[playerid][pMoney]);
+
+		f(global_str, 130, "INSERT INTO `log_money`(`AccountID`, `Value`, `Reason`, `Data`) VALUES ('%d', '%d', '%s', NOW())", PI[playerid][pID], value, log);
+		mysql_tquery(mysql, global_str);
+    }
+}
+
+stock getPlayerMoney(playerid) return PI[playerid][pMoney];

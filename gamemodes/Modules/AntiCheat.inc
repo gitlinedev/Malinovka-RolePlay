@@ -140,18 +140,25 @@ public: OnCheatDetected(playerid, const ip_address[], type, code)
         Kick(playerid);
         return 1;
     }
-    SCMF(playerid, -1, "%s -> %03d", AC_CODE_NAME[code], code);
+    //SCMF(playerid, -1, "%s -> %03d", AC_CODE_NAME[code], code);
     switch AC_CODE_TRIGGER_TYPE[code] do
     {
         case AC_CODE_TRIGGER_TYPE_WARNING:
         {
             pTemp[playerid][ACWarnings]++;
             SAMF(COLOR_ADMINCHAT, "[Анти-чит] Подозрение %s[%d] (#%03d/%d: %s [IP: %s]).", PN(playerid), playerid, code, GetPlayerVehicleID(playerid), AC_CODE_NAME[code], ip_address);
+            
+            SQL("INSERT INTO `detections`(`NickName`, `DetectionSource`, `ACName`, `ACCode`, `ACKick`, `Date`) VALUES ('%s', 0, '%s', '%d', 0, NOW())",\
+                PN(playerid), AC_CODE_NAME[code], code);
         }
         case AC_CODE_TRIGGER_TYPE_KICK: 
 		{
             SAMF(COLOR_ADMINCHAT, "[Анти-чит] %s[%d] кикнут (%s #%03d/%d [IP: %s]).", PN(playerid), playerid, AC_CODE_NAME[code], code, GetPlayerVehicleID(playerid), ip_address);
 			SCMF(playerid, COLOR_BLACK, "Вы были кикнуты по подозрению в читерстве (#%03d)", code);
+
+            SQL("INSERT INTO `detections`(`NickName`, `DetectionSource`, `ACName`, `ACCode`, `ACKick`, `Date`) VALUES ('%s', 0, '%s', '%d', 1, NOW())",\
+                PN(playerid), AC_CODE_NAME[code], code);
+
 			return Kick(playerid);
 		}
         default: return false;

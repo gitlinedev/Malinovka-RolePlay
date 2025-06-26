@@ -23,10 +23,6 @@ enum hInfo
 	hNalog,
 	hKlass,
 	hMed,
-	hGarage,
-	Float:hGarage_X,
-	Float:hGarage_Y,
-	Float:hGarage_Z,
 	hObjectCount[2],
 	H_PICKUP_ID,
 	H_AREA_ID
@@ -47,8 +43,6 @@ stock LoadHouses()
 	{
 		ID = cache_get_row_int(i, 0, mysql);
 		HouseInfo[ID][hID] = ID;
-
-		//printf("LoadHouse -> %i", ID);
 
 		HouseInfo[ID][hEnter_X] = cache_get_row_float(i, 1, mysql);
 		HouseInfo[ID][hEnter_Y] = cache_get_row_float(i, 2, mysql);
@@ -154,7 +148,7 @@ stock UpdateHouse(house)
 
 	HouseInfo[house][H_AREA_ID] = CreateDynamicSphere(HouseInfo[house][hEnter_X], HouseInfo[house][hEnter_Y], HouseInfo[house][hEnter_Z], 2.25, -1);
 
-	HouseInfo[house][H_PICKUP_ID] = CreateDynamicPickup( !GetString(HouseInfo[house][hOwner], "The State") ? 1272 : 1273, 23, HouseInfo[house][hEnter_X], HouseInfo[house][hEnter_Y], HouseInfo[house][hEnter_Z],-1);
+	HouseInfo[house][H_PICKUP_ID] = CreateDynamicPickup( !GetString(HouseInfo[house][hOwner], "The State") ? 19522 : 1273, 23, HouseInfo[house][hEnter_X], HouseInfo[house][hEnter_Y], HouseInfo[house][hEnter_Z],-1);
 	if(GetString(HouseInfo[house][hOwner], "The State")) HouseIcon[house] = CreateDynamicMapIcon(HouseInfo[house][hEnter_X], HouseInfo[house][hEnter_Y], HouseInfo[house][hEnter_Z], 31, -1, 0, -1, -1, 100.0);
 
 	return SaveHouse(house);
@@ -178,6 +172,8 @@ stock ShowInfoMenu(playerid, id, type) // 0 biz, 1 house
 		case 1:
 		{
 			InfoHouse[playerid] = id;
+			
+			pTemp[playerid][pShowDialog] = 1;
 
 		    if SELLING *then
 			{		
@@ -191,6 +187,8 @@ stock ShowInfoMenu(playerid, id, type) // 0 biz, 1 house
 			}
 			else 
 			{
+				pTemp[playerid][pShowDialog] = 1;
+
 				return SPDF(playerid, dHouseOwned, 0, !"{EE3366}Дом куплен", !"Войти", !"Закрыть",\
 					"{FFFFFF}Номер дома:\t\t%d\n\
 					Владелец:\t\t{3377CC}%s\n\
@@ -213,6 +211,8 @@ stock IsValidHouse(id)
 
 stock house_OnDialogResponse(playerid, dialogid, response, listitem)
 {
+	pTemp[playerid][pShowDialog] = 0;
+
 	switch dialogid do
 	{
 		case dHouseSelling:
@@ -225,11 +225,17 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem)
 
 				if(!strcmp(HouseInfo[house][hOwner], "The State"))
 				{
+					if getPlayerMoney(playerid) < HouseInfo[house][hCost] *then return SCM(playerid, COLOR_LIGHTGREY, !"У Вас недостаточно денег на руках");
+
+					f(global_str, 30, "Покупка дома (ID: %d)", house);
+					GivePlayerMoneyLog(playerid, -HouseInfo[house][hCost], global_str);
+
 					HouseEntered[playerid] = house;
 
 					PI[playerid][pHouseKey] = house;
 
 					SCM(playerid, 0x367074FF, !"Поздравляем! Вы купили дом");
+
 					SPD(playerid, 0, 0, !"{EE3366}Покупка жилья",\
 						!"{FFFFFF}Для управления недвижимостью используйте команду /home\n\
 						Оплата дома производится в банке (/gps 1 5). Не забудьте\n\
@@ -237,13 +243,15 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem)
             
 					SetString(HouseInfo[house][hOwner], PN(playerid));
 					UpdateHouse(house);
+
+					SaveAccount(playerid);
 				}
 				else SCM(playerid, COLOR_LIGHTGREY, !"Этот дом уже куплен");
 			}
 		}
 		case dHouseOwned:
 		{
-			if !response *then return 1;
+			if !response *then return pTemp[playerid][pShowDialog] = 0;
 			if response *then
 			{	
 				new house = InfoHouse[playerid];
@@ -278,4 +286,21 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem)
 		}
 	}
 	return 1;
+}
+
+cmd:home(playerid)
+{
+	new house = PI[playerid][pHouseKey];
+
+	if house > 0 && GetString(HouseInfo[house][hOwner], PN(playerid)) *then
+	{
+		SPDF(playerid, dHouseMenu, DIALOG_STYLE_LIST, !"{EE3366}Управление домом", !"Далее", !"Закрыть", "\
+		1. Информация\n\
+		2. Информация об улучшениях\n\
+		3. Парковочные места\n\
+		4. %s дом\n\
+		5. Построить маршрут на навигаторе\n\
+		6. Продать дом", HouseInfo[house][hLock] ? ("Открыть") : ("Закрыть"));
+	}
+	else SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
 }
