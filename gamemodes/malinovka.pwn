@@ -216,23 +216,31 @@ public OnGameModeInit()
 	return 1;
 }
 
-public: UpdatePlayer()
-{
-	return 1;
-}
-
 public: ServerTimer()
 {
-	new year,month,day,minuite,second,hour;
+	new year,month,day,minute,second,hour;
    	getdate(year,month,day);
-   	Global_Time = gettime(hour, minuite, second);
+   	Global_Time = gettime(hour, minute, second);
 
-	if minuite == 45 && second == 0 *then
+	if(minute == 0 && hour == 1)
+	{
+		foreach(new i: Player)
+		{
+			if(IsPlayerLogged{i})
+			{
+				PI[i][pDayAFK] = 0;
+				PI[i][pDayOnline] = 0;
+			}
+		}
+		mysql_query(mysql, "UPDATE `accounts` SET `DayAFK` = 0, `DayOnline` = 0", false);
+		print("[MySQL] Очистил статисткиу онлайна и афк");
+	}
+	if minute == 45 && second == 0 *then
 	{
 		SetRandomWeather();
 	}
 
-	if minuite == 30 && second == 0 *then
+	if minute == 30 && second == 0 *then
 	{
 		SCMALL(0xEE3366FF, !"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 		SCMALL(0xFFFFFFFF, !"Для посещения игрового магазина посетите сайт: {EE3366}"Mode_Site"");
@@ -367,9 +375,6 @@ public OnPlayerDisconnect(playerid, reason)
 		IsPlayerLogged{playerid} = false;
 
 		f(global_str, 110, "UPDATE `accounts` SET `OnlineStatus` = '0', `PlayerID` = '65535' WHERE `ID` = '%d'", PI[playerid][pID]);
-		mysql_tquery(mysql, global_str);
-
-		f(global_str, 120, "DELETE FROM `client` WHERE `NickName` = '%s'", PN(playerid));
 		mysql_tquery(mysql, global_str);
 
 		if pTemp[playerid][pDriver] == 1 *then KillTimer(SpeedometerUpdate[playerid]);
@@ -570,6 +575,17 @@ public OnPlayerUpdate(playerid)
 			}
 			cef_emit_event(playerid, "execute.event:fps", CEFINT(pTemp[playerid][pCurrentFPS]));
 		}
+		if PlayerAFKTime[playerid][0] > 5 *then
+		{
+			PI[playerid][pDayAFK] += PlayerAFKTime[playerid][0];
+			PI[playerid][pGlobalAFK] += PlayerAFKTime[playerid][0];
+
+			SaveAccount(playerid);
+
+			SetPlayerChatBubble(playerid, " ", COLOR_WHITE, 30.0, 1);
+		}
+		PlayerAFK[playerid]++;
+		PlayerAFKTime[playerid][0] = 0;
 	}
 	return 1;
 }
@@ -1026,6 +1042,8 @@ stock UpdatePlayers()
 		{
 			if(!IsPlayerNPC(playerid))
 	    	{
+				PI[playerid][pDayOnline]++;
+
 				if PI[playerid][pDemorgan] > 0 *then
 				{
 					PI[playerid][pDemorgan] --;
@@ -1059,10 +1077,31 @@ stock UpdatePlayers()
 						UpdatePlayerDataInt(playerid, "VMuteTime", 0);
 					}
 				}
+				if(PlayerAFK[playerid] == 0 || GetPlayerState(playerid) == PLAYER_STATE_SPECTATING)
+				{
+					PlayerAFKTime[playerid][0] ++;
+	
+					if PlayerAFKTime[playerid][0] >= 1200 *then
+					{
+						SCM(playerid, COLOR_GREY, !"Превышено максимальное время паузы (20 минут)");
+						SaveAccount(playerid);
+						SpecPl(playerid, true);
+						PrepareKickCamera(playerid);
+					}
+					else 
+					{
+						if(PlayerAFKTime[playerid][0] >= 60) f(global_str,80,"На паузе: %d мин", PlayerAFKTime[playerid][0]/60);
+						else f(global_str,80,"На паузе: %d сек", PlayerAFKTime[playerid][0]);
+					}
+
+					SetPlayerChatBubble(playerid, global_str, COLOR_TOMATO, 30.0, 3000);
+				}
+				PlayerAFK[playerid] = 0;
 			}
 		}
 	}
 }
+
 stock GetSkinOfPlayer(playerid)
 {
 	if !IsPlayerOnline(playerid) *then 
@@ -1292,6 +1331,8 @@ public OnPlayerLeaveDynamicArea(playerid, areaid)
 stock PrepareKickCamera(playerid, delay = 1000)
 {
 	cef_emit_event(playerid, "execute.event:hud:active", CEFINT(1));
+	cef_emit_event(playerid, "execute.event:radars-active", CEFINT(false));
+
 	SpecPl(playerid, true);
 	InterpolateCameraPos(playerid, 1864.6229, 2067.9146, 25.7431, 1864.6229, 2067.9146, 25.7431, 10000000);
 	InterpolateCameraLookAt(playerid, 1821.6516, 2095.7375, 16.1631, 1821.6516, 2095.7375, 16.1631, 1000);
@@ -1430,3 +1471,16 @@ stock GivePlayerMoneyLog(playerid, value, log[])
 }
 
 stock getPlayerMoney(playerid) return PI[playerid][pMoney];
+
+public: UpdatePlayer()
+{
+	foreach(Player, playerid)
+	{
+		if !IsPlayerLogged{playerid} *then continue;
+
+		if !PlayerAFKTime[playerid][0] *then
+		{
+
+		}
+	}
+}

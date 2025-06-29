@@ -136,6 +136,8 @@ new const AdminCommandList[][AdminCommand] = {
 	{"ahp", 4, 0, "Выдать ХП игрокам в радиусе"},
 	{"setmp", 4, 0, "Установить точку телепорта на мероприятие"},
 	{"editmp", 4, 0, "Настроить мероприятие"},
+	{"ban", 4, 0, "Заблокировать игрока"},
+	{"unban", 4, 0, "Разблокировать игрока"},
 
 	//level 5
 	{"msg", 5, 0, "Написать на весь сервер"},
@@ -146,6 +148,8 @@ new const AdminCommandList[][AdminCommand] = {
 	//level7
 	{"banip", 7, 0, "Заблокировать IP игрока"},
 	{"unbanip", 7, 0, "Разблокировать IP игрока"},
+	{"banpc", 7, 0, "Заблокировал игрок по HWID/UUID"},
+	{"unbanpc", 7, 0, "Разблокировать игрока по HWID"},
 
     //level 8
     {"makegm", 8, 0, "Выдать права игрового мастера"}
@@ -154,6 +158,130 @@ new const AdminCommandList[][AdminCommand] = {
 new Iterator:Admin<MAX_PLAYERS>;
 new Iterator:Event<MAX_PLAYERS>;
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+cmd:unbanpc(playerid, data[])
+{
+	if(!CheckAccess(playerid, 7)) 
+        return false;
+
+	new name[MAX_PLAYER_NAME];
+
+	if(sscanf(data, "s[24]", name))
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unbanpc [имя]");
+
+    if !IsBannedNamePC(name) *then
+		return SCM(playerid, -1, !"Этот игрок не заблокирован по железу");
+
+	UnBanNamePC(name);
+	SCMF(playerid, -1, !"Игрок %s разблокирован", name);
+
+	f(global_str, 256, "[%s #%d] %s разблокировал ПК игроку %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), name);
+	return SendAdminsMessage(COLOR_ADMINCHAT, global_str);
+}
+cmd:banpc(playerid, data[])
+{
+	if(!CheckAccess(playerid, 7)) 
+        return false;
+
+	new id;
+
+    if sscanf(data, "u", id) *then
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /banpc [ID игрока]");
+
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	global_str = "";
+	global_str = GenerateBanCode(7);
+
+	BanPlayerPC(PN(id), PI[id][pHWID], PI[id][pUUID], global_str);
+	CreatePunishment(id, playerid, 3, 9999, "NoReason (pc ban)");
+
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] заблокировал игрока %s по ПК", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(id));
+
+	SaveAccount(id);
+
+	SCM(id, COLOR_BLACK, !"Ваш аккаунт заблокирован навсегда, для выхода введите /q");
+	SpecPl(id, true);
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    PrepareKickCamera(id);
+	return 1;
+}
+cmd:unban(playerid, data[])
+{
+	if(!CheckAccess(playerid, 4)) 
+        return false;
+
+	new
+		name[MAX_PLAYER_NAME],
+		reason[64];
+
+	if(sscanf(data, "s[24]s[64]", name, reason))
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unban [имя] [причина]");
+
+    if !IsBannedName(name) *then
+		return SCM(playerid, -1, !"Этот игрок не заблокирован на сервере");
+
+	UnBanName(name);
+	SCMF(playerid, -1, !"Игрок %s разблокирован", name);
+
+	if strlen(global_str) *then f(global_str, 256, "[%s #%d] %s разблокировал игрока %s, причина: %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), name, reason);
+	else f(global_str, 256, "[%s #%d] %s разблокировал игрока %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), name);
+	
+	return SendAdminsMessage(COLOR_ADMINCHAT, global_str);
+}
+cmd:ban(playerid, data[])
+{
+	if(!CheckAccess(playerid, 4)) 
+        return false;
+
+	new id, days, reason[30];
+
+    if sscanf(data, "uds[30]", id, days, reason) *then
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /ban [ID игрока] [Дни 1-30] [Причина]");
+
+	if id == INVALID_PLAYER_ID *then
+		return 0;
+
+	if strlen(reason) > 30 *then
+		return SCM(playerid, COLOR_LIGHTGREY, !"Причина блокировки не может быть больше 30 символов");
+
+	if !(1 <= days <= 30) *then
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /ban [ID игрока] [Дни 1-30] [Причина]");
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	BanName(PN(id), PN(playerid), days, reason);
+	new punishmentID = CreatePunishment(id, playerid, 2, days, reason);
+
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] заблокировал %s на %d дней. Причина: %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(id), days, reason);
+	SCMF(id, COLOR_TOMATO, "Ваш аккаунт заблокирован на %d дн. Причина: %s", days, reason);
+	SCMF(id, COLOR_LIGHTGREY, "Номер наказания: {00912D}#%d{CCCCCC} (для обжалования на {F87031}forum.m-bonus.com{CCCCCC})", punishmentID);
+
+
+	new year, mounth, day, hour, minute, second;
+	getdate(year, mounth, day);
+	gettime(hour, minute, second);
+
+	SPDF(id, 0, DIALOG_STYLE_MSGBOX, !"{EE3366}Блокировка аккаунта", !"Закрыть", !"", "\
+	{FFFFFF}Никнейм:\t\t{3366CC}%s\n\
+	{FFFFFF}ID аккаунта:\t\t{3366CC}%d\n\
+	{FFFFFF}Номер наказания:\t{00912D}%d\n\
+	{FFFFFF}Сервер:\t\tСервер #1\n\
+	Дата:\t\t\t%02d.%02d.%04d\n\
+	Время:\t\t\t%02d:%02d:%02d\n\
+	Причина:\t\t%s\n\
+	Количество дней:\t%d дн\n\n\
+	{FFFF99}Советуем сделать скриншот (клавиша F8), чтобы иметь\n\
+	возможность обжаловать бан на forum.m-bonus.com", PN(id), id, punishmentID, day, mounth, year, hour, minute, second, reason, days);
+
+	PI[id][pLeader] = 0;
+	PI[id][pAdmin] = 0;
+	PI[id][pAdminNumber] = 0;
+
+	SaveAccount(id);
+
+	SCM(id, COLOR_BLACK, !"Ваш аккаунт заблокирован, для выхода введите /q");
+	SpecPl(id, true);
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    PrepareKickCamera(id);
+	return 1;
+}
 cmd:editmp(playerid) 
 {
     if(!CheckAccess(playerid, 4)) 
@@ -204,7 +332,7 @@ cmd:jail(playerid, params[])
         return false;
 
     new time;
-    if(sscanf(params,"uds[100]", params[0], time, params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используй: /jail [ID игрока] [время] [причина]");
+    if(sscanf(params,"uds[100]", params[0], time, params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /jail [ID игрока] [время] [причина]");
 
 	if !IsPlayerOnline(params[0]) *then return false;
 
@@ -1094,14 +1222,14 @@ stock BanName(const name[], const namez[], days, reason[])
 
 public: @BanName(player_name[], ban_admin[], days, reason[])
 {
-	mysql_tquery(mysql, !cache_get_row_count() ? (str_f("INSERT INTO `bans` (`Name`, `BanAdmin`, `BanSeconds`, `BanReason`) VALUE ('%s', '%s', '%d', '%s')", player_name, ban_admin, Global_Time+days*60*60*24, reason)):(str_f("UPDATE `bannames` SET `BanAdmin` = '%s', `BanSeconds` = %d, `BanReason` = '%s' WHERE `Name` = BINARY('%s') LIMIT 1;", ban_admin, Global_Time+days*60*60*24, reason, player_name)));
+	mysql_tquery(mysql, !cache_get_row_count() ? (str_f("INSERT INTO `bans` (`Name`, `GameMaster`, `BanSeconds`, `BanReason`) VALUE ('%s', '%s', '%d', '%s')", player_name, ban_admin, Global_Time+days*60*60*24, reason)):(str_f("UPDATE `bannames` SET `GameMaster` = '%s', `BanSeconds` = %d, `BanReason` = '%s' WHERE `Name` = BINARY('%s') LIMIT 1;", ban_admin, Global_Time+days*60*60*24, reason, player_name)));
 	
     return true;
 }
 
 stock BanPlayerPC(const NickName[], const HWID[], const UUID[], const BanCode[])
 {
-	mysql_tquery(mysql, (str_f("SELECT * FROM banpc WHERE BINARY `NickName` = '%s' LIMIT 1;", name)), "@BanPlayerPC", "ssss", NickName, HWID, UUID, BanCode);
+	mysql_tquery(mysql, (str_f("SELECT * FROM banpc WHERE BINARY `NickName` = '%s' LIMIT 1;", NickName)), "@BanPlayerPC", "ssss", NickName, HWID, UUID, BanCode);
 
 	return true;
 }
@@ -1115,4 +1243,42 @@ public: @BanPlayerPC(NickName[], HWID[], UUID[], BanCode[])
 	(str_f("UPDATE `banpc` SET `HWID` = '%s', `UUID` = '%s' WHERE `NickName` = BINARY('%s') LIMIT 1;", HWID, UUID, NickName)));
 	
     return true;
+}
+
+stock IsBannedName(name[])
+{
+	f(global_str, 200, "SELECT `Name` FROM `bans` WHERE BINARY `Name` = '%s' LIMIT 1", name);
+	new Cache:result = mysql_query(mysql, global_str);
+	new i = cache_get_row_count(mysql);
+    cache_delete(result, mysql);
+	return i;
+}
+
+stock UnBanName(name[])
+{
+	if(IsBannedName(name))
+	{
+        f(global_str, 150, "DELETE FROM `bans` WHERE BINARY `Name` = '%s'",name);
+        mysql_tquery(mysql, global_str);
+	}
+	return 1;
+}
+
+stock IsBannedNamePC(name[])
+{
+	f(global_str, 200, "SELECT `NickName` FROM `banpc` WHERE BINARY `NickName` = '%s' LIMIT 1", name);
+	new Cache:result = mysql_query(mysql, global_str);
+	new i = cache_get_row_count(mysql);
+    cache_delete(result, mysql);
+	return i;
+}
+
+stock UnBanNamePC(name[])
+{
+	if(IsBannedNamePC(name))
+	{
+        f(global_str, 150, "DELETE FROM `banpc` WHERE BINARY `NickName` = '%s'",name);
+        mysql_tquery(mysql, global_str);
+	}
+	return 1;
 }

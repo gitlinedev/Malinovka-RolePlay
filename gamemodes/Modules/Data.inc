@@ -181,6 +181,8 @@ new PlayerMail[MAX_PLAYERS][50],
 	PlayerRegIP[MAX_PLAYERS][16],
 	PlayerIp[MAX_PLAYERS][16],
     RegisterState[MAX_PLAYERS],
+    PlayerAFK[MAX_PLAYERS],
+	PlayerAFKTime[MAX_PLAYERS][2],
     SpeedometerUpdate[MAX_PLAYERS];
 
 new RegPass[MAX_PLAYERS][30];
@@ -262,7 +264,12 @@ enum PlayerInfo {
 	pUUID[70],
 	pPath[150],
     pVMute,
-    pVMuteTime
+    pVMuteTime,
+    pVKonktakeID,
+    pGlobalAFK,
+    pDayAFK,
+    pDayOnline,
+    pGlobalOnline
 };
 new PI[MAX_PLAYERS][PlayerInfo];
 
@@ -319,9 +326,16 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pWanted] =
 	PI[playerid][pRang] =
 	PI[playerid][pMember] =
+    PI[playerid][pVKonktakeID] =
 	PI[playerid][pLeader] =
 	PI[playerid][pSex] = 0;
+
 	PI[playerid][pModer] =
+    PI[playerid][pVKonktakeID] =
+    PI[playerid][pDayOnline] =
+    PI[playerid][pDayAFK] =
+    PI[playerid][pGlobalOnline] =
+    PI[playerid][pGlobalAFK] =
     PI[playerid][pExp] = 0;
 
 	PI[playerid][pArmour] =

@@ -53,6 +53,12 @@ public: OnPlayerLoadData(playerid)
 	PI[playerid][pVMuteTime] = cache_get_row_int(0, 45, mysql);
 	PI[playerid][pHouseKey] = cache_get_row_int(0, 46, mysql);
 
+	PI[playerid][pVKonktakeID] = cache_get_row_int(0, 47, mysql);
+	PI[playerid][pDayOnline] = cache_get_row_int(0, 48, mysql);
+	PI[playerid][pDayAFK] = cache_get_row_int(0, 49, mysql);
+	PI[playerid][pGlobalOnline] = cache_get_row_int(0, 50, mysql);
+	PI[playerid][pGlobalAFK] = cache_get_row_int(0, 51, mysql);
+
 	SetPlayerTeam(playerid, 4);
 
 	if PI[playerid][pDemorgan] >= 1 *then
@@ -443,6 +449,12 @@ stock SaveAccount(playerid)
 	orm_addvar_int(orm, PI[playerid][pVMute], "VMute");
 	orm_addvar_int(orm, PI[playerid][pVMuteTime], "VMuteTime");
 	orm_addvar_int(orm, PI[playerid][pHouseKey], "HouseKey");
+
+	orm_addvar_int(orm, PI[playerid][pVKonktakeID], "VKontakteID");
+	orm_addvar_int(orm, PI[playerid][pDayOnline], "DayOnline");
+	orm_addvar_int(orm, PI[playerid][pDayAFK], "DayAFK");
+	orm_addvar_int(orm, PI[playerid][pGlobalOnline], "GlobalOnline");
+	orm_addvar_int(orm, PI[playerid][pGlobalAFK], "GlobalAFK");
 
 	//Float
 	orm_addvar_float(orm, PI[playerid][pHealth], "Health");

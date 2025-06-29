@@ -234,12 +234,16 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem)
 
 					PI[playerid][pHouseKey] = house;
 
-					SCM(playerid, 0x367074FF, !"Поздравляем! Вы купили дом");
+					SCM(playerid, 0x367074FF, !"Поздравляем! Вы купили дом. Не забудьте оплатить его в банке - {d3cfb6}/gps 1 8 {367074}или {d3cfb6}/gps 7");
 
 					SPD(playerid, 0, 0, !"{EE3366}Покупка жилья",\
 						!"{FFFFFF}Для управления недвижимостью используйте команду /home\n\
-						Оплата дома производится в банке (/gps 1 5). Не забудьте\n\
-						вовремя платить за него, в противном случае он будет опечатан!", !"Закрыть", !"");
+						Оплатите жильё в банке {3366cc}(/gps 1 8 и /gps 7){FFFFFF} или в Мобильном банке {3366cc}(клавиша P){FFFFFF}.\n\
+						Не забывайте вовремя платить за него, в противном случае он будет опечатан!\n\n\
+						{FFFF00}Посетите Центр недвижимости (/gps 7) для повышения удобства пользования жильём", !"Закрыть", !"");
+					
+					f(global_str, 10, "-%d руб", HouseInfo[house][hCost]);
+					cef_emit_event(playerid, "show-notifications:radar", CEFINT(16), CEFINT(5), CEFSTR("red"), CEFSTR("Покупка дома"), CEFSTR(global_str), CEFINT(0));
             
 					SetString(HouseInfo[house][hOwner], PN(playerid));
 					UpdateHouse(house);
@@ -281,6 +285,24 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem)
 					{
 						return 1;
 					}
+					case 1:
+					{
+						return 1;
+					}
+					case 2:
+					{
+						return 1;
+					}
+					case 3:
+					{
+						new house = PI[playerid][pHouseKey];
+
+						HouseInfo[house][hLock] = !HouseInfo[house][hLock];
+
+						if HouseInfo[house][hLock] == 1 *then cef_emit_event(playerid, "show-notifications:radar", CEFINT(15), CEFINT(3), CEFSTR("icon-red"), CEFSTR("Дом закрыт"), CEFSTR(""), CEFINT(2));
+						else cef_emit_event(playerid, "show-notifications:radar", CEFINT(17), CEFINT(3), CEFSTR("icon-green"), CEFSTR("Дом открыт"), CEFSTR(""), CEFINT(3));
+						return callcmd::home(playerid);
+					}
 				}
 			}
 		}
@@ -303,4 +325,6 @@ cmd:home(playerid)
 		6. Продать дом", HouseInfo[house][hLock] ? ("Открыть") : ("Закрыть"));
 	}
 	else SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
+
+	return 1;
 }

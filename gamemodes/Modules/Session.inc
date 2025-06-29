@@ -32,6 +32,9 @@ public: GetPlayerSessionData(playerid)
         cache_get_row(0, 2, PI[playerid][pHWID], mysql, 35);
         cache_get_row(0, 3, PI[playerid][pPath], mysql, 150);
 
+        f(global_str, 120, "UPDATE `client` SET `Used` = '1' WHERE `NickName` = '%s'", PN(playerid));
+		mysql_tquery(mysql, global_str);
+
         f(global_str, 150, "SELECT * FROM `banpc` WHERE `HWID` = '%s' OR `UUID` = '%s' LIMIT 1", PI[playerid][pHWID], PI[playerid][pUUID]);
         mysql_tquery(mysql, global_str, "MysqlCheckPlayerBanPC", "d", playerid);
     }
