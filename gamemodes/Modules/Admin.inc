@@ -118,6 +118,8 @@ new const AdminCommandList[][AdminCommand] = {
 	{"gethere", 2, 2, "Телепортировать игрока к себе"},
 	{"jail", 2, 3, "Посадить игрока в ДеМорган"},
 
+	// 2 лвл добавить /unjail /mute, /unmute, /vmute, /unvmute
+
 	//level 3
 	{"skin", 3, 3, "Выдать игроку скин (временный/вечный)"},
 	{"veh", 3, 3, "Создать транспорт"},
@@ -130,6 +132,8 @@ new const AdminCommandList[][AdminCommand] = {
 	{"gun", 3, 3, "Выдать оружие"},
 	{"aclear", 3, 3, "Снять розыск игроку"},
 	{"resgun", 3, 3, "Забрать оружие"},
+	
+	// 3 лвл добавить /warn, /unwarn
 
 	//level 4
 	{"atw", 4, 0, "Забрать оружие у игроков в радиусе"},
@@ -141,18 +145,26 @@ new const AdminCommandList[][AdminCommand] = {
 
 	//level 5
 	{"msg", 5, 0, "Написать на весь сервер"},
+	// 5 лвл добавить /setleader, /setmember, /auninvite, /skick
+	
 
 	//level6
 	{"setsex", 6, 0, "Изменить пол персонажа игроку"},
+	// добавить /makemoder, /givemoney 1 -> 10.000.000 
 
 	//level7
 	{"banip", 7, 0, "Заблокировать IP игрока"},
 	{"unbanip", 7, 0, "Разблокировать IP игрока"},
 	{"banpc", 7, 0, "Заблокировал игрок по HWID/UUID"},
 	{"unbanpc", 7, 0, "Разблокировать игрока по HWID"},
+	// добавить /setstat
 
     //level 8
     {"makegm", 8, 0, "Выдать права игрового мастера"}
+	// добавить /givedonate
+	// /givemoneyall
+	// /givedonateall
+	// /givevipall
 };
 
 new Iterator:Admin<MAX_PLAYERS>;
