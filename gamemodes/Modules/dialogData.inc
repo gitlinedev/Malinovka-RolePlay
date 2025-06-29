@@ -30,5 +30,8 @@ enum
     dEventSettings,
     dHouseOwned,
     dHouseSelling,
-    dHouseMenu
+    dHouseMenu,
+    dMakeGameModer,
+    dModerCMDList,
+    dModerCMD
 };

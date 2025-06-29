@@ -93,7 +93,7 @@ enum AdminCommand
 {
 	adminCommand[30],
 	adminLevel,
-	ModLevel,
+	moderLevel,
 	adminCommandInfo[100]
 };
 new const AdminCommandList[][AdminCommand] = {
@@ -117,8 +117,11 @@ new const AdminCommandList[][AdminCommand] = {
 	{"goto", 2, 3, "Телепортироваться к игроку"},
 	{"gethere", 2, 2, "Телепортировать игрока к себе"},
 	{"jail", 2, 3, "Посадить игрока в ДеМорган"},
-
-	// 2 лвл добавить /unjail /mute, /unmute, /vmute, /unvmute
+	{"unjail", 2, 3, "Выпустить игрока из ДеМоргана"},
+	{"mute", 2, 3, "Выдать блокировку текстового чата"},
+	{"unmute", 2, 3, "Снять блокировку текстового чата"},
+	{"vmute", 2, 3, "Выдать блокировку голосового чата"},
+	{"unvmute", 2, 3, "Снять блокировку голосового чата"},
 
 	//level 3
 	{"skin", 3, 3, "Выдать игроку скин (временный/вечный)"},
@@ -145,12 +148,14 @@ new const AdminCommandList[][AdminCommand] = {
 
 	//level 5
 	{"msg", 5, 0, "Написать на весь сервер"},
-	// 5 лвл добавить /setleader, /setmember, /auninvite, /skick
+	{"skick", 5, 0, "Кикнуть игрока с сервера без уведомления"},
+	// 5 лвл добавить /setleader, /setmember, /auninvite
 	
 
 	//level6
 	{"setsex", 6, 0, "Изменить пол персонажа игроку"},
-	// добавить /makemoder, /givemoney 1 -> 10.000.000 
+	{"makemoder", 6, 0, "Выдать права игрового модератора"},
+	// добавить , /givemoney 1 -> 10.000.000 
 
 	//level7
 	{"banip", 7, 0, "Заблокировать IP игрока"},
@@ -168,8 +173,180 @@ new const AdminCommandList[][AdminCommand] = {
 };
 
 new Iterator:Admin<MAX_PLAYERS>;
+new Iterator:Moder<MAX_PLAYERS>;
 new Iterator:Event<MAX_PLAYERS>;
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+cmd:makemoder(playerid, params[]) 
+{
+    if(!CheckAccess(playerid, 6)) 
+        return false;
+
+    if sscanf(params,"u",params[0]) *then 
+        return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /makemoder [ID игрока]");
+
+	if params[0] == INVALID_PLAYER_ID *then return 0;
+
+    if params[0] == playerid *then return 0;
+
+	if !IsPlayerLogged{params[0]} *then return SCM(playerid, COLOR_LIGHTGREY, !"Игрок не авторизован");
+
+    pTemp[playerid][targetID] = params[0];
+
+	return SPD(playerid, dMakeGameModer, DIALOG_STYLE_LIST, !"{EE3366}Выдача прав игрового модератора", !"Снять права игрового модератора\n1. Junior Moderator\n2. Moderator\n3. Senior Moderator", !"Далее", !"Отмена");
+}
+
+cmd:vmute(playerid, params[])
+{
+	if(!CheckAccess(playerid, 2, 3)) 
+        return false;
+
+    new time;
+    if(sscanf(params,"uds[100]", params[0], time, params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /vmute [ID игрока] [время] [причина]");
+
+	if !IsPlayerOnline(params[0]) *then return false;
+
+    if(strlen(params[1]) > 30) 
+		return SCM(playerid,COLOR_LIGHTGREY, !"Причина не может быть больше 30 символов");
+
+    if(PI[params[0]][pVMute] == 1)
+		return SCM(playerid, COLOR_LIGHTGREY, !"Этот игрок уже имеет блокировку текстового чата");
+
+    if(time == 0) 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Нельзя заблокировка текстовый чат на 0 минут");
+
+    if(time> 900) 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Нельзя заблокировать текстовый чат больше чем на 900 минут");
+
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	SetSpawnInfoEx(params[0], GetSkinOfPlayer(playerid), -1764.1515, -2889.2085, 14.3141, 240.8832);
+
+	new punishmentID = CreatePunishment(params[0], playerid, 4, time, params[1]);
+	SCMF(playerid, COLOR_TOMATO, "Вы заблокировали голосовой чат игрока %s на %d минут. Причина: %s", PN(params[0]), time, params[1]);
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] заблокировал голосовой чат игроку %s на %d минут. Причина: %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid),playerid, PN(params[0]), time,params[1]);
+
+	SCMF(params[0], COLOR_TOMATO, "Использование голосового чата заблокировано на %d мин. Причина: %s", time, params[1]);
+	SCMF(params[0], COLOR_LIGHTGREY, "Номер наказания: {00912D}#%d{CCCCCC} (для обжалования на {F87031}forum.m-bonus.com{CCCCCC})", punishmentID);
+	SCM(params[0], COLOR_LIGHTGREY, !"Время до разблокировки отображается в правом верхнем углу");
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	PI[params[0]][pVMuteTime] = time*60;
+	PI[params[0]][pVMute] = 1;
+	SvMutePlayerEnable(params[0]);
+
+	cef_emit_event(params[0], "show-notifications:hud", CEFINT(103), CEFSTR("red-time"), CEFSTR("Блокировка голосового чата"), CEFINT(PI[params[0]][pDemorgan]));
+
+	return 1;
+}
+cmd:mute(playerid, params[])
+{
+	if(!CheckAccess(playerid, 2, 3)) 
+        return false;
+
+    new time;
+    if(sscanf(params,"uds[100]", params[0], time, params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /mute [ID игрока] [время] [причина]");
+
+	if !IsPlayerOnline(params[0]) *then return false;
+
+    if(strlen(params[1]) > 30) 
+		return SCM(playerid,COLOR_LIGHTGREY, !"Причина не может быть больше 30 символов");
+
+    if(PI[params[0]][pMute] == 1)
+		return SCM(playerid, COLOR_LIGHTGREY, !"Этот игрок уже имеет блокировку текстового чата");
+
+    if(time == 0) 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Нельзя заблокировка текстовый чат на 0 минут");
+
+    if(time> 900) 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Нельзя заблокировать текстовый чат больше чем на 900 минут");
+
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	SetSpawnInfoEx(params[0], GetSkinOfPlayer(playerid), -1764.1515, -2889.2085, 14.3141, 240.8832);
+
+	new punishmentID = CreatePunishment(params[0], playerid, 4, time, params[1]);
+	SCMF(playerid, COLOR_TOMATO, "Вы заблокировали текстовый чат игрока %s на %d минут. Причина: %s", PN(params[0]), time, params[1]);
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] заблокировал текстовый чат игроку %s на %d минут. Причина: %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid),playerid, PN(params[0]), time,params[1]);
+
+	SCMF(params[0], COLOR_TOMATO, "Использование чата заблокировано на %d мин. Причина: %s", time, params[1]);
+	SCMF(params[0], COLOR_LIGHTGREY, "Номер наказания: {00912D}#%d{CCCCCC} (для обжалования на {F87031}forum.m-bonus.com{CCCCCC})", punishmentID);
+	SCM(params[0], COLOR_LIGHTGREY, !"Время до разблокировки отображается в правом верхнем углу");
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	PI[params[0]][pMuteTime] = time*60;
+	PI[params[0]][pMute] = 1;
+
+	cef_emit_event(params[0], "show-notifications:hud", CEFINT(102), CEFSTR("red-time"), CEFSTR("Блокировка текстового чата"), CEFINT(PI[params[0]][pDemorgan]));
+
+	return 1;
+}
+cmd:unvmute(playerid, params[])
+{
+	if(!CheckAccess(playerid, 2, 3)) 
+        return false;
+
+    if(sscanf(params,"u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unvmute [ID игрока]");
+
+	if !IsPlayerOnline(params[0]) *then return false;
+
+    if(PI[params[0]][pMute] <= 0)
+		return SCM(playerid, COLOR_LIGHTGREY, !"Этот игрок не имеет блокировки голосового чата");
+
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	SCMF(params[0], COLOR_TOMATO, "%s снял Вам блокировку голосового чата", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] снял игроку %s блокировку голосового чата", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid),playerid, PN(params[0]));
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	
+	PI[params[0]][pVMute] = 0;
+	PI[params[0]][pVMuteTime] = 0;
+	SvMutePlayerDisable(params[0]);
+
+	cef_emit_event(playerid, "remove-notifications:radar", CEFINT(103));
+	return 1;
+}
+cmd:unmute(playerid, params[])
+{
+	if(!CheckAccess(playerid, 2, 3)) 
+        return false;
+
+    if(sscanf(params,"u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unmute [ID игрока]");
+
+	if !IsPlayerOnline(params[0]) *then return false;
+
+    if(PI[params[0]][pMute] <= 0)
+		return SCM(playerid, COLOR_LIGHTGREY, !"Этот игрок не имеет блокировки текстового чата");
+
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	SCMF(params[0], COLOR_TOMATO, "%s снял Вам блокировку текстового чата", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] снял игроку %s блокировку текстового чата", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid),playerid, PN(params[0]));
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	
+	PI[params[0]][pMute] = 0;
+	PI[params[0]][pMuteTime] = 0;
+
+	cef_emit_event(playerid, "remove-notifications:radar", CEFINT(102));
+	return 1;
+}
+cmd:unjail(playerid, params[])
+{
+	if(!CheckAccess(playerid, 2, 3)) 
+        return false;
+
+    if(sscanf(params,"u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unjail [ID игрока]");
+
+	if !IsPlayerOnline(params[0]) *then return false;
+
+    if(PI[params[0]][pDemorgan] <= 0)
+		return SCM(playerid, COLOR_LIGHTGREY, !"Этот игрок не в ДеМоргане");
+
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	SCMF(params[0], COLOR_TOMATO, "%s выпустил Вас из тюрьмы", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выпустил игрока %s из тюрьмы", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid),playerid, PN(params[0]));
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	
+	PI[params[0]][pDemorgan] = 0;
+	UpdatePlayerHealth(params[0], 100);
+	PlayerSpawn(params[0]);
+
+	cef_emit_event(playerid, "remove-notifications:radar", CEFINT(101));
+	return 1;
+}
 cmd:unbanpc(playerid, data[])
 {
 	if(!CheckAccess(playerid, 7)) 
@@ -633,6 +810,21 @@ cmd:cc(playerid)
 	return 1;
 }
 
+cmd:skick(playerid,params[]) 
+{
+    if(!CheckAccess(playerid, 3, 3)) 
+        return false;
+
+	if sscanf(params,"us[32]",params[0],params[1]) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /skick [ID игрока] [причина]");
+		
+	if !IsPlayerOnline(params[0]) *then 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Игрок не в сети");
+
+	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] тихо кикнул игрока %s. Причина: %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(params[0]), params[1]);
+	return PrepareKickCamera(params[0]);
+}
+
 cmd:kick(playerid,params[]) 
 {
     if(!CheckAccess(playerid, 3, 3)) 
@@ -679,6 +871,7 @@ cmd:makegm(playerid, params[])
 
 	return SPD(playerid, dMakeGameMaster, DIALOG_STYLE_LIST, !"{EE3366}Выдача прав игрового мастера", !"Снять права игрового мастера\n1. NGM\n2. JRGM\n3. GM\n4. GM+\n5. LGM\n6. SGM\n7. SGM+\n8. DEV", !"Далее", !"Отмена");
 }
+
 cmd:freeze(playerid, params[])
 {
 	if(!CheckAccess(playerid, 1, 1)) 
@@ -1002,7 +1195,7 @@ cmd:ahelp(playerid)
 	for new i = 1; i < 9; i++ do
 		strcat(global_str, (str_f("\n{FFFFFF}%d.{%s} %s", i, PI[playerid][pAdmin] >= i ? "FFFFFF":"AFAFAF", Admin_Names[i])));
     
-	return SPD(playerid, dAdminCMD, DIALOG_STYLE_LIST, !"{EE3366}Команды администратора", global_str, !"Выбрать", !"Отмена");
+	return SPD(playerid, dAdminCMD, DIALOG_STYLE_LIST, !"{EE3366}Команды игрового мастера", global_str, !"Выбрать", !"Отмена");
 }
 
 stock GetMaxAmountAHelp(level)
@@ -1125,6 +1318,8 @@ stock admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
                 { 
 					SCM(playerid, COLOR_YELLOW, !"Вы были сняты с поста игрового мастера!");
                     SCMF(pTemp[playerid][targetID], COLOR_YELLOW, "Игровой мастер %s снял Вас с должности игрового мастера", PN(playerid));
+
+					if Iter_Contains(Admin, pTemp[playerid][targetID]) *then Iter_Remove(Admin, pTemp[playerid][targetID]);
                 }
                 else 
                 {
@@ -1134,6 +1329,32 @@ stock admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
                 }
                 ALogin{pTemp[playerid][targetID]} = false;
                 UpdatePlayerDataInt(pTemp[playerid][targetID], "Admin", PI[pTemp[playerid][targetID]][pAdmin]);
+
+                return pTemp[playerid][targetID] = INVALID_PLAYER_ID;
+            }
+        }
+		case dMakeGameModer:
+        {
+            if(!response) return pTemp[playerid][targetID] = INVALID_PLAYER_ID;
+            if(response) 
+			{
+                PI[pTemp[playerid][targetID]][pModer] = listitem;
+
+                if listitem == 0 *then
+                { 
+					SCM(playerid, COLOR_YELLOW, !"Вы были сняты с поста игрового модератора!");
+                    SCMF(pTemp[playerid][targetID], COLOR_YELLOW, "Игровой мастер %s снял Вас с должности игрового модератора", PN(playerid));
+
+					if Iter_Contains(Moder, pTemp[playerid][targetID]) *then Iter_Remove(Moder, pTemp[playerid][targetID]);
+                }
+                else 
+                {
+					SCMF(playerid, COLOR_YELLOW, "Вы изменили уровень игрового модератора для %s[%d], теперь он '%s'", Moder_Names[listitem - 1], PN(pTemp[playerid][targetID]), pTemp[playerid][targetID]);
+                    SCMF(pTemp[playerid][targetID], COLOR_YELLOW, "Игровой мастер изменил ваш уровень до %s", Moder_Names[listitem - 1]);
+                    Iter_Add(Moder, playerid);
+                }
+                ALogin{pTemp[playerid][targetID]} = false;
+                UpdatePlayerDataInt(pTemp[playerid][targetID], "Admin", PI[pTemp[playerid][targetID]][pModer]);
 
                 return pTemp[playerid][targetID] = INVALID_PLAYER_ID;
             }
@@ -1165,6 +1386,35 @@ stock admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 				page ++;
 
 			return print_AdminCommand(playerid, level, page);
+		}
+
+		case dModerCMD:
+		{
+			if !response *then
+				return false;
+
+			listitem++;
+			spdList(playerid, 0, listitem);
+
+			return print_ModerCommand(playerid, listitem);
+		}
+
+		case dModerCMDList:
+		{
+			new level = gpdList(playerid, 0), page = gpdList(playerid, 1);
+
+			if !response *then
+			{
+				if page *then
+					return print_ModerCommand(playerid, level, page - 1);
+				else
+					return callcmd::ahelp(playerid);
+			}
+
+			if !(page + 1 == GetMaxAmountMHelp(level)) *then
+				page ++;
+
+			return print_ModerCommand(playerid, level, page);
 		}
     }
     return 1;

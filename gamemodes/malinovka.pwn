@@ -368,6 +368,7 @@ public OnPlayerDisconnect(playerid, reason)
 	{
 		if Iter_Contains(Admin, playerid) *then Iter_Remove(Admin, playerid);
 		if Iter_Contains(Event, playerid) *then Iter_Remove(Event, playerid);
+		if Iter_Contains(Moder, playerid) *then Iter_Remove(Moder, playerid);
 
 		DPlayerData(playerid, !"vr");
 
