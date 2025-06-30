@@ -135,7 +135,8 @@ new const AdminCommandList[][AdminCommand] = {
 	{"gun", 3, 3, "Выдать оружие"},
 	{"aclear", 3, 3, "Снять розыск игроку"},
 	{"resgun", 3, 3, "Забрать оружие"},
-	
+	{"warn", 3, 3, "Выдать предупреждение игроку"},
+	{"unwarn", 3, 3, "Снять предупреждение игроку"},	
 	// 3 лвл добавить /warn, /unwarn
 
 	//level 4
@@ -176,6 +177,77 @@ new Iterator:Admin<MAX_PLAYERS>;
 new Iterator:Moder<MAX_PLAYERS>;
 new Iterator:Event<MAX_PLAYERS>;
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+CMD:unwarn(playerid, params[])
+{
+    if (!CheckAccess(playerid, 2, 3)) 
+        return 0;
+
+    new targetid;
+    if (sscanf(params, "u", targetid)) 
+        return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unwarn [ID игрока]");
+
+    if (!IsPlayerOnline(targetid)) 
+        return 0;
+
+    if (PI[targetid][pWarns] <= 0)
+        return SCM(playerid, COLOR_LIGHTGREY, !"У игрока нет активных варнов.");
+
+    RemovePlayerWarn(targetid, 0);
+
+    SCMF(targetid, COLOR_TOMATO, "%s снял Вам предупреждение", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
+    SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] снял игроку %s предупреждение", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(targetid));
+
+    return 1;
+}
+
+CMD:warn(playerid, params[])
+{
+	if (!CheckAccess(playerid, 2, 3)) return 0;
+
+	new targetid, reason[100];
+	if (sscanf(params, "us[100]", targetid, reason)) 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /warn [ID игрока] [причина]");
+
+	if (!IsPlayerOnline(targetid)) return 0;
+
+	if (strlen(reason) > 30) 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Причина не может быть больше 30 символов");
+	
+	if (PI[targetid][pWarns] < 2)
+	{
+		new slot = PI[targetid][pWarns]++;
+		PI[targetid][pWarnsTimers][slot] = 21600;
+
+		new pid = CreatePunishment(targetid, playerid, 6, 3, reason);
+
+		SAMF(COLOR_ADMINCHAT, "[%s #%d] %s выдал предупреждение игроку %s [%d/3]. Причина: %s",\
+			StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), PN(targetid), PI[targetid][pWarns], reason);
+
+		SCMF(targetid, COLOR_TOMATO, "%s выдал Вам предупреждение [%d/3]. Причина: %s", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор", PI[targetid][pWarns], reason);
+		SCMF(targetid, COLOR_LIGHTGREY, "Номер наказания: {00912D}#%d{CCCCCC} (для обжалования на {F87031}forum.m-bonus.com{CCCCCC})", pid);
+		SCM(targetid, COLOR_LIGHTGREY, !"До снятия всех предупреждений запрещено вступать во фракции");
+	}
+	else
+	{
+		PI[targetid][pWarns] = 0;
+		for (new i; i < 3; i++) PI[targetid][pWarnsTimers][i] = 0;
+
+		new pid = CreatePunishment(targetid, playerid, 2, 7, reason);
+
+		BanName(PN(targetid), PN(playerid), 7, reason);
+
+		SAMF(COLOR_TOMATO, "[%s #%d] %s заблокировал %s на 7 дней. Причина: 3 предупреждения",\
+			StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), PN(targetid));
+
+		ShowBanDialog(targetid, pid, reason);
+		PI[targetid][pLeader] = PI[targetid][pAdmin] = PI[targetid][pAdminNumber] = 0;
+
+		SaveAccount(targetid);
+		SCM(targetid, COLOR_BLACK, !"Ваш аккаунт заблокирован, для выхода введите /q");
+	}
+	SpecPl(targetid, true);
+	return PrepareKickCamera(targetid);
+}
 cmd:makemoder(playerid, params[]) 
 {
     if(!CheckAccess(playerid, 6)) 
@@ -220,7 +292,7 @@ cmd:vmute(playerid, params[])
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	SetSpawnInfoEx(params[0], GetSkinOfPlayer(playerid), -1764.1515, -2889.2085, 14.3141, 240.8832);
 
-	new punishmentID = CreatePunishment(params[0], playerid, 4, time, params[1]);
+	new punishmentID = CreatePunishment(params[0], playerid, 5, time, params[1]);
 	SCMF(playerid, COLOR_TOMATO, "Вы заблокировали голосовой чат игрока %s на %d минут. Причина: %s", PN(params[0]), time, params[1]);
 	SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] заблокировал голосовой чат игроку %s на %d минут. Причина: %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid),playerid, PN(params[0]), time,params[1]);
 
@@ -297,6 +369,8 @@ cmd:unvmute(playerid, params[])
 	PI[params[0]][pVMuteTime] = 0;
 	SvMutePlayerDisable(params[0]);
 
+	RemoveActivePunishment(params[0], 5);
+
 	cef_emit_event(playerid, "remove-notifications:radar", CEFINT(103));
 	return 1;
 }
@@ -319,6 +393,8 @@ cmd:unmute(playerid, params[])
 	
 	PI[params[0]][pMute] = 0;
 	PI[params[0]][pMuteTime] = 0;
+
+	RemoveActivePunishment(params[0], 4);
 
 	cef_emit_event(playerid, "remove-notifications:radar", CEFINT(102));
 	return 1;
@@ -343,6 +419,8 @@ cmd:unjail(playerid, params[])
 	PI[params[0]][pDemorgan] = 0;
 	UpdatePlayerHealth(params[0], 100);
 	PlayerSpawn(params[0]);
+
+	RemoveActivePunishment(params[0], 1);
 
 	cef_emit_event(playerid, "remove-notifications:radar", CEFINT(101));
 	return 1;
@@ -457,7 +535,7 @@ cmd:ban(playerid, data[])
 	Причина:\t\t%s\n\
 	Количество дней:\t%d дн\n\n\
 	{FFFF99}Советуем сделать скриншот (клавиша F8), чтобы иметь\n\
-	возможность обжаловать бан на forum.m-bonus.com", PN(id), id, punishmentID, day, mounth, year, hour, minute, second, reason, days);
+	возможность обжаловать бан на forum.m-bonus.com", PN(id), PI[id][pID], punishmentID, day, mounth, year, hour, minute, second, reason, days);
 
 	PI[id][pLeader] = 0;
 	PI[id][pAdmin] = 0;
@@ -1543,4 +1621,41 @@ stock UnBanNamePC(name[])
         mysql_tquery(mysql, global_str);
 	}
 	return 1;
+}
+
+stock RemovePlayerWarn(playerid, slot)
+{
+    for (new i = slot; i < 2; i++)
+    {
+        PI[playerid][pWarnsTimers][i] = PI[playerid][pWarnsTimers][i + 1];
+    }
+
+    PI[playerid][pWarnsTimers][2] = 0;
+    if (PI[playerid][pWarns] > 0) PI[playerid][pWarns]--;
+}
+
+stock ShowBanDialog(playerid, punishmentID, const reason[])
+{
+	new year, month, day, hour, minute, second;
+	getdate(year, month, day);
+	gettime(hour, minute, second);
+
+	SCM(playerid, COLOR_TOMATO, "Ваш аккаунт заблокирован на 7 дн. Причина: 3 предупреждения");
+	SCMF(playerid, COLOR_LIGHTGREY, "Номер наказания: {00912D}#%d{CCCCCC} (для обжалования на {F87031}forum.m-bonus.com{CCCCCC})", punishmentID);
+
+	SPDF(playerid, 0, DIALOG_STYLE_MSGBOX, !"{EE3366}Блокировка аккаунта", !"Закрыть", !"", "\
+	{FFFFFF}Никнейм:\t\t{3366CC}%s\n\
+	{FFFFFF}ID аккаунта:\t\t{3366CC}%d\n\
+	{FFFFFF}Номер наказания:\t{00912D}%d\n\
+	{FFFFFF}Сервер:\t\tСервер #1\n\
+	Дата:\t\t\t%02d.%02d.%04d\n\
+	Время:\t\t\t%02d:%02d:%02d\n\
+	Причина:\t\t%s\n\
+	Количество дней:\t7 дн\n\n\
+	{FFFF99}Советуем сделать скриншот (клавиша F8), чтобы иметь\n\
+	возможность обжаловать бан на forum.m-bonus.com",
+		PN(playerid), PI[playerid][pID], punishmentID,
+		day, month, year,
+		hour, minute, second,
+		reason);
 }

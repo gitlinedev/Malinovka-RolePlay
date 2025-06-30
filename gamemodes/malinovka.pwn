@@ -1078,6 +1078,21 @@ stock UpdatePlayers()
 						UpdatePlayerDataInt(playerid, "VMuteTime", 0);
 					}
 				}
+				if PI[playerid][pWarns] > 0 *then
+				{
+					for (new i = 0; i < 3; i++)
+					{
+						if (PI[playerid][pWarnsTimers][i] > 0)
+						{
+							PI[playerid][pWarnsTimers][i]--;
+
+							if (PI[playerid][pWarnsTimers][i] == 0)
+							{
+								RemovePlayerWarn(playerid, i);
+							}
+						}
+					}
+				}
 				if(PlayerAFK[playerid] == 0 || GetPlayerState(playerid) == PLAYER_STATE_SPECTATING)
 				{
 					PlayerAFKTime[playerid][0] ++;

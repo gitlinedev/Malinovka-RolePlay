@@ -28,36 +28,41 @@ public: OnPlayerLoadData(playerid)
 	PI[playerid][pMute] = cache_get_row_int(0, 17, mysql);
 	PI[playerid][pMuteTime] = cache_get_row_int(0, 18, mysql);
 	PI[playerid][pWarns] = cache_get_row_int(0, 19, mysql);
-	PI[playerid][pWarnsTime] = cache_get_row_int(0, 20, mysql);
-	PI[playerid][pJail] = cache_get_row_int(0, 21, mysql);
-	PI[playerid][pJailTime] = cache_get_row_int(0, 22, mysql);
-	PI[playerid][pHospital] = cache_get_row_int(0, 23, mysql);
-	PI[playerid][pSkin] = cache_get_row_int(0, 24, mysql);
-	PI[playerid][pWanted] = cache_get_row_int(0, 25, mysql);
-	PI[playerid][pAdminNumber] = cache_get_row_int(0, 26, mysql);
+	PI[playerid][pJail] = cache_get_row_int(0, 20, mysql);
+	PI[playerid][pJailTime] = cache_get_row_int(0, 21, mysql);
+	PI[playerid][pHospital] = cache_get_row_int(0, 22, mysql);
+	PI[playerid][pSkin] = cache_get_row_int(0, 23, mysql);
+	PI[playerid][pWanted] = cache_get_row_int(0, 24, mysql);
+	PI[playerid][pAdminNumber] = cache_get_row_int(0, 25, mysql);
 	//new
-	PI[playerid][pLeader] = cache_get_row_int(0, 27, mysql);
-	PI[playerid][pMember] = cache_get_row_int(0, 28, mysql);
-	PI[playerid][pOrgSkin] = cache_get_row_int(0, 29, mysql);
-	PI[playerid][pRang] = cache_get_row_int(0, 30, mysql);
-	PI[playerid][pSpawnSetting] = cache_get_row_int(0, 31, mysql);
-	PI[playerid][pDemorgan] = cache_get_row_int(0, 32, mysql);
+	PI[playerid][pLeader] = cache_get_row_int(0, 26, mysql);
+	PI[playerid][pMember] = cache_get_row_int(0, 27, mysql);
+	PI[playerid][pOrgSkin] = cache_get_row_int(0, 28, mysql);
+	PI[playerid][pRang] = cache_get_row_int(0, 29, mysql);
+	PI[playerid][pSpawnSetting] = cache_get_row_int(0, 30, mysql);
+	PI[playerid][pDemorgan] = cache_get_row_int(0, 31, mysql);
 	//PI[playerid][pDemorganTime] = cache_get_row_int(0, 33, mysql);
 	PI[playerid][pShowFPS] = cache_get_row_int(0, 34, mysql);
-	PI[playerid][pShowNameTags] = cache_get_row_int(0, 39, mysql);
-	PI[playerid][pCinemaMode] = cache_get_row_int(0, 40, mysql);
-	PI[playerid][pVoiceChat] = cache_get_row_int(0, 41, mysql);
-	PI[playerid][pShowRain] = cache_get_row_int(0, 42, mysql);
-	PI[playerid][pDamageMP3] = cache_get_row_int(0, 43, mysql);
-	PI[playerid][pVMute] = cache_get_row_int(0, 44, mysql);
-	PI[playerid][pVMuteTime] = cache_get_row_int(0, 45, mysql);
-	PI[playerid][pHouseKey] = cache_get_row_int(0, 46, mysql);
+	PI[playerid][pShowNameTags] = cache_get_row_int(0, 38, mysql);
+	PI[playerid][pCinemaMode] = cache_get_row_int(0, 39, mysql);
+	PI[playerid][pVoiceChat] = cache_get_row_int(0, 40, mysql);
+	PI[playerid][pShowRain] = cache_get_row_int(0, 41, mysql);
+	PI[playerid][pDamageMP3] = cache_get_row_int(0, 42, mysql);
+	PI[playerid][pVMute] = cache_get_row_int(0, 43, mysql);
+	PI[playerid][pVMuteTime] = cache_get_row_int(0, 44, mysql);
+	PI[playerid][pHouseKey] = cache_get_row_int(0, 45, mysql);
 
-	PI[playerid][pVKonktakeID] = cache_get_row_int(0, 47, mysql);
-	PI[playerid][pDayOnline] = cache_get_row_int(0, 48, mysql);
-	PI[playerid][pDayAFK] = cache_get_row_int(0, 49, mysql);
-	PI[playerid][pGlobalOnline] = cache_get_row_int(0, 50, mysql);
-	PI[playerid][pGlobalAFK] = cache_get_row_int(0, 51, mysql);
+	PI[playerid][pVKonktakeID] = cache_get_row_int(0, 46, mysql);
+	PI[playerid][pDayOnline] = cache_get_row_int(0, 47, mysql);
+	PI[playerid][pDayAFK] = cache_get_row_int(0, 48, mysql);
+	PI[playerid][pGlobalOnline] = cache_get_row_int(0, 49, mysql);
+	PI[playerid][pGlobalAFK] = cache_get_row_int(0, 50, mysql);
+
+	PI[playerid][pWarnsTimers][0] = cache_get_row_int(0, 51, mysql);
+	PI[playerid][pWarnsTimers][1] = cache_get_row_int(0, 52, mysql);
+	PI[playerid][pWarnsTimers][2] = cache_get_row_int(0, 53, mysql);
+
+	if PI[playerid][pVMute] == 1 *then SvMutePlayerEnable(playerid);
 
 	SetPlayerTeam(playerid, 4);
 
@@ -105,6 +110,7 @@ public: OnPlayerLoadData(playerid)
 	PreloadAllAnimLibs(playerid);
 	return PlayerSpawn(playerid);
 }
+
 stock CheckPlayerLogged(playerid, Name[])
 {
 	foreach(Player, i)
@@ -428,7 +434,6 @@ stock SaveAccount(playerid)
 	orm_addvar_int(orm, PI[playerid][pJail], "Jail");
 	orm_addvar_int(orm, PI[playerid][pJailTime], "JailTime");
 	orm_addvar_int(orm, PI[playerid][pWarns], "Warns");
-	orm_addvar_int(orm, PI[playerid][pWarnsTime], "WarnsTime");
 	orm_addvar_int(orm, PI[playerid][pHospital], "Hospital");
 	orm_addvar_int(orm, PI[playerid][pSkin], "Skin");
 	orm_addvar_int(orm, PI[playerid][pWanted], "Wanted");
@@ -455,6 +460,11 @@ stock SaveAccount(playerid)
 	orm_addvar_int(orm, PI[playerid][pDayAFK], "DayAFK");
 	orm_addvar_int(orm, PI[playerid][pGlobalOnline], "GlobalOnline");
 	orm_addvar_int(orm, PI[playerid][pGlobalAFK], "GlobalAFK");
+
+
+	orm_addvar_int(orm, PI[playerid][pWarnsTimers][0], "WarnsTimerOne");
+	orm_addvar_int(orm, PI[playerid][pWarnsTimers][1], "WarnsTimerTwo");
+	orm_addvar_int(orm, PI[playerid][pWarnsTimers][2], "WarnsTimerThree");
 
 	//Float
 	orm_addvar_float(orm, PI[playerid][pHealth], "Health");

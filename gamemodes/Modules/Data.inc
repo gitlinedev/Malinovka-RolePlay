@@ -250,7 +250,7 @@ enum PlayerInfo {
 	pMuteTime,
     pVoiceChat,
 	pWarns,
-	pWarnsTime,
+	pWarnsTimers[3],
 	pJail,
 	pJailTime,
     pShowFPS,
@@ -284,12 +284,15 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pPath][0] = 
 	PlayerName[playerid][0] = EOS;
 
+    for (new i = 0; i < 3; i++)
+    {
+        PI[playerid][pWarnsTimers][i] = 0;
+    }
 
     PI[playerid][pID] = 
     PI[playerid][pHouseKey] =
 	pTemp[playerid][dialogListItem] = -1;
 
-	PI[playerid][pWarnsTime] =
 	PI[playerid][pJailTime] =
     PI[playerid][pVMuteTime] =
     PI[playerid][pShowRain] =
