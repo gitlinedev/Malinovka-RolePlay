@@ -36,7 +36,7 @@ enum
 };
 
 const
-	Float:MOVE_SPEED = 175.0,
+	//Float:MOVE_SPEED = 175.0,
 	Float:ACCEL_RATE = 0.06;
 
 
@@ -188,7 +188,7 @@ stock MoveCamera(playerid)
 		FlyAccelmul[playerid] += ACCEL_RATE;
 
 	new
-		Float:speed = MOVE_SPEED * FlyAccelmul[playerid],
+		Float:speed = AInfo[playerid][admFlySpeed] * FlyAccelmul[playerid],
 		Float:x, Float:y, Float:z;
 		
 	GetNextCameraPosition(FlyMode[playerid], CameraPosX, CameraPosY, CameraPosZ, CameraFrontX, CameraFrontY, CameraFrontZ, x, y, z);

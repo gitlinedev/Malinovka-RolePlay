@@ -512,16 +512,28 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
 
 				if IsPlayerInAnyVehicle(playerid) *then
 				{
-					SAMF(COLOR_LIGHTYELLOW, "Вопрос от %s[%d] (%d):{FFFFFF} %s",\
-						PN(playerid), playerid, GetPlayerVehicleID(playerid), inputtextsave);
+					foreach(Admin, i) {
+						if(PI[i][pAdmin] && ALogin{i} && AInfo[i][admShowReport]) 
+							SCMF(i, COLOR_LIGHTYELLOW, "Вопрос от %s[%d] (%d):{FFFFFF} %s", PN(playerid), playerid, GetPlayerVehicleID(playerid), inputtextsave);
+					}
+					foreach(Moder, i) {
+						if(PI[i][pModer]) 
+							SCMF(i, COLOR_LIGHTYELLOW, "Вопрос от %s[%d] (%d):{FFFFFF} %s", PN(playerid), playerid, GetPlayerVehicleID(playerid), inputtextsave);
+					}
 
 					SCMF(playerid, COLOR_LIGHTYELLOW, "Вопрос от %s[%d] (%d):{FFFFFF} %s", 
 						PN(playerid), playerid, GetPlayerVehicleID(playerid), inputtextsave);
 				}
    				else
 				{
-					SAMF(COLOR_LIGHTYELLOW, "Вопрос от %s[%d]:{FFFFFF} %s",\
-						PN(playerid), playerid, inputtextsave);
+					foreach(Admin, i) {
+						if(PI[i][pAdmin] && ALogin{i} && AInfo[i][admShowReport]) 
+							SCMF(i, COLOR_LIGHTYELLOW, "Вопрос от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
+					}
+					foreach(Moder, i) {
+						if(PI[i][pModer]) 
+							SCMF(i, COLOR_LIGHTYELLOW, "Вопрос от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
+					}
 
 					SCMF(playerid, COLOR_LIGHTYELLOW, "Вопрос от %s[%d]:{FFFFFF} %s", 
 						PN(playerid), playerid, inputtextsave);
@@ -541,17 +553,29 @@ stock k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[]
 					return SCM(playerid, COLOR_GREY, !"Не менее 1 и не более 100 символов"), ShowHelpDialog(playerid);
 
 				if IsPlayerInAnyVehicle(playerid) *then
-				{
-					SAMF(COLOR_REPORT, "Жалоба от %s[%d] (%d):{FFFFFF} %s",\
-						PN(playerid), playerid, GetPlayerVehicleID(playerid), inputtextsave);
+				{	
+					foreach(Admin, i) {
+						if(PI[i][pAdmin] && ALogin{i} && AInfo[i][admShowReport]) 
+							SCMF(i, COLOR_REPORT, "Жалоба от %s[%d] (%d):{FFFFFF} %s", PN(playerid), playerid, GetPlayerVehicleID(playerid), inputtextsave);
+					}
+					foreach(Moder, i) {
+						if(PI[i][pModer]) 
+							SCMF(i, COLOR_REPORT, "Жалоба от %s[%d] (%d):{FFFFFF} %s", PN(playerid), playerid, GetPlayerVehicleID(playerid), inputtextsave);
+					}
 
 					SCMF(playerid,COLOR_REPORT, "Жалоба от %s[%d] (%d):{FFFFFF} %s", 
 						PN(playerid), playerid, GetPlayerVehicleID(playerid), inputtextsave);
 				}
 				else 
 				{
-					SAMF(COLOR_REPORT, "Жалоба от %s[%d]:{FFFFFF} %s",\
-						PN(playerid), playerid, inputtextsave);
+					foreach(Admin, i) {
+						if(PI[i][pAdmin] && ALogin{i} && AInfo[i][admShowReport]) 
+							SCMF(i, COLOR_REPORT, "Жалоба от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
+					}
+					foreach(Moder, i) {
+						if(PI[i][pModer]) 
+							SCMF(i, COLOR_REPORT, "Жалоба от %s[%d]:{FFFFFF} %s", PN(playerid), playerid, inputtextsave);
+					}
 
 					SCMF(playerid,COLOR_REPORT, "Жалоба от %s[%d]:{FFFFFF} %s", 
 						PN(playerid), playerid, inputtextsave);

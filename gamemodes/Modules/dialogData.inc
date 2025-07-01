@@ -33,5 +33,7 @@ enum
     dHouseMenu,
     dMakeGameModer,
     dModerCMDList,
-    dModerCMD
+    dModerCMD,
+    dAdminPanel,
+    dAdminFlySpeed
 };

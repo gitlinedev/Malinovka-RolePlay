@@ -110,6 +110,10 @@ enum _:get_player_name_type
 	PLAYER_SEARCH_PID
 };
 
+new Iterator:Admin<MAX_PLAYERS>;
+new Iterator:Moder<MAX_PLAYERS>;
+new Iterator:Event<MAX_PLAYERS>;
+
 //======================================[ limits ]================================================//
 const 
 	MAX_ORGS = 8,
@@ -121,9 +125,9 @@ new LoadedHouses;
 #include Modules/dialogData // ид диалогов
 #include Modules/Data // массивы и цвета
 #include Modules/VoiceChat // голосовой чат
-#include Modules/AntiCheat // анти-чит
-#include Modules/Accounts // авторизаци€ и регистраци€
 #include Modules/Admin // система админов
+#include Modules/Accounts // авторизаци€ и регистраци€
+#include Modules/AntiCheat // анти-чит
 #include Modules/DefaultCMD // команды по умолчанию
 #include Modules/SQL // работа с базой данных
 #include Modules/CEFClient // цеф
@@ -348,7 +352,7 @@ public OnPlayerConnect(playerid)
 
 	f(global_str, 150, "SELECT `ID`, `Mail` FROM accounts WHERE NickName = '%s' LIMIT 1;", PlayerName[playerid]);
     mysql_tquery(mysql, global_str, "GetPlayerDataMysql", "d", playerid);
-
+	
 	RemoveBuildings(playerid);
 
 	return 1;
@@ -487,9 +491,16 @@ public OnPlayerText(playerid, text[])
 			return 0;
 		}
 	}
-
-	f(global_str, 300, "- %s {%s}(%s)[%d]", text, TeamColors[GetTeamID(playerid)][ColorStr], PN(playerid), playerid);
-	ProxDetector(30.0, playerid, global_str, -1);
+	if AInfo[playerid][admHide] *then
+	{
+		f(global_str, 300, "»гровой ћастер: {FFFFFF}%s", text);
+		ProxDetector(30.0, playerid, global_str, 0xDD3366FF);
+	}
+	else 
+	{
+		f(global_str, 300, "- %s {%s}(%s)[%d]", text, TeamColors[GetTeamID(playerid)][ColorStr], PN(playerid), playerid);
+		ProxDetector(30.0, playerid, global_str, -1);
+	}
 
 	if(GetPlayerState(playerid) == PLAYER_STATE_ONFOOT && !AnimPlayed{playerid})
 	{
@@ -1685,4 +1696,8 @@ stock PayDayPlayer()
 	return 1;
 }
 
-cmd:callpd(playerid) return PayDay();
+public OnPlayerStreamIn(playerid, forplayerid) 
+{
+	if AInfo[forplayerid][admHide] *then return ShowPlayerNameTagForPlayer(playerid, forplayerid, false);
+	return 1;
+}

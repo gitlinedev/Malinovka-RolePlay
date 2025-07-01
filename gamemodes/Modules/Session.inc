@@ -96,6 +96,11 @@ public: MysqlCheckPlayerBanPC(playerid)
 
         if(PI[playerid][pID] != -1)
         {
+            foreach(Admin, i) {
+                if(PI[i][pAdmin] && ALogin{i} && !AInfo[i][admInfoNewPlayer]) 
+                    SCMF(i, COLOR_LIGHTGREY, "[Откладка]: Игрок %s[%d] успешно зашел на сервер. IP-адрес: %s", PlayerName[playerid], playerid, AInfo[i][admIP] ? "Скрыто" : PlayerIp[playerid]);      
+            }
+
             ShowLoginDialog(playerid);
         }
         else

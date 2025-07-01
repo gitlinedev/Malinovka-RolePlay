@@ -211,7 +211,7 @@ new PlayerMail[MAX_PLAYERS][50],
     PlayerAFK[MAX_PLAYERS],
 	PlayerAFKTime[MAX_PLAYERS][2],
     SpeedometerUpdate[MAX_PLAYERS];
-
+    
 new RegPass[MAX_PLAYERS][30];
 new RegSex[MAX_PLAYERS];
 new RegReferal[MAX_PLAYERS][24];

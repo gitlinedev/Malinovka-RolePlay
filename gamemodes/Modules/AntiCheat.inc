@@ -146,14 +146,22 @@ public: OnCheatDetected(playerid, const ip_address[], type, code)
         case AC_CODE_TRIGGER_TYPE_WARNING:
         {
             pTemp[playerid][ACWarnings]++;
-            SAMF(COLOR_ADMINCHAT, "[Анти-чит] Подозрение %s[%d] (#%03d/%d: %s [IP: %s]).", PN(playerid), playerid, code, GetPlayerVehicleID(playerid), AC_CODE_NAME[code], ip_address);
+            
+            foreach(Admin, i) {
+                if(PI[i][pAdmin] && ALogin{i} && AInfo[i][admACMsg]) 
+                    SCMF(i, COLOR_ADMINCHAT, "[Анти-чит] Подозрение %s[%d] (#%03d/%d: %s [IP: %s]).", PN(playerid), playerid, code, GetPlayerVehicleID(playerid), AC_CODE_NAME[code], ip_address);
+            }
             
             SQL("INSERT INTO `detections`(`NickName`, `DetectionSource`, `ACName`, `ACCode`, `ACKick`, `Date`) VALUES ('%s', 0, '%s', '%d', 0, NOW())",\
                 PN(playerid), AC_CODE_NAME[code], code);
         }
         case AC_CODE_TRIGGER_TYPE_KICK: 
 		{
-            SAMF(COLOR_ADMINCHAT, "[Анти-чит] %s[%d] кикнут (%s #%03d/%d [IP: %s]).", PN(playerid), playerid, AC_CODE_NAME[code], code, GetPlayerVehicleID(playerid), ip_address);
+            foreach(Admin, i) {
+                if(PI[i][pAdmin] && ALogin{i} && AInfo[i][admACMsg]) 
+                    SCMF(i, COLOR_ADMINCHAT, "[Анти-чит] %s[%d] кикнут (%s #%03d/%d [IP: %s]).", PN(playerid), playerid, AC_CODE_NAME[code], code, GetPlayerVehicleID(playerid), ip_address);
+            }
+
 			SCMF(playerid, COLOR_BLACK, "Вы были кикнуты по подозрению в читерстве (#%03d)", code);
 
             SQL("INSERT INTO `detections`(`NickName`, `DetectionSource`, `ACName`, `ACCode`, `ACKick`, `Date`) VALUES ('%s', 0, '%s', '%d', 1, NOW())",\

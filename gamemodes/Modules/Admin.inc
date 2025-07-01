@@ -1,17 +1,16 @@
 enum AdminInfo
 {
-	admID,
-    admGoto,
-	admGethere,
-	admSpectate,
 	admInfoNewPlayer,
 	admKillList,
 	admIP,
-	Float:admPos[3],
-	admMember,
-	admMemberRank,
-	admWorld,
-	admInterior
+	admACMsg,
+	admJoin,
+	admFlySpeed,
+	admHide,
+	admShowReport,
+    admGethere,
+    admGoto,
+    admInterior
 }
 new AInfo[MAX_PLAYERS][AdminInfo];
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -172,9 +171,6 @@ new const AdminCommandList[][AdminCommand] = {
 	// /givevipall
 };
 
-new Iterator:Admin<MAX_PLAYERS>;
-new Iterator:Moder<MAX_PLAYERS>;
-new Iterator:Event<MAX_PLAYERS>;
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 cmd:givedonate(playerid, params[])
 {
@@ -1038,8 +1034,27 @@ cmd:as(playerid)
 
 	if !ALogin{playerid} *then return 
 		SPD(playerid, dALogin, DIALOG_STYLE_PASSWORD, !"{EE3366}Авторизация", !"{FFFFFF}Для получения доступа к правам {EE3366}игрового мастера{FFFFFF}\n необходимо подтвердить личность, введя пароль.", !"Далее", !"Отмена");
-    
-    SCM(playerid, -1, !"В разработке!");
+
+	f(global_str, 1000, "\
+		1. Оповещения анти-чита\t%s\n\
+		2. Вывод списка смертей\t%s\n\
+		3. Входы / выходы ИМ\t%s\n\
+		4. Входы / выходы игроков\t%s\n\
+		5. Скорость полёта (/fly)\t%d\n\
+		6. Изменить никнейм\t\tВручную\n\
+		7. Скрыть ник\t\t\t%s\n\
+		8. Отображение репорта\t%s\n\
+		9. IP адреса в сообщениях\t%s",\
+		AInfo[playerid][admACMsg] ? ("{4eaa77}Все{FFFFFF}") : ("{ce6c4f}Выключены{FFFFFF}"),\
+		AInfo[playerid][admKillList] ? ("{4eaa77}Включен{FFFFFF}") : ("{ce6c4f}Выключен{FFFFFF}"),\
+		AInfo[playerid][admJoin] ? ("{4eaa77}Включены{FFFFFF}") : ("{ce6c4f}Выключены{FFFFFF}"),\
+		AInfo[playerid][admInfoNewPlayer] ? ("{4eaa77}Включены{FFFFFF}") : ("{ce6c4f}Выключены{FFFFFF}"),\
+		AInfo[playerid][admFlySpeed],\
+		AInfo[playerid][admHide] ? ("{4eaa77}Включено{FFFFFF}") : ("{ce6c4f}Выключено{FFFFFF}"),\
+		AInfo[playerid][admShowReport] ? ("{4eaa77}Включено{FFFFFF}") : ("{ce6c4f}Выключено{FFFFFF}"),\
+		AInfo[playerid][admIP] ? ("{4eaa77}Включены{FFFFFF}") : ("{ce6c4f}Выключены{FFFFFF}"));
+	
+	SPD(playerid, dAdminPanel, DIALOG_STYLE_LIST, !"{EE3366}Настройки игрового мастера", global_str, !"Изменить", !"Назад");
     return 1;
 }
 
@@ -1438,6 +1453,94 @@ stock admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 {
     switch dialogid do
     {
+		case dAdminPanel:
+		{
+			if(!response) return callcmd::menu(playerid);
+			if(response)
+			{
+				switch(listitem)
+				{
+					case 0:
+					{
+						AInfo[playerid][admACMsg] = !AInfo[playerid][admACMsg];
+						callcmd::as(playerid);
+					}
+					case 1:
+					{
+						AInfo[playerid][admKillList] = !AInfo[playerid][admKillList];
+						callcmd::as(playerid);
+					}
+					case 2:
+					{
+						AInfo[playerid][admJoin] = !AInfo[playerid][admJoin];
+						callcmd::as(playerid);
+					}
+					case 3:
+					{
+						AInfo[playerid][admInfoNewPlayer] = !AInfo[playerid][admInfoNewPlayer];
+						callcmd::as(playerid);
+					}
+					case 4:
+					{
+						SPD(playerid, dAdminFlySpeed, DIALOG_STYLE_INPUT, !"{EE3366}Изменить скорость полёта", !"{FFFFFF}Введите желаемую скорость от 50 до 300:", !"Изменить", !"Назад");
+					}
+					case 5: return 1;
+					case 6:
+					{
+						AInfo[playerid][admHide] = !AInfo[playerid][admHide];
+
+						if !AInfo[playerid][admHide] *then
+						{
+							SCM(playerid, COLOR_HINT, !"[AS]: {FFFFFF}скрытие никнейма выключено");
+							UpdatePlayerHealth(playerid, 100.0);
+
+							foreach(new i: Player)
+							{
+								if(IsPlayerLogged{i})
+									ShowPlayerNameTagForPlayer(i, playerid, true);
+							}
+						}
+						else 
+						{
+							SCM(playerid, COLOR_HINT, !"[AS]: {FFFFFF} скрытие никнейма включено");
+							UpdatePlayerHealth(playerid, 176.0);
+
+							foreach(new i: Player)
+							{
+								if(IsPlayerLogged{i})
+									ShowPlayerNameTagForPlayer(i, playerid, false);
+							}
+						}
+						callcmd::as(playerid);
+					}
+					case 7:
+					{	
+						AInfo[playerid][admShowReport] = !AInfo[playerid][admShowReport];
+						callcmd::as(playerid);
+					}
+					case 8:
+					{	
+						AInfo[playerid][admIP] = !AInfo[playerid][admIP];
+						callcmd::as(playerid);
+					}
+				}
+				SaveAdminSettings(playerid);
+			}
+		}
+		case dAdminFlySpeed:
+		{
+			if(!response) return callcmd::as(playerid);
+			if(response)
+			{
+				new Speed = strval(inputtextsave);
+
+				if Speed > 300 || Speed < 50 *then return SPD(playerid, dAdminFlySpeed, DIALOG_STYLE_INPUT, !"{EE3366}Изменить скорость полёта", !"{FFFFFF}Введите желаемую скорость от 50 до 300:", !"Изменить", !"Назад");
+				
+				AInfo[playerid][admFlySpeed] = Speed;
+
+				callcmd::as(playerid);
+			}
+		}
 		case dEventSettings:
 		{
 			if(!response) return 1;
@@ -1621,8 +1724,10 @@ public: AloginAuth(playerid, password)
 
             AInfo[playerid][admInterior] = -1;
             
-            f(global_str, 128, "[%s #%d] %s[%d] вошел на сервер", Admin_Names[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PN(playerid), playerid);
-            SendAdminsMessage(-1, global_str);
+			foreach(Admin, i) {
+                if(PI[i][pAdmin] && ALogin{i} && AInfo[i][admJoin]) 
+                    SCMF(i, COLOR_ADMINCHAT, "[%s #%d] %s[%d] вошел на сервер", Admin_Names[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PN(playerid), playerid);
+            }
 
             SCMF(playerid, -1, "Вы успешно авторизовались как {EE3366}%s{FFFFFF}!", Admin_Names[PI[playerid][pAdmin]]);
         
@@ -1630,6 +1735,8 @@ public: AloginAuth(playerid, password)
 
             Iter_Add(Admin, playerid);
             ALogin{playerid} = true;
+
+			callcmd::as(playerid);
         }
     }
     else 

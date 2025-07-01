@@ -70,6 +70,12 @@ public: OnPlayerLoadData(playerid)
 
 	if PI[playerid][pVMute] == 1 *then SvMutePlayerEnable(playerid);
 
+	if(PI[playerid][pAdmin])
+	{
+		f(global_str, 100, "SELECT * FROM `admin` WHERE `AccountID` = '%d'", PI[playerid][pID]);
+		mysql_tquery(mysql, global_str, "LoadAdminSettings", "d", playerid);
+	}
+
 	SetPlayerTeam(playerid, 4);
 
 	if PI[playerid][pDemorgan] >= 1 *then
@@ -117,6 +123,72 @@ public: OnPlayerLoadData(playerid)
 	return PlayerSpawn(playerid);
 }
 
+public: LoadAdminSettings(playerid)
+{
+	if(cache_get_row_count())
+	{
+		AInfo[playerid][admInfoNewPlayer] = cache_get_row_int(0, 1, mysql);
+		AInfo[playerid][admKillList] = cache_get_row_int(0, 2, mysql);
+		AInfo[playerid][admIP] = cache_get_row_int(0, 3, mysql);
+		AInfo[playerid][admACMsg] = cache_get_row_int(0, 4, mysql);
+		AInfo[playerid][admJoin] = cache_get_row_int(0, 5, mysql);
+		AInfo[playerid][admFlySpeed] = cache_get_row_int(0, 6, mysql);
+		AInfo[playerid][admHide] = cache_get_row_int(0, 7, mysql);
+		AInfo[playerid][admShowReport] = cache_get_row_int(0, 8, mysql);
+		AInfo[playerid][admGethere] = cache_get_row_int(0, 9, mysql);
+		AInfo[playerid][admGoto] = cache_get_row_int(0, 10, mysql);
+	}
+	else 
+	{
+		AInfo[playerid][admInfoNewPlayer] = 1;
+		AInfo[playerid][admKillList] = 1;
+		AInfo[playerid][admIP] = 1;
+		AInfo[playerid][admACMsg] = 1;
+		AInfo[playerid][admJoin] = 1;
+		AInfo[playerid][admFlySpeed] = 125;
+		AInfo[playerid][admHide] = 0;
+		AInfo[playerid][admShowReport] = 1;
+		AInfo[playerid][admGethere] = 1;
+		AInfo[playerid][admGoto] = 1;
+
+		f(global_str, 310, "INSERT INTO `admin` ( `AccountID`, `admInfoNewPlayer`, `admKillList`, `admIP`, `admACMsg`, `admJoin`, `admFlySpeed`, `admHide`, `admShowReport`, `admGethere`, `admGoto`) VALUES\
+							('%d','%d','%d','%d','%d','%d','%d','%d','%d','%d','%d')",\
+			PI[playerid][pID], AInfo[playerid][admInfoNewPlayer], AInfo[playerid][admKillList], AInfo[playerid][admIP], AInfo[playerid][admACMsg],\
+			AInfo[playerid][admJoin], AInfo[playerid][admFlySpeed], AInfo[playerid][admHide], AInfo[playerid][admShowReport], AInfo[playerid][admGethere], AInfo[playerid][admGoto]);
+
+		mysql_query(mysql, global_str, false);
+	}
+	return 1;
+}
+
+stock SaveAdminSettings(playerid)
+{
+    if !IsPlayerOnline(playerid) *then return false;
+	
+	new ORM:orm = orm_create("admin");
+	
+	// Integer
+	orm_addvar_int(orm, PI[playerid][pID], "AccountID");
+	
+	orm_addvar_int(orm, AInfo[playerid][admInfoNewPlayer], "admInfoNewPlayer");
+	orm_addvar_int(orm, AInfo[playerid][admKillList], "admKillList");
+	orm_addvar_int(orm, AInfo[playerid][admIP], "admIP");
+	orm_addvar_int(orm, AInfo[playerid][admACMsg], "admACMsg");
+	orm_addvar_int(orm, AInfo[playerid][admJoin], "admJoin");
+	orm_addvar_int(orm, AInfo[playerid][admFlySpeed], "admFlySpeed");
+	orm_addvar_int(orm, AInfo[playerid][admHide], "admHide");
+	orm_addvar_int(orm, AInfo[playerid][admShowReport], "admShowReport");
+	orm_addvar_int(orm, AInfo[playerid][admGethere], "admGethere");
+	orm_addvar_int(orm, AInfo[playerid][admGoto], "admGoto");
+	
+	orm_setkey(orm, "AccountID");
+	
+	orm_update(orm);
+	orm_destroy(orm);
+
+	return true;
+}
+
 stock CheckPlayerLogged(playerid, Name[])
 {
 	foreach(Player, i)
@@ -155,6 +227,11 @@ stock OnPlayerLogin(playerid, Reg = 0)
 		SCM(playerid, 0xCC6666FF, !"На сервере можно арендовать транспорт за небольшую сумму на срок до трёх дней {ffff99}(/gps 1 10)");
 		SCM(playerid, 0xCC6666FF, !"Перейдя на 2 уровень не забудьте посетить любую мэрию {ffff99}(/gps 3 1-3){cc6666}, там можно устроиться на работу");
 		SCM(playerid, 0xCC6666FF, !"Желаем приятной игры. При возникновении вопросов смело задавайте их игровым мастерам {ffff99}(/report или /menu > 6)");
+
+		foreach(Admin, i) {
+			if(PI[i][pAdmin] && ALogin{i} && !AInfo[i][admInfoNewPlayer]) 
+				SCMF(i, COLOR_LIGHTGREY, "[Откладка]: Игрок %s[%d] успешно создал аккаунт. IP-адрес: %s", PlayerName[playerid], playerid, AInfo[i][admIP] ? "Скрыто" : PlayerIp[playerid]);      
+		}
 	}
 
 	f(global_str, 150, "SELECT * FROM `bans` WHERE BINARY `Name` = '%s' LIMIT 1", PN(playerid));
