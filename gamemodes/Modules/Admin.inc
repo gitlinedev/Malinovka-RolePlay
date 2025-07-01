@@ -137,8 +137,7 @@ new const AdminCommandList[][AdminCommand] = {
 	{"resgun", 3, 3, "Забрать оружие"},
 	{"warn", 3, 3, "Выдать предупреждение игроку"},
 	{"unwarn", 3, 3, "Снять предупреждение игроку"},	
-	// 3 лвл добавить /warn, /unwarn
-
+	
 	//level 4
 	{"atw", 4, 0, "Забрать оружие у игроков в радиусе"},
 	{"ahp", 4, 0, "Выдать ХП игрокам в радиусе"},
@@ -156,18 +155,18 @@ new const AdminCommandList[][AdminCommand] = {
 	//level6
 	{"setsex", 6, 0, "Изменить пол персонажа игроку"},
 	{"makemoder", 6, 0, "Выдать права игрового модератора"},
-	// добавить , /givemoney 1 -> 10.000.000 
+	{"givemoney", 6, 0, "Выдать игроку деньги"},
 
 	//level7
 	{"banip", 7, 0, "Заблокировать IP игрока"},
 	{"unbanip", 7, 0, "Разблокировать IP игрока"},
 	{"banpc", 7, 0, "Заблокировал игрок по HWID/UUID"},
 	{"unbanpc", 7, 0, "Разблокировать игрока по HWID"},
-	// добавить /setstat
+	{"setstat", 7, 0, "Изменить параметры игроку"},
 
     //level 8
-    {"makegm", 8, 0, "Выдать права игрового мастера"}
-	// добавить /givedonate
+    {"makegm", 8, 0, "Выдать права игрового мастера"},
+	{"givedonate", 8, 0, "Выдать донат игроку"}
 	// /givemoneyall
 	// /givedonateall
 	// /givevipall
@@ -177,7 +176,110 @@ new Iterator:Admin<MAX_PLAYERS>;
 new Iterator:Moder<MAX_PLAYERS>;
 new Iterator:Event<MAX_PLAYERS>;
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-CMD:unwarn(playerid, params[])
+cmd:givedonate(playerid, params[])
+{
+	if(!CheckAccess(playerid, 8))
+		return 0;
+
+	new targetid, value;
+
+	if (sscanf(params, "ud", targetid, value))
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givedonate [ID игрока] [количество]");
+	
+	if (!IsPlayerOnline(targetid)) 
+        return 0;
+	
+	if (value > 1000)
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givedonate [ID игрока] [ 1 < 1000]");
+	
+	SCMF(targetid, -1, "Игровой мастер выдал Вам %d малинки", value);
+    SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал %d малинки игроку %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, value, PN(targetid));
+
+	PI[playerid][pDonate] += value;
+
+	f(global_str, 15, "+%d мал.", value);
+	cef_emit_event(playerid, "show-notifications:radar", CEFINT(43), CEFINT(5), CEFSTR("green"), CEFSTR("Начисление"), CEFSTR(global_str), CEFINT(""));
+
+	return true;
+}
+
+cmd:setstat(playerid, params[])
+{
+    if(CheckAccess(playerid, 7)) return 1;
+
+    new id, idf, amount;
+
+    if(sscanf(params, "udd", id, idf, amount)) {
+        SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setstat [ID] [ID-функции] [кол-во]");
+        return ShowSetStats(playerid);
+    }
+
+    if(idf == 0)
+		return ShowSetStats(playerid);
+
+    if(idf < 1 || idf > 3) 
+		return SCM(playerid, COLOR_LIGHTGREY, !"Неверный ID-функции");
+
+	static fName[35];
+
+    if(idf == 1)
+    {
+        GivePlayerMoney(playerid, amount);
+	    PI[playerid][pMoney] = amount;
+		UpdatePlayerDataInt(playerid, "Money", PI[playerid][pMoney]);
+
+		fName = "деньги";
+    }
+    else if(idf == 2)
+    {
+        PI[id][pLevel] = amount;
+        SetPlayerScore(id, PI[id][pLevel]);
+
+		fName = "уровень";
+    }
+
+	else if(idf == 3)
+    {
+        PI[id][pExp] = amount;
+		fName = "опыт";
+    }
+
+    SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] изменил игроку %s параметр '%s' на %d",\
+        StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, PN(id), fName, amount);
+
+    return SaveAccount(id);
+}
+
+
+cmd:givemoney(playerid, params[])
+{
+	if(!CheckAccess(playerid, 6))
+		return 0;
+
+	new targetid, value;
+
+	if (sscanf(params, "ud", targetid, value))
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givemoney [ID игрока] [количество]");
+	
+	if (!IsPlayerOnline(targetid)) 
+        return 0;
+	
+	if (value > 10000000)
+		return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givemoney [ID игрока] [ 1 < 10.000.000]");
+	
+	SCMF(targetid, -1, "%s выдал Вам %d рублей", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор", value);
+    SAMF(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал %d рублей игроку %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), playerid, value, PN(targetid));
+
+	f(global_str, 30, "Выдача от ИМ #%d", PI[playerid][pAdminNumber]);
+	GivePlayerMoneyLog(targetid, value, global_str);
+
+	f(global_str, 15, "+%d руб.", value);
+	cef_emit_event(playerid, "show-notifications:radar", CEFINT(43), CEFINT(5), CEFSTR("green"), CEFSTR("Начисление"), CEFSTR(global_str), CEFINT(""));
+
+	return true;
+}
+
+cmd:unwarn(playerid, params[])
 {
     if (!CheckAccess(playerid, 2, 3)) 
         return 0;
@@ -200,7 +302,7 @@ CMD:unwarn(playerid, params[])
     return 1;
 }
 
-CMD:warn(playerid, params[])
+cmd:warn(playerid, params[])
 {
 	if (!CheckAccess(playerid, 2, 3)) return 0;
 
@@ -248,6 +350,7 @@ CMD:warn(playerid, params[])
 	SpecPl(targetid, true);
 	return PrepareKickCamera(targetid);
 }
+
 cmd:makemoder(playerid, params[]) 
 {
     if(!CheckAccess(playerid, 6)) 
@@ -308,6 +411,7 @@ cmd:vmute(playerid, params[])
 
 	return 1;
 }
+
 cmd:mute(playerid, params[])
 {
 	if(!CheckAccess(playerid, 2, 3)) 
@@ -348,6 +452,7 @@ cmd:mute(playerid, params[])
 
 	return 1;
 }
+
 cmd:unvmute(playerid, params[])
 {
 	if(!CheckAccess(playerid, 2, 3)) 
@@ -374,6 +479,7 @@ cmd:unvmute(playerid, params[])
 	cef_emit_event(playerid, "remove-notifications:radar", CEFINT(103));
 	return 1;
 }
+
 cmd:unmute(playerid, params[])
 {
 	if(!CheckAccess(playerid, 2, 3)) 
@@ -399,6 +505,7 @@ cmd:unmute(playerid, params[])
 	cef_emit_event(playerid, "remove-notifications:radar", CEFINT(102));
 	return 1;
 }
+
 cmd:unjail(playerid, params[])
 {
 	if(!CheckAccess(playerid, 2, 3)) 
@@ -425,6 +532,7 @@ cmd:unjail(playerid, params[])
 	cef_emit_event(playerid, "remove-notifications:radar", CEFINT(101));
 	return 1;
 }
+
 cmd:unbanpc(playerid, data[])
 {
 	if(!CheckAccess(playerid, 7)) 
@@ -444,6 +552,7 @@ cmd:unbanpc(playerid, data[])
 	f(global_str, 256, "[%s #%d] %s разблокировал ПК игроку %s", StaffTag(playerid), PI[playerid][pAdminNumber], PN(playerid), name);
 	return SendAdminsMessage(COLOR_ADMINCHAT, global_str);
 }
+
 cmd:banpc(playerid, data[])
 {
 	if(!CheckAccess(playerid, 7)) 
@@ -471,6 +580,7 @@ cmd:banpc(playerid, data[])
     PrepareKickCamera(id);
 	return 1;
 }
+
 cmd:unban(playerid, data[])
 {
 	if(!CheckAccess(playerid, 4)) 
@@ -494,6 +604,7 @@ cmd:unban(playerid, data[])
 	
 	return SendAdminsMessage(COLOR_ADMINCHAT, global_str);
 }
+
 cmd:ban(playerid, data[])
 {
 	if(!CheckAccess(playerid, 4)) 
@@ -549,6 +660,7 @@ cmd:ban(playerid, data[])
     PrepareKickCamera(id);
 	return 1;
 }
+
 cmd:editmp(playerid) 
 {
     if(!CheckAccess(playerid, 4)) 
@@ -1532,21 +1644,34 @@ public: AloginAuth(playerid, password)
 
 stock CheckAccess(playerid, adminLvl = 1, modLvl = 0)
 {
-    if PI[playerid][pAdmin] < adminLvl *then 
-	{
-		return 0;
-	}
-    else if modLvl >= 1 && PI[playerid][pModer] >= modLvl && modLvl != 0 *then 
+    new bool:hasAdminAccess = false;
+    new bool:hasModerAccess = false;
+
+    if (adminLvl > 0 && PI[playerid][pAdmin] >= adminLvl)
     {
-        return 0;
+        if (!ALogin{playerid})
+        {
+            SCM(playerid, COLOR_LIGHTGREY, !"Вы не авторизованы как игровой мастер");
+            return 0;
+        }
+        hasAdminAccess = true;
     }
-	else if !ALogin{playerid} *then
-	{
-		SCM(playerid, COLOR_LIGHTGREY, !"Вы не авторизованы как игровой мастер");
-		return 0;
-	}
-    return 1;
+
+    if (modLvl > 0 && PI[playerid][pModer] >= modLvl)
+    {
+        hasModerAccess = true;
+    }
+
+    if (hasAdminAccess || hasModerAccess)
+    {
+        return 1;
+    }
+	
+    if (PI[playerid][pAdmin] || PI[playerid][pModer]) SCM(playerid, COLOR_LIGHTGREY, !"У вас нет доступа к этой команде");
+
+    return 0;
 }
+
 stock BanIP(IP[])
 {
     f(global_str, 100, "INSERT INTO `banip` (`IP`) VALUE ('%s')",IP);
@@ -1658,4 +1783,13 @@ stock ShowBanDialog(playerid, punishmentID, const reason[])
 		day, month, year,
 		hour, minute, second,
 		reason);
+}
+
+stock ShowSetStats(playerid)
+{
+	return SPD(playerid, 0, DIALOG_STYLE_MSGBOX, !"{EE3366}Параметры", 
+	"Код #1 -> отвечает за деньги\n\
+	Код #2 -> отвечает за LvL\n\
+	Код #3 -> отвечает за Exp", 
+	!"Закрыть", !"");
 }

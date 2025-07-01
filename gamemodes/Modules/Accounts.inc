@@ -62,6 +62,12 @@ public: OnPlayerLoadData(playerid)
 	PI[playerid][pWarnsTimers][1] = cache_get_row_int(0, 52, mysql);
 	PI[playerid][pWarnsTimers][2] = cache_get_row_int(0, 53, mysql);
 
+	PI[playerid][pModer] = cache_get_row_int(0, 54, mysql);
+	PI[playerid][pPlayedTime] = cache_get_row_int(0, 55, mysql);
+
+	PI[playerid][pRespect] = cache_get_row_int(0, 56, mysql);
+	PI[playerid][pSalary] = cache_get_row_int(0, 57, mysql);
+
 	if PI[playerid][pVMute] == 1 *then SvMutePlayerEnable(playerid);
 
 	SetPlayerTeam(playerid, 4);
@@ -465,6 +471,12 @@ stock SaveAccount(playerid)
 	orm_addvar_int(orm, PI[playerid][pWarnsTimers][0], "WarnsTimerOne");
 	orm_addvar_int(orm, PI[playerid][pWarnsTimers][1], "WarnsTimerTwo");
 	orm_addvar_int(orm, PI[playerid][pWarnsTimers][2], "WarnsTimerThree");
+
+	orm_addvar_int(orm, PI[playerid][pModer], "Moder");
+	orm_addvar_int(orm, PI[playerid][pPlayedTime], "PlayedTime");
+
+	orm_addvar_int(orm, PI[playerid][pRespect], "Respect");
+	orm_addvar_int(orm, PI[playerid][pSalary], "Salary");
 
 	//Float
 	orm_addvar_float(orm, PI[playerid][pHealth], "Health");

@@ -29,6 +29,33 @@
 #define TEAM_KAVKAZ 	(6)
 #define TEAM_GOPOTA 	(7)
 
+#define MAX_ORGANIZATIONS 7
+#define MAX_RANKS 10
+
+new OrganizationSalary[MAX_ORGANIZATIONS][MAX_RANKS] = {
+    // Организация 1
+    {5000, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    
+    // Организация 2
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+
+    // Организация 3
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+
+    // Организация 4
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+
+    // Организация 5
+    {3000, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+
+    // Организация 6
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+
+    // Организация 7
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+};
+
+
 #define MAX_GPS_CATEGORIES 6
 #define MAX_CATEGORY_NAME 32
 #define MAX_GPS_ITEM_LENGTH 96
@@ -269,7 +296,11 @@ enum PlayerInfo {
     pGlobalAFK,
     pDayAFK,
     pDayOnline,
-    pGlobalOnline
+    pGlobalOnline,
+    pPlayedTime,
+
+    pRespect,
+    pSalary
 };
 new PI[MAX_PLAYERS][PlayerInfo];
 
@@ -296,6 +327,8 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pJailTime] =
     PI[playerid][pVMuteTime] =
     PI[playerid][pShowRain] =
+    PI[playerid][pRespect] =
+    PI[playerid][pSalary] =
     PI[playerid][pDamageMP3] =
 	PI[playerid][pMuteTime] = 0;
 	
@@ -329,6 +362,7 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pWanted] =
 	PI[playerid][pRang] =
 	PI[playerid][pMember] =
+    PI[playerid][pPlayedTime] =
     PI[playerid][pVKonktakeID] =
 	PI[playerid][pLeader] =
 	PI[playerid][pSex] = 0;

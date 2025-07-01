@@ -98,10 +98,17 @@ stock sql_get_row(id_0, _:id_1[], array_size = sizeof(id_1))
 		cache_get_row(id_0, id_1[i], SQL_GET_ROW_STR[i], mysql);
 }
 
-new PlayerDialogList[MAX_PLAYERS][64];
+new PlayerDialogList[MAX_PLAYERS][64],
+	PAYDAY_LAST_TIME = 25;
 
 #define spdList(%0,%1,%2) PlayerDialogList[%0][%1] = %2
 #define gpdList(%0,%1) PlayerDialogList[%0][%1]
+
+enum _:get_player_name_type 
+{
+	PLAYER_SEARCH_NAME,
+	PLAYER_SEARCH_PID
+};
 
 //======================================[ limits ]================================================//
 const 
@@ -128,6 +135,8 @@ new LoadedHouses;
 
 #include Modules/KeyListener // тестовый модул
 #include Modules/Houses // дома
+
+#include Modules/AdminFly // админ флай
 
 //=====================================[ global server settings ]==================================//
 
@@ -177,7 +186,7 @@ public OnGameModeInit()
 	print("  Malinovka RolePlay mode by -> [vk.com/gitline]");
 	print("----------------------------------------------------------------------------");
 
-	mysql_tquery(mysql, "TRUNCATE TABLE client;");
+	//mysql_tquery(mysql, "TRUNCATE TABLE client;");
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	EnableAntiCheat(39, 0); // отключил dialog hack 
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -222,6 +231,15 @@ public: ServerTimer()
    	getdate(year,month,day);
    	Global_Time = gettime(hour, minute, second);
 
+	if !(PAYDAY_LAST_TIME == hour) && minute == 0 *then
+   	{
+		//day_of_week = getDayEx();
+		PAYDAY_LAST_TIME = hour;
+		SetWorldTime(hour);
+		SaveServerData();
+		PayDay();
+	}
+	
 	if(minute == 0 && hour == 1)
 	{
 		foreach(new i: Player)
@@ -318,6 +336,8 @@ public OnPlayerConnect(playerid)
 	SetPlayerWeather(playerid, 18);
 	//ClearChatForPlayer(playerid);
 
+	fly_OnPlayerConnect(playerid);
+
 	if SvGetVersion(playerid) == SV_NULL *then SCM(playerid, 0xEE83F0AA, !"[VoiceChat] {FFFFFF}загрузка плагина произошла {FFFF33}неуспешно (NULL)");
     else if SvHasMicro(playerid) == SV_FALSE *then SCM(playerid, 0xEE83F0AA, !"[VoiceChat] {FFFFFF}загрузка плагина произошла {FFFF33}c ошибкой (MIC)");
     else if ((LocalStream[playerid] = SvCreateDLStreamAtPlayer(30.0, 0xEE83F0AA, playerid, 0xff0000ff, !"")))
@@ -399,6 +419,8 @@ public OnPlayerSpawn(playerid)
 	SetPlayerWeather(playerid, WeatherServer);
 	StopAudioStreamForPlayer(playerid);
 
+	fly_OnPlayerSpawn(playerid);
+
 	SettingSpawn(playerid);
 	return 1;
 }
@@ -409,7 +431,9 @@ public OnPlayerDeath(playerid, killerid, reason)
 		return true;
 
     if IsPlayerLogged{playerid} *then
-    {
+    {	
+		fly_OnPlayerDeath(playerid, killerid, reason);
+
 		foreach(Player, i)
 		{
 			if PI[i][pAdmin] && !AInfo[i][admKillList] *then
@@ -566,6 +590,8 @@ public OnPlayerUpdate(playerid)
 	if !IsPlayerLogged{playerid} *then return false;
 	else if IsPlayerLogged{playerid} && IsPlayerConnected(playerid) *then
 	{
+		fly_OnPlayerUpdate(playerid);
+
 		if PI[playerid][pShowFPS] == 1 *then 
 		{
 			new getFPS = GetPlayerFPS(playerid);
@@ -1113,6 +1139,8 @@ stock UpdatePlayers()
 					SetPlayerChatBubble(playerid, global_str, COLOR_TOMATO, 30.0, 3000);
 				}
 				PlayerAFK[playerid] = 0;
+
+				if(!PlayerAFKTime[playerid][0] && PI[playerid][pPlayedTime] < 3601) PI[playerid][pPlayedTime]++;
 			}
 		}
 	}
@@ -1500,3 +1528,161 @@ public: UpdatePlayer()
 		}
 	}
 }
+
+stock CheckNextLevel(playerid)
+{
+	if PI[playerid][pExp] >= (PI[playerid][pLevel] + 1)*4  *then
+	{
+        while PI[playerid][pExp] >= (PI[playerid][pLevel]+1)*4 do
+		{
+			PI[playerid][pLevel] ++;
+
+			PI[playerid][pExp] -= (PI[playerid][pLevel]+1)*4;
+			if PI[playerid][pLevel] == 4 *then
+			{
+				f(global_str, 100, "SELECT `Referal` FROM `accounts` WHERE `NickName`='%s'", PN(playerid));
+				mysql_tquery(mysql, global_str, "MysqlReferalCheck", "d", playerid);
+			}
+		}
+		SCM(playerid, 0x4EC4EA, !"Поздравляю! Ваш уровень повышен");
+
+		UpdatePlayerDataInt(playerid, "Exp", PI[playerid][pExp]);
+		UpdatePlayerDataInt(playerid, "Level", PI[playerid][pLevel]);
+
+		SetPlayerScore(playerid, PI[playerid][pLevel]);
+
+		f(global_str, 40, "ПОЗДРАВЛЯЕМ! УРОВЕНЬ ВАШЕГО ПЕРСОНАЖА ПОВЫСИЛСЯ ДО %d", PI[playerid][pLevel]);
+
+		cef_emit_event(playerid, "show-notifications:top", CEFINT(5), CEFSTR("УРОВЕНЬ ПОВЫШЕН"), CEFSTR(global_str), CEFSTR("yellow-lvl"));
+		return 1;
+	}
+	return 0;
+}
+
+public: MysqlReferalCheck(playerid)
+{
+	if !cache_get_row_count(mysql) *then return true;
+	
+	cache_get_row(0, 0, mysql_string, mysql);
+
+	if strcmp(mysql_string, "No Referal", false) != 0 *then
+	{
+		new player = GetPlayerID(mysql_string);
+		
+		if !(!IsPlayerOnline(player)) *then
+			GivePlayerMoneyLog(player, 15000000, "Реферальная система"), SCMF(player, COLOR_HINT, "[Информация]: {FFFFFF}Вы получаете {6699ff}15.OOO.OOO{FFFFFF} рублей за приведенного вами игрока {6699ff}%s{FFFFFF}", PN(playerid));
+		else
+			SQL("UPDATE `accounts` SET `Money` = `Money`+300000 WHERE `NickName` = '%s'", mysql_string);
+	}
+
+	return true;
+}
+
+stock GetPlayerID(name[], type = PLAYER_SEARCH_NAME, data = -1)
+{
+	foreach (new i: Player)
+	{
+		switch type do
+		{
+			case PLAYER_SEARCH_NAME:
+			{
+				if !strcmp(PlayerName[i], name, false) *then
+					return i;
+			}
+
+			case PLAYER_SEARCH_PID:
+			{
+				if PI[i][pID] == data *then
+					return i;
+			}
+		}
+	}
+
+	return INVALID_PLAYER_ID;
+}
+
+stock PayDay()
+{
+	PayDayPlayer();
+	
+	mysql_query(mysql, "UPDATE `accounts` SET `PlayedTime` = 0", false);
+	print("[MySQL] Очистил статисткиу онлайна за час");
+
+	SaveServer = 10;
+	return 1;
+}
+
+stock PayDayPlayer()
+{
+	new hour, minute, second;
+	gettime(hour, minute, second);
+
+    foreach(Player, i)
+	{
+	    if(IsPlayerLogged{i})
+	    {
+			SCMF(i, -1, "Московское время {3377CC}%02d:%02d", hour, minute);
+			SCM(i, -1, !"Клиент банка пгт. Батырево:");
+			SCM(i, -1, !"____________________________");
+			
+			if PlayerAFKTime[i][0] > 5 *then
+			{
+				SCM(i, COLOR_GREY, !"Для получения PayDay необходимо не находиться на паузе");
+				SCM(i, -1, " ____________________________");
+				return 1;
+			}
+	        else if(PI[i][pPlayedTime] >= 1200)
+			{
+	   			PI[i][pExp]++;
+				PI[i][pPlayedTime] = 0;
+
+				if(PI[i][pWanted] > 0) 
+				{
+					PI[i][pWanted]--;
+					SetPlayerWantedLevel(i, PI[i][pWanted]);
+				}
+				if(PI[i][pRespect] < 100) PI[i][pRespect]++;
+
+				if(PI[i][pMember] >= 1)
+				{
+					PI[i][pSalary] += OrganizationSalary[PI[i][pMember]][PI[i][pRang]]; // зп орг
+				}
+
+				if(PI[i][pAdmin]) 
+				{
+					new GMSalary = 100000*PI[i][pAdmin];
+					PI[i][pBank] += PI[i][pSalary] + GMSalary;
+
+					SCMF(i, -1, "Зарплата: {EE3366}%d руб", PI[i][pSalary]);
+					SCMF(i, -1, "Зарплата игрового мастера: {EE3366}%d руб", GMSalary);
+					SCMF(i, -1, "Текущий баланс зарплатного счёта: {EE3366}%d руб", PI[i][pBank]);
+				}
+				else 
+				{
+					PI[i][pBank] += PI[i][pSalary];
+					SCMF(i, -1, "Зарплата: {EE3366}%d руб", PI[i][pSalary]);
+					SCMF(i, -1, "Текущий баланс зарплатного счёта: {EE3366}%d руб", PI[i][pBank]);
+				}
+
+				if(PI[i][pSalary] > 0)
+				{
+					f(global_str, 30, "+%d руб", PI[i][pSalary]);
+					cef_emit_event(i, "show-notifications:radar", CEFINT(45), CEFINT(5), CEFSTR("green"), CEFSTR("Получение зарплаты на банковский счёт в банке"), CEFSTR(global_str), CEFINT(""));
+				}
+
+				PI[i][pSalary] = 0;
+				CheckNextLevel(i);
+			}
+			else 
+			{
+            	SCM(i, COLOR_GREY, !"Для получения PayDay необходимо отыграть минимум 20 минут");
+			}
+		}
+		else SCM(i, COLOR_GREY, !"Вы не авторизированы для получения зарплаты");
+
+		SCM(i, -1, "____________________________");
+	}
+	return 1;
+}
+
+cmd:callpd(playerid) return PayDay();
