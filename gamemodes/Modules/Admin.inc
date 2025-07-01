@@ -1044,7 +1044,9 @@ cmd:as(playerid)
 		6. Изменить никнейм\t\tВручную\n\
 		7. Скрыть ник\t\t\t%s\n\
 		8. Отображение репорта\t%s\n\
-		9. IP адреса в сообщениях\t%s",\
+		9. IP адреса в сообщениях\t%s\n\
+		10. Телепорт к себе\t%s\n\
+		11. Телепорт себя к ИМ\t%s",\
 		AInfo[playerid][admACMsg] ? ("{4eaa77}Все{FFFFFF}") : ("{ce6c4f}Выключены{FFFFFF}"),\
 		AInfo[playerid][admKillList] ? ("{4eaa77}Включен{FFFFFF}") : ("{ce6c4f}Выключен{FFFFFF}"),\
 		AInfo[playerid][admJoin] ? ("{4eaa77}Включены{FFFFFF}") : ("{ce6c4f}Выключены{FFFFFF}"),\
@@ -1052,7 +1054,9 @@ cmd:as(playerid)
 		AInfo[playerid][admFlySpeed],\
 		AInfo[playerid][admHide] ? ("{4eaa77}Включено{FFFFFF}") : ("{ce6c4f}Выключено{FFFFFF}"),\
 		AInfo[playerid][admShowReport] ? ("{4eaa77}Включено{FFFFFF}") : ("{ce6c4f}Выключено{FFFFFF}"),\
-		AInfo[playerid][admIP] ? ("{4eaa77}Включены{FFFFFF}") : ("{ce6c4f}Выключены{FFFFFF}"));
+		AInfo[playerid][admIP] ? ("{4eaa77}Включены{FFFFFF}") : ("{ce6c4f}Выключены{FFFFFF}"),\
+		AInfo[playerid][admGoto] ? ("{4eaa77}Включен{FFFFFF}") : ("{ce6c4f}Выключен{FFFFFF}"),\
+		AInfo[playerid][admGethere] ? ("{4eaa77}Включен{FFFFFF}") : ("{ce6c4f}Выключен{FFFFFF}"));
 	
 	SPD(playerid, dAdminPanel, DIALOG_STYLE_LIST, !"{EE3366}Настройки игрового мастера", global_str, !"Изменить", !"Назад");
     return 1;
@@ -1521,6 +1525,16 @@ stock admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 					case 8:
 					{	
 						AInfo[playerid][admIP] = !AInfo[playerid][admIP];
+						callcmd::as(playerid);
+					}
+					case 9:
+					{	
+						AInfo[playerid][admGoto] = !AInfo[playerid][admGoto];
+						callcmd::as(playerid);
+					}
+					case 10:
+					{	
+						AInfo[playerid][admGethere] = !AInfo[playerid][admGethere];
 						callcmd::as(playerid);
 					}
 				}
