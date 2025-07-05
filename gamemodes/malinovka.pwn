@@ -123,9 +123,12 @@ new LoadedHouses;
 //======================================[ modules ]================================================//
 
 #include Modules/dialogData // ид диалогов
+
 #include Modules/Data // массивы и цвета
-#include Modules/VoiceChat // голосовой чат
+
 #include Modules/Admin // система админов
+
+#include Modules/VoiceChat // голосовой чат
 #include Modules/Accounts // авторизация и регистрация
 #include Modules/AntiCheat // анти-чит
 #include Modules/DefaultCMD // команды по умолчанию
@@ -141,6 +144,8 @@ new LoadedHouses;
 #include Modules/Houses // дома
 
 #include Modules/AdminFly // админ флай
+
+#include Modules/Radial // админ флай
 
 //=====================================[ global server settings ]==================================//
 
@@ -342,9 +347,9 @@ public OnPlayerConnect(playerid)
 
 	fly_OnPlayerConnect(playerid);
 
-	if SvGetVersion(playerid) == SV_NULL *then SCM(playerid, 0xEE83F0AA, !"[VoiceChat] {FFFFFF}загрузка плагина произошла {FFFF33}неуспешно (NULL)");
-    else if SvHasMicro(playerid) == SV_FALSE *then SCM(playerid, 0xEE83F0AA, !"[VoiceChat] {FFFFFF}загрузка плагина произошла {FFFF33}c ошибкой (MIC)");
-    else if ((LocalStream[playerid] = SvCreateDLStreamAtPlayer(30.0, 0xEE83F0AA, playerid, 0xff0000ff, !"")))
+	if SvGetVersion(playerid) == SV_NULL *then SCM(playerid, 0xEE83F0AA, !"[VoiceChat] загрузка плагина произошла неуспешно");
+    else if SvHasMicro(playerid) == SV_FALSE *then SCM(playerid, 0xEE83F0AA, !"[VoiceChat] загрузка плагина произошла c ошибкой");
+    else if ((LocalStream[playerid] = SvCreateDLStreamAtPlayer(30.0, 0xEE83F0AA, playerid, 0xEE3366FF, !"")))
     {
         if (GlobalStream) SvAttachListenerToStream(GlobalStream, playerid);
         SvAddKey(playerid, 0x58);
@@ -491,7 +496,7 @@ public OnPlayerText(playerid, text[])
 			return 0;
 		}
 	}
-	if AInfo[playerid][admHide] *then
+	if AInfo[playerid][admHide] > 0 *then
 	{
 		f(global_str, 300, "Игровой Мастер: {FFFFFF}%s", text);
 		ProxDetector(30.0, playerid, global_str, 0xDD3366FF);
@@ -1700,4 +1705,14 @@ public OnPlayerStreamIn(playerid, forplayerid)
 {
 	if AInfo[forplayerid][admHide] *then return ShowPlayerNameTagForPlayer(playerid, forplayerid, false);
 	return 1;
+}
+
+stock GetServerOnline(playerid)
+{
+	new value = 0; 
+
+	for(new i; i < MAX_PLAYERS; i++)
+		value++;
+
+	return value;
 }

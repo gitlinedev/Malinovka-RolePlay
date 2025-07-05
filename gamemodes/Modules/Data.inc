@@ -98,6 +98,22 @@ new TeamColors[][TeamColor] =
     {0x66CCFFFF, "66CCFF"}  //GOPOTA
 };
 
+enum AdminInfo
+{
+	admInfoNewPlayer,
+	admKillList,
+	admIP,
+	admACMsg,
+	admJoin,
+	admFlySpeed,
+	admHide,
+	admShowReport,
+    admGethere,
+    admGoto,
+    admInterior
+}
+new AInfo[MAX_PLAYERS][AdminInfo];
+
 new SpawnIntWorld[8][2] =
 {
 	{0,0},				//Int: 0 | World: 0 | None
@@ -247,7 +263,18 @@ enum _temp_
     Float:pOldY,
     Float:pOldZ,
     pDriver,
-    pShowDialog
+    pShowDialog,
+
+    AddHouse,
+    AHouseCost,
+    AHouseNalog,
+    AHouseLocation,
+    Float:AHouseEnterX,
+    Float:AHouseEnterY,
+    Float:AHouseEnterZ,
+    Float:AHouseCarX,
+    Float:AHouseCarY,
+    Float:AHouseCarZ
 }
 new pTemp[MAX_PLAYERS][_temp_];
 
@@ -383,6 +410,17 @@ stock ClearPlayerData(playerid)
     pTemp[playerid][pMarkerX] =
     pTemp[playerid][pMarkerY] =
     pTemp[playerid][pMarkerZ] = 0.0;
+
+    AInfo[playerid][admInfoNewPlayer] =
+    AInfo[playerid][admKillList] =
+    AInfo[playerid][admIP] =
+    AInfo[playerid][admACMsg] =
+    AInfo[playerid][admFlySpeed] =
+    AInfo[playerid][admHide] =
+    AInfo[playerid][admShowReport] =
+    AInfo[playerid][admGethere] =
+    AInfo[playerid][admGoto] =
+    AInfo[playerid][admInterior] = 0;
 
 	ALogin{playerid} =
 	AnimPlayed{playerid} =

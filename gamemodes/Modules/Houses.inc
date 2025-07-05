@@ -23,12 +23,26 @@ enum hInfo
 	hNalog,
 	hKlass,
 	hMed,
+
+	hDays,
+	hLocation,
+	hParkPlaces,
+
 	hObjectCount[2],
 	H_PICKUP_ID,
 	H_AREA_ID
 };
 
 new HouseIcon[MAX_HOUSES] = {-1, ...};
+
+static const houseKlass[2][23 + 1] = {
+	"Избушка",
+	"Средний класс"
+};
+static const houseLocation[2][23 + 1] = {
+	"пгт. Батырево",
+	"с. Роговичи"
+};
 
 new
 	HouseInfo[MAX_HOUSES][hInfo];
@@ -66,6 +80,10 @@ stock LoadHouses()
 		HouseInfo[ID][hNalog] = cache_get_row_int(i, 18, mysql);
 		HouseInfo[ID][hKlass] = cache_get_row_int(i, 19, mysql);
 		HouseInfo[ID][hMed] = cache_get_row_int(i, 20, mysql);
+
+		HouseInfo[ID][hDays] = cache_get_row_int(i, 21, mysql);
+		HouseInfo[ID][hLocation] = cache_get_row_int(i, 22, mysql);
+		HouseInfo[ID][hParkPlaces] = cache_get_row_int(i, 23, mysql);
 		
 	    if(isnull(HouseInfo[ID][hOwner])) SetString(HouseInfo[ID][hOwner], "The State");
 	}
@@ -86,22 +104,26 @@ stock SaveHouse(houseid)
 		HouseInfo[houseid][hEnter_X],
 		HouseInfo[houseid][hEnter_Y],
 		HouseInfo[houseid][hEnter_Z]);
+
 	strcat(global_str, str);
 
 	f(str, sizeof(str), "`Exit_X` = '%.4f', `Exit_Y` = '%.4f', `Exit_Z` = '%.4f', ",
 	 	HouseInfo[houseid][hExit_X],
 		HouseInfo[houseid][hExit_Y],
 		HouseInfo[houseid][hExit_Z]);
+
 	strcat(global_str, str);
 
 	f(str, sizeof(str), "`Owner` = '%s',",
 		HouseInfo[houseid][hOwner]);
+
 	strcat(global_str, str);
 
 	f(str, sizeof(str), "`Level` = '%d', `Cost` = '%d', `Lock` = '%d', ",
 		HouseInfo[houseid][hLevel],
 		HouseInfo[houseid][hCost],
 		HouseInfo[houseid][hLock]);
+
 	strcat(global_str, str);
 
 	f(str, sizeof(str), "`Interior` = '%d', `Money` = '%d', `Drugs` = '%d', `Ammo` = '%d', ",
@@ -109,24 +131,34 @@ stock SaveHouse(houseid)
 		HouseInfo[houseid][hMoney],
 		HouseInfo[houseid][hDrugs],
 		HouseInfo[houseid][hAmmo]);
+
 	strcat(global_str, str);
 
 	f(str, sizeof(str), "`Skin_1` = '%d', `Skin_2` = '%d', `Skin_3` = '%d', ",
 		HouseInfo[houseid][hSkin][0],
 		HouseInfo[houseid][hSkin][1],
         HouseInfo[houseid][hSkin][2]);
+
 	strcat(global_str, str);
 
 	f(str, sizeof(str), "`Nalog` = '%d', `Klass` = '%d', ",
 		HouseInfo[houseid][hNalog],
 		HouseInfo[houseid][hKlass],
 		HouseInfo[houseid][hMed]);
+
+	strcat(global_str, str);
+
+	f(str, sizeof(str), "`Days` = '%d', `Location` = '%d', `ParkPlaces` = '%d', ",
+		HouseInfo[houseid][hDays],
+		HouseInfo[houseid][hLocation],
+		HouseInfo[houseid][hParkPlaces]);
+
 	strcat(global_str, str);
 
 	f(str, sizeof(str), "`Med` = '%d' WHERE `ID` = '%i'",
 		HouseInfo[houseid][hMed],
 		HouseInfo[houseid][hID]);
-	
+
 	strcat(global_str, str);
 	
 	mysql_tquery(mysql, global_str);
@@ -161,11 +193,6 @@ stock ShowInfoMenu(playerid, id, type) // 0 biz, 1 house
 
 	new SELLING = GetString(HouseInfo[id][hOwner], "The State");
 		//LOCK = HouseInfo[id][hLock];
-
-	static const houseKlass[2][23 + 1] = {
-		"Избушка",
-		"Средний класс"
-	};
 
 	switch type do
 	{
@@ -274,16 +301,41 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem)
 	            else cef_emit_event(playerid, "show-notifications:center", CEFINT(3000), CEFINT(2), CEFSTR("Этот дом закрыт"));
 			}
 		}
+		case dHouseMenuBack:
+		{
+			if !response *then return callcmd::home(playerid);
+			if response *then return 1;
+		}
 		case dHouseMenu:
 		{
 			if !response *then return 1;
 			if response *then
 			{
+				new house = PI[playerid][pHouseKey];
+
 				switch listitem do
 				{	
 					case 0:
 					{
-						return 1;
+						SPDF(playerid, dHouseMenuBack, DIALOG_STYLE_MSGBOX, !"{EE3366}Информация о доме", !"Закрыть", !"Назад", "\
+						{FFFFFF}Название:\t\t {3366cc}%s\n\
+						{FFFFFF}Номер дома:\t\t %d\n\
+						Владелец:\t\t %s\n\
+						Расположение:\t %s\n\
+						Стоимость:\t\t %d руб\n\
+						{FFFFFF}Квартплата:\t\t {4acc6c} %d руб / день\n\
+						{FFFFFF}Статус оплаты:\t\t %d дн {FFFF99}(оплата в Банке - /gps или Мобильном Банке - клавиша P)\n\
+						{FFFFFF}Кол-во парк. мест:\t %d {FFFF99}(купить в Центре недвижимости - /gps 7)\n\
+						{FFFFFF}Статус:\t\t\t {4acc6c}%s", 
+							houseKlass[HouseInfo[house][hKlass]],
+							house,
+							HouseInfo[house][hOwner],
+							houseLocation[HouseInfo[house][hLocation]],
+							HouseInfo[house][hCost],
+							HouseInfo[house][hNalog],
+							HouseInfo[house][hDays],
+							HouseInfo[house][hParkPlaces],
+							HouseInfo[house][hLock] ? ("{4ccd73}Дом открыт") : ("{FF6347}Дом закрыт"));
 					}
 					case 1:
 					{
@@ -295,8 +347,6 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem)
 					}
 					case 3:
 					{
-						new house = PI[playerid][pHouseKey];
-
 						HouseInfo[house][hLock] = !HouseInfo[house][hLock];
 
 						if HouseInfo[house][hLock] == 1 *then cef_emit_event(playerid, "show-notifications:radar", CEFINT(15), CEFINT(3), CEFSTR("icon-red"), CEFSTR("Дом закрыт"), CEFSTR(""), CEFINT(2));
@@ -304,6 +354,19 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem)
 						return callcmd::home(playerid);
 					}
 				}
+			}
+		}
+		case dAddHouse:
+		{
+			if !response *then 
+			{
+				SCM(playerid, -1, !"Вы отменили добавление нового дома");
+				
+				ClearCreateHouse(playerid);
+			}
+			if response *then
+			{
+				pTemp[playerid][AHouseLocation] = listitem;
 			}
 		}
 	}
@@ -327,4 +390,47 @@ cmd:home(playerid)
 	else SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
 
 	return 1;
+}
+
+cmd:addhouse(playerid)
+{
+	if(!CheckAccess(playerid, 8))
+		return 0;
+	
+
+	return SPDF(playerid, dAddHouse, DIALOG_STYLE_TABLIST_HEADERS, !"{ee3366}Добавление дома", !"Далее", !"Отмена", "Пункт\tЗначение\n\
+		{FFFFFF}Стоимость дома\t{FFFF99}%d\n\
+		{FFFFFF}Налоговая ставка\t{FFFF99}%d\n\
+		{FFFFFF}Расположение\t{FFFF99}%s\n\
+		{FFFFFF}Точка входа в дом\t{FFFF99}%.2f %.2f %.2f\n\
+		{FFFFFF}Место появления автомобиля\t{FFFF99}%.2f %.2f %.2f", pTemp[playerid][AHouseCost], pTemp[playerid][AHouseNalog], houseLocation[pTemp[playerid][AHouseLocation]],
+		pTemp[playerid][AHouseEnterX], pTemp[playerid][AHouseEnterY], pTemp[playerid][AHouseEnterZ],
+		pTemp[playerid][AHouseCarX], pTemp[playerid][AHouseCarY], pTemp[playerid][AHouseCarZ]);
+}
+
+cmd:undocreate(playerid)
+{
+	if(!CheckAccess(playerid, 8))
+		return 0;
+	
+	if pTemp[playerid][AddHouse] == 0 *then return SCM(playerid, -1, !"Вы не начали создание дома");
+
+	ClearCreateHouse(playerid);
+	
+	return SCM(playerid, -1, !"Вы отменили создание дома");
+}
+
+stock ClearCreateHouse(playerid)
+{
+	pTemp[playerid][AHouseCost] =
+	pTemp[playerid][AddHouse] =
+	pTemp[playerid][AHouseNalog] =
+	pTemp[playerid][AHouseLocation] = 0;
+
+	pTemp[playerid][AHouseEnterX] =
+	pTemp[playerid][AHouseEnterY] =
+	pTemp[playerid][AHouseEnterZ] =
+	pTemp[playerid][AHouseCarX] =
+	pTemp[playerid][AHouseCarY] =
+	pTemp[playerid][AHouseCarZ] = 0.0;
 }

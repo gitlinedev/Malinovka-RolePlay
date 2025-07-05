@@ -35,5 +35,7 @@ enum
     dModerCMDList,
     dModerCMD,
     dAdminPanel,
-    dAdminFlySpeed
+    dAdminFlySpeed,
+    dHouseMenuBack,
+    dAddHouse
 };

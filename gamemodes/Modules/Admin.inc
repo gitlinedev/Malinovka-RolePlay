@@ -1,18 +1,3 @@
-enum AdminInfo
-{
-	admInfoNewPlayer,
-	admKillList,
-	admIP,
-	admACMsg,
-	admJoin,
-	admFlySpeed,
-	admHide,
-	admShowReport,
-    admGethere,
-    admGoto,
-    admInterior
-}
-new AInfo[MAX_PLAYERS][AdminInfo];
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 static const AdminPassword[8] = {5673, 4657, 1345, 9755, 7367, 2556, 8086, 6769};
 static const Admin_Names[9][5] = {"None","NGM","JRGM","GM","GM+","LGM","SGM","SGM+","DEV"};
@@ -520,6 +505,7 @@ cmd:unjail(playerid, params[])
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	
 	PI[params[0]][pDemorgan] = 0;
+	
 	UpdatePlayerHealth(params[0], 100);
 	PlayerSpawn(params[0]);
 
