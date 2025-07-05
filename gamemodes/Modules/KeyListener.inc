@@ -18,18 +18,18 @@ public OnPlayerKeyDown(playerid, KeyID)
 	}
 	if(KeyID == 9)
 	{
-		//cef_emit_event(playerid, "execute.event:radial-button", 
-		//	CEFINT(/* button id */), CEFINT(/* active true/false */), CEFSTR(/* если кнопка не активна тут причина, если причина не нужна - "" */));
+		RadialUpdate[playerid] = SetTimerEx("OnRadialUpdate", 1000, true, "d", playerid);
 
-		f(global_str, 50, "Подключено (%d ms, %.2f loss)", GetPlayerPing(playerid), NetStats_PacketLossPercent(playerid));
-
-		cef_emit_event(playerid, "execute.event:radial-network", 
-			CEFSTR(PN(playerid)), CEFINT(GetServerOnline()), CEFSTR(global_str), CEFSTR(global_str));
-
-		cef_emit_event(playerid, "execute.event:radial-time", 
-			CEFINT(PI[playerid][pDayOnline] / 60), CEFINT(PI[playerid][pDayAFK] / 60), CEFINT(PI[playerid][pPlayedTime] / 60));
+		pTemp[playerid][pRadialOpen] = 1;
 
 		cef_emit_event(playerid, "execute.event:radial-show", CEFINT(true));
+	}
+	if(KeyID == 27)
+	{
+		if pTemp[playerid][pRadialOpen] == 1 *then
+		{
+			KillTimer(RadialUpdate[playerid]);
+		}
 	}
 }
 public OnPlayerKeyUp(playerid, KeyID)

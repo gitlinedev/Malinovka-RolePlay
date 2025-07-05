@@ -236,7 +236,7 @@ stock IsValidHouse(id)
 	return 0;
 }
 
-stock house_OnDialogResponse(playerid, dialogid, response, listitem)
+stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave[])
 {
 	pTemp[playerid][pShowDialog] = 0;
 
@@ -358,19 +358,158 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem)
 		}
 		case dAddHouse:
 		{
-			if !response *then 
-			{
-				SCM(playerid, -1, !"Вы отменили добавление нового дома");
-				
-				ClearCreateHouse(playerid);
-			}
+			if !response *then return callcmd::as(playerid);
 			if response *then
 			{
+				switch(listitem)
+				{
+					case 0:
+					{
+						SPD(playerid, dAddHouseCost, DIALOG_STYLE_INPUT, !"{EE3366}Создание дома", 
+							!"{FFFFFF}Укажите цену которая будет использоваться при продаже дома\n\n{FFFF99}Данная сумма не может привышать 100 млн, а также быть меньше 1 тыс.", !"Далее", !"Назад");
+					}
+					case 1:
+					{
+						SPD(playerid, dAddHouseNalog, DIALOG_STYLE_INPUT, !"{EE3366}Создание дома", 
+							!"{FFFFFF}Укажите налог на дом.\n\n{FFFF99}Данная сумма не может привышать 1 млн, а также быть меньше 1 тыс.", !"Далее", !"Назад");
+					}
+					case 2:
+					{
+						SPD(playerid, dAddHouseLocation, DIALOG_STYLE_LIST, !"{EE3366}Создание дома", 
+							!"пгт. Батырево\nс. Роговичи", !"Далее", !"Назад");
+					}
+					case 3:
+					{
+						SPD(playerid, dAddHouseEnter, DIALOG_STYLE_MSGBOX, !"{EE3366}Создание дома", 
+							!"{FFFFFF}Вы уверены что хотите установить место входа в этом месте?", !"Далее", !"Назад");
+					}
+					case 4:
+					{
+						SPD(playerid, dAddHouseCar, DIALOG_STYLE_MSGBOX, !"{EE3366}Создание дома", 
+							!"{FFFFFF}Вы уверены что хотите установить место буксировки машины в этом месте?", !"Далее", !"Назад");
+					}
+					case 5:
+					{
+						if (IsAllHouseStepsComplete(playerid)) 
+						{
+							SCM(playerid, -1, !"Вы успешно создали дом");
+							ClearCreateHouse(playerid);
+						} 
+						else 
+						{
+							SCM(playerid, -1, !"Вы ещё не заполнили все пункты");
+						}
+					}
+					case 6:
+					{
+						SCM(playerid, -1, !"Вы отменили создание нового дома");
+						ClearCreateHouse(playerid);
+					}
+				}
+			}
+		}
+		case dAddHouseCost:
+		{
+			if !response *then return callcmd::addhouse(playerid);
+			if response *then
+			{
+				if pTemp[playerid][AddHouse] == 0 *then 
+					return SCM(playerid, -1, !"Вы не начали создание дома");
+
+				if strval(inputtextsave) < 1000 or strval(inputtextsave) > 100000000 *then 
+					return SCM(playerid, -1, !"Государственная стоимость дома не может привышать 100 млн, и не может быть меньше 1 тыс");
+				
+				pTemp[playerid][AHouseCost] = strval(inputtextsave);
+
+				pTemp[playerid][AHouseStep][0] = 1;
+
+				return callcmd::addhouse(playerid);
+			}
+		}
+		case dAddHouseNalog:
+		{
+			if !response *then return callcmd::addhouse(playerid);
+			if response *then
+			{
+				if pTemp[playerid][AddHouse] == 0 *then 
+					return SCM(playerid, -1, !"Вы не начали создание дома");
+
+				if strval(inputtextsave) < 1000 or strval(inputtextsave) > 100000000 *then 
+					return SCM(playerid, -1, !"Налог на дом не может привышать 1 млн, и не может быть меньше 1 тыс");
+				
+				pTemp[playerid][AHouseNalog] = strval(inputtextsave);
+
+				pTemp[playerid][AHouseStep][1] = 1;
+
+				return callcmd::addhouse(playerid);
+			}
+		}
+		case dAddHouseLocation:
+		{
+			if !response *then return callcmd::addhouse(playerid);
+			if response *then
+			{
+				if pTemp[playerid][AddHouse] == 0 *then 
+					return SCM(playerid, -1, !"Вы не начали создание дома");
+
 				pTemp[playerid][AHouseLocation] = listitem;
+
+				pTemp[playerid][AHouseStep][2] = 1;
+
+				return callcmd::addhouse(playerid);
+			}
+		}
+		case dAddHouseEnter:
+		{
+			if !response *then return callcmd::addhouse(playerid);
+			if response *then
+			{
+				if pTemp[playerid][AddHouse] == 0 *then 
+					return SCM(playerid, -1, !"Вы не начали создание дома");
+
+				GetPlayerPos(playerid, pTemp[playerid][AHouseEnterX] , pTemp[playerid][AHouseEnterY], pTemp[playerid][AHouseEnterZ]);
+				
+				pTemp[playerid][AHouseStep][3] = 1;
+
+				return callcmd::addhouse(playerid);
+			}
+		}
+		case dAddHouseCar:
+		{
+			if !response *then return callcmd::addhouse(playerid);
+			if response *then
+			{
+				if pTemp[playerid][AddHouse] == 0 *then 
+					return SCM(playerid, -1, !"Вы не начали создание дома");
+
+				GetPlayerPos(playerid, pTemp[playerid][AHouseCarX], pTemp[playerid][AHouseCarY], pTemp[playerid][AHouseCarZ]);
+
+				pTemp[playerid][AHouseStep][4] = 1;
+
+				return callcmd::addhouse(playerid);
+			}
+		}
+		case dStartAHouse:
+		{
+			if !response *then return 1;
+			if response *then
+			{
+				pTemp[playerid][AddHouse] = 1;
+				callcmd::addhouse(playerid);
+
+				return SCM(playerid, -1, !"Вы начали создание дома");
 			}
 		}
 	}
 	return 1;
+}
+
+stock IsAllHouseStepsComplete(playerid)
+{
+    for (new i = 0; i < 4; i++) {
+        if (pTemp[playerid][AHouseStep][i] == 0) return false;
+    }
+    return true;
 }
 
 cmd:home(playerid)
@@ -397,15 +536,21 @@ cmd:addhouse(playerid)
 	if(!CheckAccess(playerid, 8))
 		return 0;
 	
-
-	return SPDF(playerid, dAddHouse, DIALOG_STYLE_TABLIST_HEADERS, !"{ee3366}Добавление дома", !"Далее", !"Отмена", "Пункт\tЗначение\n\
-		{FFFFFF}Стоимость дома\t{FFFF99}%d\n\
-		{FFFFFF}Налоговая ставка\t{FFFF99}%d\n\
-		{FFFFFF}Расположение\t{FFFF99}%s\n\
-		{FFFFFF}Точка входа в дом\t{FFFF99}%.2f %.2f %.2f\n\
-		{FFFFFF}Место появления автомобиля\t{FFFF99}%.2f %.2f %.2f", pTemp[playerid][AHouseCost], pTemp[playerid][AHouseNalog], houseLocation[pTemp[playerid][AHouseLocation]],
-		pTemp[playerid][AHouseEnterX], pTemp[playerid][AHouseEnterY], pTemp[playerid][AHouseEnterZ],
-		pTemp[playerid][AHouseCarX], pTemp[playerid][AHouseCarY], pTemp[playerid][AHouseCarZ]);
+	if pTemp[playerid][AddHouse] == 0 *then SPD(playerid, dStartAHouse, DIALOG_STYLE_MSGBOX, !"{ee3366}Создание дома", !"{FFFFFF}Вы действительно хотите начать создание дома?", !"Да", !"Нет");
+	else 
+	{
+		SPDF(playerid, dAddHouse, DIALOG_STYLE_TABLIST_HEADERS, !"{ee3366}Создание дома", !"Далее", !"Назад", "Пункт\tЗначение\n\
+			{FFFFFF}Стоимость дома\t{FFFF99}%d\n\
+			{FFFFFF}Налоговая ставка\t{FFFF99}%d\n\
+			{FFFFFF}Расположение\t{FFFF99}%s\n\
+			{FFFFFF}Точка входа в дом\t{FFFF99}%.2f %.2f %.2f\n\
+			{FFFFFF}Место появления автомобиля\t{FFFF99}%.2f %.2f %.2f\n\
+			{FFFF99}Создать дом\n\
+			{FF6347}Отменить создание дома", pTemp[playerid][AHouseCost], pTemp[playerid][AHouseNalog], houseLocation[pTemp[playerid][AHouseLocation]],
+			pTemp[playerid][AHouseEnterX], pTemp[playerid][AHouseEnterY], pTemp[playerid][AHouseEnterZ],
+			pTemp[playerid][AHouseCarX], pTemp[playerid][AHouseCarY], pTemp[playerid][AHouseCarZ]);
+	}
+	return 1;
 }
 
 cmd:undocreate(playerid)
@@ -433,4 +578,9 @@ stock ClearCreateHouse(playerid)
 	pTemp[playerid][AHouseCarX] =
 	pTemp[playerid][AHouseCarY] =
 	pTemp[playerid][AHouseCarZ] = 0.0;
+
+	for (new i = 0; i < 4; i++)
+    {
+        pTemp[playerid][AHouseStep][i] = 0;
+    }
 }

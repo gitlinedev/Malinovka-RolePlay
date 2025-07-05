@@ -649,7 +649,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	accounts_OnDialogResponse(playerid, dialogid, response, inputtextsave);
 	admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave);
 	k_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave);
-	house_OnDialogResponse(playerid, dialogid, response, listitem);
+	house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsave);
 
 	switch dialogid do
 	{
@@ -1707,12 +1707,14 @@ public OnPlayerStreamIn(playerid, forplayerid)
 	return 1;
 }
 
-stock GetServerOnline(playerid)
+stock GetServerOnline()
 {
-	new value = 0; 
+	new AmountOnline; 
 
 	for(new i; i < MAX_PLAYERS; i++)
-		value++;
-
-	return value;
+	{
+		if !IsPlayerOnline(i) *then return 1;
+		AmountOnline++;
+	}
+	return AmountOnline;
 }

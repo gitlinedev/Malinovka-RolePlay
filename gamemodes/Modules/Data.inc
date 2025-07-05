@@ -226,7 +226,8 @@ new PlayerMail[MAX_PLAYERS][50],
     RegisterState[MAX_PLAYERS],
     PlayerAFK[MAX_PLAYERS],
 	PlayerAFKTime[MAX_PLAYERS][2],
-    SpeedometerUpdate[MAX_PLAYERS];
+    SpeedometerUpdate[MAX_PLAYERS],
+    RadialUpdate[MAX_PLAYERS];
     
 new RegPass[MAX_PLAYERS][30];
 new RegSex[MAX_PLAYERS];
@@ -274,7 +275,9 @@ enum _temp_
     Float:AHouseEnterZ,
     Float:AHouseCarX,
     Float:AHouseCarY,
-    Float:AHouseCarZ
+    Float:AHouseCarZ,
+    pRadialOpen,
+    AHouseStep[5]
 }
 new pTemp[MAX_PLAYERS][_temp_];
 
@@ -346,6 +349,11 @@ stock ClearPlayerData(playerid)
     {
         PI[playerid][pWarnsTimers][i] = 0;
     }
+    
+    for (new i = 0; i < 5; i++)
+    {
+        pTemp[playerid][AHouseStep][i] = 0;
+    }
 
     PI[playerid][pID] = 
     PI[playerid][pHouseKey] =
@@ -364,6 +372,7 @@ stock ClearPlayerData(playerid)
     pTemp[playerid][pCurrentFPS] =
     pTemp[playerid][pDriver] =
     pTemp[playerid][pMarker] =
+    pTemp[playerid][pRadialOpen] =
     pTemp[playerid][pOnEvent] =
     pTemp[playerid][pTestDrive] =
     pTemp[playerid][pShowDialog] =

@@ -37,5 +37,11 @@ enum
     dAdminPanel,
     dAdminFlySpeed,
     dHouseMenuBack,
-    dAddHouse
+    dAddHouse,
+    dAddHouseCost,
+    dAddHouseNalog,
+    dAddHouseLocation,
+    dAddHouseCar,
+    dAddHouseEnter,
+    dStartAHouse
 };
