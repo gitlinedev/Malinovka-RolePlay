@@ -30,7 +30,11 @@ enum hInfo
 
 	hObjectCount[2],
 	H_PICKUP_ID,
-	H_AREA_ID
+	H_AREA_ID,
+
+	Float:hCar_X,
+	Float:hCar_Y,
+	Float:hCar_Z,
 };
 
 new HouseIcon[MAX_HOUSES] = {-1, ...};
@@ -55,6 +59,7 @@ stock LoadHouses()
 	
 	for new i; i < LoadedHouses; i++ do
 	{
+
 		ID = cache_get_row_int(i, 0, mysql);
 		HouseInfo[ID][hID] = ID;
 
@@ -84,6 +89,10 @@ stock LoadHouses()
 		HouseInfo[ID][hDays] = cache_get_row_int(i, 21, mysql);
 		HouseInfo[ID][hLocation] = cache_get_row_int(i, 22, mysql);
 		HouseInfo[ID][hParkPlaces] = cache_get_row_int(i, 23, mysql);
+
+		HouseInfo[ID][hCar_X] = cache_get_row_float(i, 24, mysql);
+		HouseInfo[ID][hCar_Y] = cache_get_row_float(i, 25, mysql);
+		HouseInfo[ID][hCar_Z] = cache_get_row_float(i, 26, mysql);
 		
 	    if(isnull(HouseInfo[ID][hOwner])) SetString(HouseInfo[ID][hOwner], "The State");
 	}
@@ -94,7 +103,11 @@ stock LoadHouses()
 
 stock SaveHouse(houseid)
 {
-	if(!IsValidHouse(houseid)) return 0;
+	if (!IsValidHouse(houseid)) {
+		printf("[SaveHouse] Сохранение отменено: houseid=%d, hID=%d", houseid, HouseInfo[houseid][hID]);
+		return 0;
+	}
+
 	static str[256];
 	global_str = "";
 	f(str, sizeof(str), "UPDATE `houses` SET");
@@ -155,12 +168,15 @@ stock SaveHouse(houseid)
 
 	strcat(global_str, str);
 
-	f(str, sizeof(str), "`Med` = '%d' WHERE `ID` = '%i'",
+	f(str, sizeof(str), "`Med` = '%d', `Car_X` = '%.4f', `Car_Y` = '%.4f', `Car_Z` = '%.4f' WHERE `ID` = '%i'",
 		HouseInfo[houseid][hMed],
+		HouseInfo[houseid][hCar_X],
+		HouseInfo[houseid][hCar_Y],
+		HouseInfo[houseid][hCar_Z],
 		HouseInfo[houseid][hID]);
 
 	strcat(global_str, str);
-	
+
 	mysql_tquery(mysql, global_str);
 	return 1;
 }
@@ -232,7 +248,7 @@ stock ShowInfoMenu(playerid, id, type) // 0 biz, 1 house
 
 stock IsValidHouse(id)
 {
-	if(id <= LoadedHouses && id > 0) return 1;
+	if(id <= LoadedHouses && id >= 0) return 1;
 	return 0;
 }
 
@@ -392,18 +408,65 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 					{
 						if (IsAllHouseStepsComplete(playerid)) 
 						{
-							SCM(playerid, -1, !"Вы успешно создали дом");
+							
+							new ID = LoadedHouses;
+   							if(ID+1 > MAX_HOUSES) return ClearCreateHouse(playerid), SCM(playerid, COLOR_LIGHTGREY, !"Привышен лимит домов на сервере, создание дома отменено");
+
+							SetString(HouseInfo[ID][hOwner], "The State");
+							HouseInfo[ID][hEnter_X] = pTemp[playerid][AHouseEnterX];
+							HouseInfo[ID][hEnter_Y] = pTemp[playerid][AHouseEnterY];
+							HouseInfo[ID][hEnter_Z] = pTemp[playerid][AHouseEnterZ];
+
+							HouseInfo[ID][hExit_X] = 0.00;
+							HouseInfo[ID][hExit_Y] = 0.00;
+							HouseInfo[ID][hExit_Z] = 0.00;
+
+							HouseInfo[ID][hCar_X] = pTemp[playerid][AHouseCarX];
+							HouseInfo[ID][hCar_Y] = pTemp[playerid][AHouseCarY]; 
+							HouseInfo[ID][hCar_Z] = pTemp[playerid][AHouseCarZ];
+
+							HouseInfo[ID][hCost] = pTemp[playerid][AHouseCost];
+							HouseInfo[ID][hKlass] = 1;
+							HouseInfo[ID][hNalog] = pTemp[playerid][AHouseNalog];
+							HouseInfo[ID][hLocation] = pTemp[playerid][AHouseLocation];
+
+							f(global_str, 375, "\
+							INSERT INTO `houses`(`ID`, `Enter_X`, `Enter_Y`, `Enter_Z`, `Exit_X`, `Exit_Y`, `Exit_Z`, `Owner`, `Cost` , `Klass`, `Location`, `ParkPlaces`, `Interior`, `Car_X`, `Car_Y`, `Car_Z`) \
+							VALUES (%d, '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', 'The State', '%d', '%d', '%d', 3, '%d', '%.2f', '%.2f', '%.2f')", ID,
+							HouseInfo[ID][hEnter_X], 
+							HouseInfo[ID][hEnter_Y], 
+							HouseInfo[ID][hEnter_Z], 
+							HouseInfo[ID][hExit_X], 
+							HouseInfo[ID][hExit_Y], 
+							HouseInfo[ID][hExit_Z], 
+							HouseInfo[ID][hCost], 
+							HouseInfo[ID][hKlass], 
+							HouseInfo[ID][hLocation], 
+							HouseInfo[ID][hInt],
+							HouseInfo[ID][hCar_X], 
+							HouseInfo[ID][hCar_Y], 
+							HouseInfo[ID][hCar_Z]);
+
+							mysql_tquery(mysql, global_str);
+
+							//=-=-==-=-=-=-==-=-=-=-=-=
+							HouseInfo[ID][H_PICKUP_ID] = CreateDynamicPickup( !GetString(HouseInfo[ID][hOwner], "The State") ? 19522 : 1273, 23, HouseInfo[ID][hEnter_X], HouseInfo[ID][hEnter_Y], HouseInfo[ID][hEnter_Z],-1);
+							if(GetString(HouseInfo[ID][hOwner], "The State")) HouseIcon[ID] = CreateDynamicMapIcon(HouseInfo[ID][hEnter_X], HouseInfo[ID][hEnter_Y], HouseInfo[ID][hEnter_Z], 31, -1, 0, -1, -1, 100.0);
+
+							UpdateHouse(ID);
+							LoadedHouses++;
+							//=-=-==-=-=-=-==-=-=-=-=-=
+							
 							ClearCreateHouse(playerid);
+
+							return SCMF(playerid, -1, "Вы успешно создали дом номер {FFFF99}%d {ffffff}Стоимость покупки: {FFFF99}%d", ID, HouseInfo[ID][hCost]);
 						} 
-						else 
-						{
-							SCM(playerid, -1, !"Вы ещё не заполнили все пункты");
-						}
+						else return SCM(playerid, COLOR_LIGHTGREY, !"Вы ещё не заполнили все пункты");
 					}
 					case 6:
 					{
-						SCM(playerid, -1, !"Вы отменили создание нового дома");
-						ClearCreateHouse(playerid);
+						SCM(playerid, COLOR_LIGHTGREY, !"Вы отменили создание нового дома");
+						return ClearCreateHouse(playerid);
 					}
 				}
 			}
@@ -414,10 +477,10 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 			if response *then
 			{
 				if pTemp[playerid][AddHouse] == 0 *then 
-					return SCM(playerid, -1, !"Вы не начали создание дома");
+					return SCM(playerid, COLOR_LIGHTGREY, !"Вы не начали создание дома");
 
 				if strval(inputtextsave) < 1000 or strval(inputtextsave) > 100000000 *then 
-					return SCM(playerid, -1, !"Государственная стоимость дома не может привышать 100 млн, и не может быть меньше 1 тыс");
+					return SCM(playerid, COLOR_LIGHTGREY, !"Государственная стоимость дома не может привышать 100 млн, и не может быть меньше 1 тыс");
 				
 				pTemp[playerid][AHouseCost] = strval(inputtextsave);
 
@@ -432,10 +495,10 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 			if response *then
 			{
 				if pTemp[playerid][AddHouse] == 0 *then 
-					return SCM(playerid, -1, !"Вы не начали создание дома");
+					return SCM(playerid, COLOR_LIGHTGREY, !"Вы не начали создание дома");
 
 				if strval(inputtextsave) < 1000 or strval(inputtextsave) > 100000000 *then 
-					return SCM(playerid, -1, !"Налог на дом не может привышать 1 млн, и не может быть меньше 1 тыс");
+					return SCM(playerid, COLOR_LIGHTGREY, !"Налог на дом не может привышать 1 млн, и не может быть меньше 1 тыс");
 				
 				pTemp[playerid][AHouseNalog] = strval(inputtextsave);
 
@@ -450,7 +513,7 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 			if response *then
 			{
 				if pTemp[playerid][AddHouse] == 0 *then 
-					return SCM(playerid, -1, !"Вы не начали создание дома");
+					return SCM(playerid, COLOR_LIGHTGREY, !"Вы не начали создание дома");
 
 				pTemp[playerid][AHouseLocation] = listitem;
 
@@ -465,7 +528,7 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 			if response *then
 			{
 				if pTemp[playerid][AddHouse] == 0 *then 
-					return SCM(playerid, -1, !"Вы не начали создание дома");
+					return SCM(playerid, COLOR_LIGHTGREY, !"Вы не начали создание дома");
 
 				GetPlayerPos(playerid, pTemp[playerid][AHouseEnterX] , pTemp[playerid][AHouseEnterY], pTemp[playerid][AHouseEnterZ]);
 				
@@ -480,7 +543,7 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 			if response *then
 			{
 				if pTemp[playerid][AddHouse] == 0 *then 
-					return SCM(playerid, -1, !"Вы не начали создание дома");
+					return SCM(playerid, COLOR_LIGHTGREY, !"Вы не начали создание дома");
 
 				GetPlayerPos(playerid, pTemp[playerid][AHouseCarX], pTemp[playerid][AHouseCarY], pTemp[playerid][AHouseCarZ]);
 
@@ -497,7 +560,7 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 				pTemp[playerid][AddHouse] = 1;
 				callcmd::addhouse(playerid);
 
-				return SCM(playerid, -1, !"Вы начали создание дома");
+				return SCM(playerid, COLOR_LIGHTGREY, !"Вы начали создание дома");
 			}
 		}
 	}
@@ -553,18 +616,6 @@ cmd:addhouse(playerid)
 	return 1;
 }
 
-cmd:undocreate(playerid)
-{
-	if(!CheckAccess(playerid, 8))
-		return 0;
-	
-	if pTemp[playerid][AddHouse] == 0 *then return SCM(playerid, -1, !"Вы не начали создание дома");
-
-	ClearCreateHouse(playerid);
-	
-	return SCM(playerid, -1, !"Вы отменили создание дома");
-}
-
 stock ClearCreateHouse(playerid)
 {
 	pTemp[playerid][AHouseCost] =
@@ -583,4 +634,5 @@ stock ClearCreateHouse(playerid)
     {
         pTemp[playerid][AHouseStep][i] = 0;
     }
+	return 1;
 }

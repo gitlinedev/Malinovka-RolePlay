@@ -55,6 +55,18 @@ new OrganizationSalary[MAX_ORGANIZATIONS][MAX_RANKS] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
+enum antidminfo
+{
+	zID,
+    zName[130],
+	zStatus,
+	Float:zX,
+	Float:zY,
+	Float:zZ
+};
+
+new AntiDm[50][antidminfo],
+	AntiDMLoaded;
 
 #define MAX_GPS_CATEGORIES 6
 #define MAX_CATEGORY_NAME 32

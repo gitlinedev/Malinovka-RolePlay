@@ -1032,7 +1032,8 @@ cmd:as(playerid)
 		8. Отображение репорта\t%s\n\
 		9. IP адреса в сообщениях\t%s\n\
 		10. Телепорт к себе\t%s\n\
-		11. Телепорт себя к ИМ\t%s",\
+		11. Телепорт себя к ИМ\t%s\n\
+		12. Сохранить весь сервер",\
 		AInfo[playerid][admACMsg] ? ("{4eaa77}Все{FFFFFF}") : ("{ce6c4f}Выключены{FFFFFF}"),\
 		AInfo[playerid][admKillList] ? ("{4eaa77}Включен{FFFFFF}") : ("{ce6c4f}Выключен{FFFFFF}"),\
 		AInfo[playerid][admJoin] ? ("{4eaa77}Включены{FFFFFF}") : ("{ce6c4f}Выключены{FFFFFF}"),\
@@ -1521,6 +1522,16 @@ stock admin_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 					case 10:
 					{	
 						AInfo[playerid][admGethere] = !AInfo[playerid][admGethere];
+						callcmd::as(playerid);
+					}
+					case 11:
+					{
+						if Int_GetPlayerData(playerid, !"AdminSaveServer") > Global_Time *then
+							return SCM(playerid, COLOR_GREY, !"Эту команду можно использовать 1 раз в минуту");
+
+						SetPVarInt(playerid, !"AdminSaveServer", Global_Time + 60);
+
+						SaveServerData();
 						callcmd::as(playerid);
 					}
 				}

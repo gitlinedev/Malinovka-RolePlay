@@ -191,7 +191,8 @@ public OnGameModeInit()
 	#include Modules/MysqlLoad
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	print("----------------------------------------------------------------------------");
-	printf("  Загружено домов     ->  %d/%d", LoadedHouses, MAX_HOUSES);
+	printf("  Загружено домов         ->  %d/%d", LoadedHouses, MAX_HOUSES);
+	printf("  Загружено антиДМ зон    ->  %d/100", AntiDMLoaded);
 	print("  Malinovka RolePlay mode by -> [vk.com/gitline]");
 	print("----------------------------------------------------------------------------");
 
@@ -1470,7 +1471,7 @@ public OnPlayerEnterDynamicArea(playerid, areaid)
 
 stock SaveServerData()
 {
-	print("Сохранение серверных данных");
+	//print("Сохранение серверных данных");
 
 	for new i; i < 300; i++ do
 		CallLocalFunction("UpdateDataServer", "d", i);
@@ -1480,7 +1481,7 @@ stock SaveServerData()
 
 public: UpdateDataServer(i)
 {
-	if(i <= LoadedHouses) SaveHouse(i);
+	if(i < LoadedHouses) SaveHouse(i);
 	
 	if Iter_Contains(Player, i) && IsPlayerLogged{i} *then
 		SaveAccount(i);
@@ -1490,7 +1491,7 @@ public: UpdateDataServer(i)
 
 stock LoadOther()
 {
-	for new i; i <= LoadedHouses; i++ do
+	for new i; i < LoadedHouses; i++ do
 	{
 		CreateHouse(i);
 	}
@@ -1717,4 +1718,119 @@ stock GetServerOnline()
 		AmountOnline++;
 	}
 	return AmountOnline;
+}
+
+public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
+{
+	if !IsPlayerLogged{playerid} *then
+		return false;
+
+	new Float:Health;
+
+	if AInfo[playerid][admHide] > 0 *then
+	{
+		UpdatePlayerHealth(playerid, 176);
+		SCM(issuerid, COLOR_GREY, !"Урон заблокирован: игрок является Игровым Мастером");
+		return 0;
+	}
+	if GetTeamID(playerid) == GetTeamID(issuerid) *then
+	{
+		UpdatePlayerHealth(playerid, Health);
+		SCMF(issuerid, COLOR_GREY, "Урон заблокирован: игрок %s[%d] является вашим союзником", PN(playerid), playerid);
+		return 0;
+	}
+
+	if PI[playerid][pArmour] > 0 && weaponid <= 46 *then {
+		GetPlayerArmour(playerid, Health);
+		SetPlayerArmour(playerid, Health - amount);
+	}
+	else {
+		GetPlayerHealth(playerid, Health);
+		SetPlayerHealth(playerid, Health - amount);
+	}
+
+	if PI[playerid][pArmour] > 0 *then {
+	    if(weaponid > 46) PI[playerid][pHealth] -= amount;
+	    else PI[playerid][pArmour] -= amount;
+	}
+	else PI[playerid][pHealth] -= amount;
+
+	return 1;
+}
+
+public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
+{
+	if !IsPlayerLogged{playerid} *then
+		return false;
+
+	new Float:Health, Float:VehHealth, CarID = INVALID_VEHICLE_ID;
+	GetPlayerHealth(damagedid, Health);
+
+	if GetPlayerState(damagedid) == PLAYER_STATE_DRIVER *then
+	{
+		CarID = GetPlayerVehicleID(damagedid);
+		GetVehicleHealth(CarID, VehHealth);
+	}
+	
+	if(GetPlayerWeapon(playerid) != 43 && GetPlayerSpecialAction(playerid)!= SPECIAL_ACTION_DRINK_SPRUNK &&  GetPlayerSpecialAction(playerid)!= SPECIAL_ACTION_DRINK_WINE && GetPlayerSpecialAction(playerid)!= SPECIAL_ACTION_SMOKE_CIGGY && GetPlayerSpecialAction(playerid)!=SPECIAL_ACTION_DRINK_BEER)
+	{
+		if !IsACop(playerid) *then
+		{
+			if GetPlayerGZ(playerid) && GetPlayerVirtualWorld(playerid) == 0 *then
+			{
+				ClearAnimationsEx(playerid);
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
+
+stock IsACop(playerid, other = 1)
+{
+	new team = GetTeamID(playerid);
+	if(other)
+	{
+		switch(team)
+		{
+		    case TEAM_POLICE: return 1;
+		}
+	}
+	else
+	{
+	    switch(team)
+		{
+		    case TEAM_POLICE: return 1;
+		}
+	}
+	return 0;
+}
+
+stock GetPlayerGZ(playerid)
+{
+	for new i; i < AntiDMLoaded; i++ do
+	{
+		if AntiDm[i][zStatus] && IsPlayerInRangeOfPoint(playerid, 100.0, AntiDm[i][zX],AntiDm[i][zY],AntiDm[i][zZ]) *then
+			return true;
+	}
+
+	return false;			    
+}
+
+stock LoadAntiDM()
+{
+    new Cache:result = mysql_query(mysql, "SELECT * FROM `antidm`");
+	
+    for new idx; idx < (AntiDMLoaded = cache_get_row_count(mysql)); idx++ do
+	{
+	    AntiDm[idx][zID] = cache_get_row_int(idx, 0, mysql);
+	    AntiDm[idx][zStatus] = cache_get_row_int(idx, 1, mysql);
+	    AntiDm[idx][zX] = cache_get_row_int(idx, 2, mysql);
+	    AntiDm[idx][zY] = cache_get_row_int(idx, 3, mysql);
+	    AntiDm[idx][zZ] = cache_get_row_int(idx, 4, mysql);
+	    cache_get_row(idx, 5, AntiDm[idx][zName], mysql);
+	}
+	cache_delete(result, mysql);
+	
+	return 1;
 }
