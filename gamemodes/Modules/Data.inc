@@ -289,7 +289,12 @@ enum _temp_
     Float:AHouseCarY,
     Float:AHouseCarZ,
     pRadialOpen,
-    AHouseStep[5]
+    AHouseStep[5],
+    pFromID,
+    pToID,
+    pVal1,
+    pVal2,
+    pType
 }
 new pTemp[MAX_PLAYERS][_temp_];
 
@@ -346,6 +351,8 @@ enum PlayerInfo {
 };
 new PI[MAX_PLAYERS][PlayerInfo];
 
+new OfferTimer[MAX_PLAYERS];
+
 stock ClearPlayerData(playerid)
 {
 	PlayerMail[playerid][0] =
@@ -378,6 +385,13 @@ stock ClearPlayerData(playerid)
     PI[playerid][pSalary] =
     PI[playerid][pDamageMP3] =
 	PI[playerid][pMuteTime] = 0;
+
+
+    pTemp[playerid][pFromID] = INVALID_PLAYER_ID;
+    pTemp[playerid][pToID] = INVALID_PLAYER_ID;
+    pTemp[playerid][pVal1] = -1;
+    pTemp[playerid][pVal2] = -1;
+    pTemp[playerid][pType] = -1;
 	
 
     pTemp[playerid][pLastDrunkLevel] =

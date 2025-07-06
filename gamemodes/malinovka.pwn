@@ -147,6 +147,8 @@ new LoadedHouses;
 
 #include Modules/Radial // админ флай
 
+#include Modules/Proposition // предложения
+
 //=====================================[ global server settings ]==================================//
 
 #define Mode_Names 					   "Malinovka"
@@ -409,6 +411,17 @@ public OnPlayerDisconnect(playerid, reason)
 		mysql_tquery(mysql, global_str);
 
 		if pTemp[playerid][pDriver] == 1 *then KillTimer(SpeedometerUpdate[playerid]);
+
+		if(pTemp[playerid][pToID] != INVALID_PLAYER_ID)
+		{
+			ClearProposition(pTemp[playerid][pToID]);
+			ClearProposition(playerid);
+		}
+		if(pTemp[playerid][pFromID] != INVALID_PLAYER_ID)
+		{
+			ClearProposition(pTemp[playerid][pFromID]);
+			ClearProposition(playerid);
+		}
 	}
 	PlayerName[playerid][0] = EOS;
 	

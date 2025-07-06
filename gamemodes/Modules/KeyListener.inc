@@ -31,6 +31,8 @@ public OnPlayerKeyDown(playerid, KeyID)
 			KillTimer(RadialUpdate[playerid]);
 		}
 	}
+
+	OnPlayerUseBtn(playerid, KeyID);
 }
 public OnPlayerKeyUp(playerid, KeyID)
 {
