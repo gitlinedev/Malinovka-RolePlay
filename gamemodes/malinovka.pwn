@@ -512,7 +512,7 @@ public OnPlayerText(playerid, text[])
 	}
 	if AInfo[playerid][admHide] > 0 *then
 	{
-		f(global_str, 300, "Игровой Мастер: {FFFFFF}%s", text);
+		f(global_str, 300, "Игровой Мастер #%d: {FFFFFF}%s", PI[playerid][pAdminNumber], text);
 		ProxDetector(30.0, playerid, global_str, 0xDD3366FF);
 	}
 	else 
@@ -1469,13 +1469,16 @@ public OnPlayerEnterDynamicArea(playerid, areaid)
 	if Int_GetPlayerData(playerid, !"EnterDynamicArea") > Global_Time *then
 		return 1;
 
-	SetPVarInt(playerid, !"EnterDynamicArea", Global_Time + 3);
+	SetPVarInt(playerid, !"EnterDynamicArea", Global_Time + 5);
 
 	for (new i = 0; i <= LoadedHouses; i++)
 	{	
 		if(areaid == HouseInfo[i][H_AREA_ID] && pTemp[playerid][pShowDialog] == 0)
 		{
-			ShowInfoMenu(playerid, i, 1);
+			if !IsPlayerInAnyVehicle(playerid) *then
+			{
+				ShowInfoMenu(playerid, i, 1);
+			}
 			return 1;
 		}
 	}
@@ -1846,4 +1849,12 @@ stock LoadAntiDM()
 	cache_delete(result, mysql);
 	
 	return 1;
+}
+new Pawn[MAX_PLAYERS] = {-1, ...};
+
+cmd:test(playerid)
+{
+	for (new i = 0; i < MAX_PLAYERS; i++) {
+		SCMF(playerid, -1, "Pawn[%d] = %d", i, Pawn[i]);
+	}
 }

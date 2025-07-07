@@ -150,7 +150,8 @@ new const AdminCommandList[][AdminCommand] = {
 
     //level 8
     {"makegm", 8, 0, "Выдать права игрового мастера"},
-	{"givedonate", 8, 0, "Выдать донат игроку"}
+	{"givedonate", 8, 0, "Выдать донат игроку"},
+	{"addhouse", 8, 0, "Создать дом"}
 	// /givemoneyall
 	// /givedonateall
 	// /givevipall

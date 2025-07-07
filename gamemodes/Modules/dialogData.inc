@@ -43,5 +43,6 @@ enum
     dAddHouseLocation,
     dAddHouseCar,
     dAddHouseEnter,
-    dStartAHouse
+    dStartAHouse,
+    dHouseMenuUpgrades
 };

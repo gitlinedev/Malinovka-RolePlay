@@ -23,18 +23,20 @@ enum hInfo
 	hNalog,
 	hKlass,
 	hMed,
-
 	hDays,
 	hLocation,
 	hParkPlaces,
-
 	hObjectCount[2],
 	H_PICKUP_ID,
 	H_AREA_ID,
-
 	Float:hCar_X,
 	Float:hCar_Y,
 	Float:hCar_Z,
+	// new
+	hGrant,
+	hFridge,
+	hCloset,
+	hBoombox
 };
 
 new HouseIcon[MAX_HOUSES] = {-1, ...};
@@ -93,6 +95,11 @@ stock LoadHouses()
 		HouseInfo[ID][hCar_X] = cache_get_row_float(i, 24, mysql);
 		HouseInfo[ID][hCar_Y] = cache_get_row_float(i, 25, mysql);
 		HouseInfo[ID][hCar_Z] = cache_get_row_float(i, 26, mysql);
+
+		HouseInfo[ID][hGrant] = cache_get_row_int(i, 27, mysql);
+		HouseInfo[ID][hFridge] = cache_get_row_int(i, 28, mysql);
+		HouseInfo[ID][hCloset] = cache_get_row_int(i, 29, mysql);
+		HouseInfo[ID][hBoombox] = cache_get_row_int(i, 30, mysql);
 		
 	    if(isnull(HouseInfo[ID][hOwner])) SetString(HouseInfo[ID][hOwner], "The State");
 	}
@@ -161,10 +168,14 @@ stock SaveHouse(houseid)
 
 	strcat(global_str, str);
 
-	f(str, sizeof(str), "`Days` = '%d', `Location` = '%d', `ParkPlaces` = '%d', ",
+	f(str, sizeof(str), "`Days` = '%d', `Location` = '%d', `ParkPlaces` = '%d', `Grant` = '%d', `Fridge` = '%d', `Closet` = '%d', `Boombox` = '%d', ",
 		HouseInfo[houseid][hDays],
 		HouseInfo[houseid][hLocation],
-		HouseInfo[houseid][hParkPlaces]);
+		HouseInfo[houseid][hParkPlaces],
+		HouseInfo[houseid][hGrant],
+		HouseInfo[houseid][hFridge],
+		HouseInfo[houseid][hCloset],
+		HouseInfo[houseid][hBoombox]);
 
 	strcat(global_str, str);
 
@@ -277,6 +288,14 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 
 					PI[playerid][pHouseKey] = house;
 
+					HouseInfo[house][hDays] = 3;
+
+					HouseInfo[house][hGrant] = 0;
+					HouseInfo[house][hParkPlaces] = 2;
+					HouseInfo[house][hFridge] = 0;
+					HouseInfo[house][hCloset] = 0;
+					HouseInfo[house][hBoombox] = 0;
+
 					SCM(playerid, 0x367074FF, !"Поздравляем! Вы купили дом. Не забудьте оплатить его в банке - {d3cfb6}/gps 1 8 {367074}или {d3cfb6}/gps 7");
 
 					SPD(playerid, 0, 0, !"{EE3366}Покупка жилья",\
@@ -333,32 +352,84 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 				{	
 					case 0:
 					{
-						SPDF(playerid, dHouseMenuBack, DIALOG_STYLE_MSGBOX, !"{EE3366}Информация о доме", !"Закрыть", !"Назад", "\
-						{FFFFFF}Название:\t\t {3366cc}%s\n\
-						{FFFFFF}Номер дома:\t\t %d\n\
-						Владелец:\t\t %s\n\
-						Расположение:\t %s\n\
-						Стоимость:\t\t %d руб\n\
-						{FFFFFF}Квартплата:\t\t {4acc6c} %d руб / день\n\
-						{FFFFFF}Статус оплаты:\t\t %d дн {FFFF99}(оплата в Банке - /gps или Мобильном Банке - клавиша P)\n\
-						{FFFFFF}Кол-во парк. мест:\t %d {FFFF99}(купить в Центре недвижимости - /gps 7)\n\
-						{FFFFFF}Статус:\t\t\t {4acc6c}%s", 
-							houseKlass[HouseInfo[house][hKlass]],
-							house,
-							HouseInfo[house][hOwner],
-							houseLocation[HouseInfo[house][hLocation]],
-							HouseInfo[house][hCost],
-							HouseInfo[house][hNalog],
-							HouseInfo[house][hDays],
-							HouseInfo[house][hParkPlaces],
-							HouseInfo[house][hLock] ? ("{4ccd73}Дом открыт") : ("{FF6347}Дом закрыт"));
+						SPDF
+						(
+							playerid, dHouseMenuBack, DIALOG_STYLE_MSGBOX, !"{EE3366}Информация о доме", !"Закрыть", !"Назад", "\
+							{FFFFFF}Название:\t\t {3366cc}%s\n\
+							{FFFFFF}Номер дома:\t\t %d\n\
+							Владелец:\t\t %s\n\
+							Расположение:\t %s\n\
+							Стоимость:\t\t %d руб\n\
+							{FFFFFF}Квартплата:\t\t{4acc6c} %d руб / день\n\
+							{FFFFFF}Статус оплаты:\t\t %d дн {FFFF99}(оплата в Банке - /gps или Мобильном Банке - клавиша P)\n\
+							{FFFFFF}Кол-во парк. мест:\t %d {FFFF99}(купить в Центре недвижимости - /gps 7)\n\
+							{FFFFFF}Статус:\t\t\t {4acc6c}%s", 
+								houseKlass[HouseInfo[house][hKlass]],
+								house,
+								HouseInfo[house][hOwner],
+								houseLocation[HouseInfo[house][hLocation]],
+								HouseInfo[house][hCost],
+								HouseInfo[house][hNalog],
+								HouseInfo[house][hDays],
+								HouseInfo[house][hParkPlaces],
+								HouseInfo[house][hLock] ? ("{4ccd73}Дом открыт") : ("{FF6347}Дом закрыт")
+						);
+						
+						return 1;
 					}
 					case 1:
 					{
+						new Fridge[16], Closet[16], Boombox[16];
+
+						SPDF
+						(
+							playerid, 
+							dHouseMenuBack, 
+							DIALOG_STYLE_TABLIST_HEADERS, 
+							!"{EE3366}Информация об улучшениях", !"Закрыть", !"Назад", 
+
+							"Улучшение\tУровень\tМакс. уровень\n\
+							Парковочное место\t%s\t{f1ce36}1\n\
+							Государстевенная субсидия\t%s\t{f1ce36}1\n\
+							Холодильник\t%s\t{f1ce36}3\n\
+							Шкаф\t%s\t{f1ce36}3\n\
+							Бумбокс\t%s\t{f1ce36}3",
+							(HouseInfo[house][hParkPlaces] != 3) ? "{4cce76}0" : "{f1ce36}1",
+							(HouseInfo[house][hGrant] != 1) ? "{4cce76}0" : "{f1ce36}1",
+							(HouseInfo[house][hFridge] != 3) ? (f(Fridge, 16, "{4cce76}%d", HouseInfo[house][hFridge]), Fridge) : "{f1ce36}3",
+							(HouseInfo[house][hCloset] != 3) ? (f(Closet, 16, "{4cce76}%d", HouseInfo[house][hCloset]), Closet) : "{f1ce36}3",
+							(HouseInfo[house][hBoombox] != 3) ? (f(Boombox, 16, "{4cce76}%d", HouseInfo[house][hBoombox]), Boombox) : "{f1ce36}3"
+						);
+
 						return 1;
 					}
 					case 2:
 					{
+
+						new Cache: result, Count;
+
+						mysql_format(mysql, global_str, 150, "SELECT * FROM ownable WHERE Owner='%e' AND Premium='0'", PN(playerid));
+						result = mysql_query(mysql, global_str, true);
+
+						Count = cache_num_rows();
+
+						cache_delete(result);
+
+						SPDF
+						(
+							playerid, 
+							dHouseMenuBack, 
+							DIALOG_STYLE_TABLIST_HEADERS, 
+							!"{EE3366}Парковочные места", !"Закрыть", !"Назад", 
+							"Место\tСтатус\tДоступ\n\
+							1\t%s\t{FFFFFF}Да\n\
+							2\t%s\t{FFFFFF}Да\n\
+							3\t%s\t%s", 
+							(Count >= 1) ? ("{FF6347}Занято") : ("{4cce76}Свободно"), 
+							(Count >= 2) ? ("{FF6347}Занято") : ("{4cce76}Свободно"), 
+							(Count >= 3) ? ("{FF6347}Занято") : ("{4cce76}Свободно"), 
+							(HouseInfo[house][hParkPlaces] != 3) ? "{FFFF99}(купить в Центре недвижимости - /gps 7)" : "{FFFFFF}Да"
+						);
 						return 1;
 					}
 					case 3:
