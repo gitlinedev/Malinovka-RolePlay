@@ -123,32 +123,24 @@ new LoadedHouses;
 //======================================[ modules ]================================================//
 
 #include Modules/dialogData // ид диалогов
-
 #include Modules/Data // массивы и цвета
-
 #include Modules/Admin // система админов
-
 #include Modules/VoiceChat // голосовой чат
 #include Modules/Accounts // авторизация и регистрация
 #include Modules/AntiCheat // анти-чит
+#include Modules/Houses // дома
 #include Modules/DefaultCMD // команды по умолчанию
 #include Modules/SQL // работа с базой данных
 #include Modules/CEFClient // цеф
 #include Modules/Session // сессии игроков
 #include Modules/Moderators // модераторы
-
 #include Modules/RemoveBuild // удаление зданий
-#include Modules/Test // тестовый модуль
-
 #include Modules/KeyListener // тестовый модул
-#include Modules/Houses // дома
-
 #include Modules/AdminFly // админ флай
-
 #include Modules/Radial // админ флай
-
 #include Modules/Proposition // предложения
 
+#include Modules/Test // тестовый модуль
 //=====================================[ global server settings ]==================================//
 
 #define Mode_Names 					   "Malinovka"
@@ -1850,9 +1842,10 @@ stock LoadAntiDM()
 	
 	return 1;
 }
+//
 new Pawn[MAX_PLAYERS] = {-1, ...};
 
-cmd:test(playerid)
+cmd:test_mas(playerid)
 {
 	for (new i = 0; i < MAX_PLAYERS; i++) {
 		SCMF(playerid, -1, "Pawn[%d] = %d", i, Pawn[i]);

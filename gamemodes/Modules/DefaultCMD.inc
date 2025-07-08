@@ -706,6 +706,26 @@ CMD:gps(playerid, params[])
 
     return 1;
 }
+
+cmd:home(playerid)
+{
+	new house = PI[playerid][pHouseKey];
+
+	if house > 0 && GetString(HouseInfo[house][hOwner], PN(playerid)) *then
+	{
+		SPDF(playerid, dHouseMenu, DIALOG_STYLE_LIST, !"{EE3366}Управление домом", !"Далее", !"Закрыть", "\
+		1. Информация\n\
+		2. Информация об улучшениях\n\
+		3. Парковочные места\n\
+		4. %s дом\n\
+		5. Построить маршрут на навигаторе\n\
+		6. Продать дом", HouseInfo[house][hLock] ? ("Открыть") : ("Закрыть"));
+	}
+	else SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
+
+	return 1;
+}
+
 //=-=-=-=-=-=-=-=-=-=-=-=-=[ alias ]=-=-=-=-=-=-=-=-=-=-=-=-=//
 alias:b("n")
 alias:menu("mn", "mm", "mainmenu", "openmenu")

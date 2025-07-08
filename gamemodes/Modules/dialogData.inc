@@ -44,5 +44,7 @@ enum
     dAddHouseCar,
     dAddHouseEnter,
     dStartAHouse,
-    dHouseMenuUpgrades
+    dHouseMenuUpgrades,
+    dHouseSell,
+    dHouseSellPlayer
 };

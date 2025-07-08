@@ -440,7 +440,110 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 						else cef_emit_event(playerid, "show-notifications:radar", CEFINT(17), CEFINT(3), CEFSTR("icon-green"), CEFSTR("Дом открыт"), CEFSTR(""), CEFINT(3));
 						return callcmd::home(playerid);
 					}
+					case 4:
+					{
+						cef_emit_event
+						(
+							playerid, 
+							"show-notifications:radar", 
+							CEFINT(100), 
+							CEFINT(5), 
+							CEFSTR("icon-green"), 
+							CEFSTR("Пункт назначения отмечен у Вас на мини-карте"), 
+							CEFSTR(""), 
+							CEFINT(18)
+						);
+						
+						if PI[playerid][pAdmin] || PI[playerid][pModer] *then 
+							SCM(playerid, COLOR_LIGHTGREY, !"Используйте /tpg, чтобы телепортироваться по установленной GPS метке");
+
+						pTemp[playerid][pMarker] = 1;
+						pTemp[playerid][pMarkerX] = HouseInfo[house][hEnter_X];
+						pTemp[playerid][pMarkerY] = HouseInfo[house][hEnter_Y];
+						pTemp[playerid][pMarkerZ] = HouseInfo[house][hEnter_Z];
+
+						return	SetPlayerCheckpoint(playerid, HouseInfo[house][hEnter_X], HouseInfo[house][hEnter_Y], HouseInfo[house][hEnter_Z], 3.0);
+					}
+					case 5:
+					{
+						SPD(playerid, dHouseSell, DIALOG_STYLE_LIST, 
+							!"{EE3366}Продажа жилья", 
+							!"1. Продать дом государству\n2. Продать дом игроку", !"Выбор", !"Назад");
+					}
 				}
+			}
+		}
+		case dHouseSell:
+		{
+			if !response *then return callcmd::home(playerid);
+			if response *then
+			{
+				new house = PI[playerid][pHouseKey];
+
+				switch(listitem)
+				{
+					case 0:
+					{
+						new Value;
+						Value = HouseInfo[house][hCost] - (HouseInfo[house][hCost] / 100 * 35);
+						
+						if(HouseInfo[house][hParkPlaces] >= 3)
+						{
+							Value += 75000 / 100 * 50;
+						}
+						if(HouseInfo[house][hBoombox] > 0)
+						{
+							Value += (HouseInfo[house][hBoombox] *35000) / 100 * 50;
+						}
+						if(HouseInfo[house][hFridge] > 0)
+						{
+							Value += (HouseInfo[house][hFridge] * 25000) / 100 * 50;
+						}
+						if(HouseInfo[house][hCloset] > 0)
+						{
+							Value += (HouseInfo[house][hCloset] * 15000) / 100 * 50;
+						}
+						if(HouseInfo[house][hGrant] > 0)
+						{
+							Value += (HouseInfo[house][hGrant] * 10000) / 100 * 50;
+						}
+
+						SPDF(playerid, dHouseSell, DIALOG_STYLE_INPUT, !"{EE3366}Продажа жилья", !"Продать", !"Закрыть", 
+							"{FFFFFF}Вы действительно хотите продать своё жильё государству?\n\n\
+							Налог на продажу составляет 35%% от государственной стоимости.\n\
+							Вам будет возвращено 50%% от стоимости купленных улучешний.\n\n\
+							Наш Ваш Банковский счёт будет переведено {3366cc}%d руб\n\
+							{FFFFFF}Для подтверждения введите стоимость цифрой: {4cce76}%d\n\n\
+							{e5714c}Обратите внимание: содержимое инвентаря жилья переместится\n\
+							{e5714c}на склад вещей и будет храниться там 45 дней.\n\n\
+							{FFFF99}Примичание: Вы должны находиться в одной из Мэрий (/gps 3 1-3)", Value, HouseInfo[house][hCost]);
+					}
+					case 1: ShowSellMenu(playerid);
+				}
+			}
+		}
+		case dHouseSellPlayer:
+		{
+			if !response *then return 1;
+			if response *then
+			{
+				new id, value;
+
+				if(sscanf(inputtextsave, "p<,>dd", id, value)) 
+					return ShowSellMenu(playerid);
+
+				if !IsPlayerLogged{id} *then 
+					return ShowSellMenu(playerid);
+
+				new house = PI[playerid][pHouseKey];
+
+				new CostMin = HouseInfo[house][hCost];
+				new CostMax = HouseInfo[house][hCost] + 1250000;
+
+				if (value < CostMin || value > CostMax) 
+					return ShowSellMenu(playerid);
+
+				// Если все проверки пройдены, то можно продавать дом
 			}
 		}
 		case dAddHouse:
@@ -646,25 +749,6 @@ stock IsAllHouseStepsComplete(playerid)
     return true;
 }
 
-cmd:home(playerid)
-{
-	new house = PI[playerid][pHouseKey];
-
-	if house > 0 && GetString(HouseInfo[house][hOwner], PN(playerid)) *then
-	{
-		SPDF(playerid, dHouseMenu, DIALOG_STYLE_LIST, !"{EE3366}Управление домом", !"Далее", !"Закрыть", "\
-		1. Информация\n\
-		2. Информация об улучшениях\n\
-		3. Парковочные места\n\
-		4. %s дом\n\
-		5. Построить маршрут на навигаторе\n\
-		6. Продать дом", HouseInfo[house][hLock] ? ("Открыть") : ("Закрыть"));
-	}
-	else SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
-
-	return 1;
-}
-
 cmd:addhouse(playerid)
 {
 	if(!CheckAccess(playerid, 8))
@@ -706,4 +790,15 @@ stock ClearCreateHouse(playerid)
         pTemp[playerid][AHouseStep][i] = 0;
     }
 	return 1;
+}
+
+stock ShowSellMenu(playerid)
+{
+	return SPD(playerid, dHouseSellPlayer, DIALOG_STYLE_INPUT, 
+		!"{EE3366}Продажа жилья игроку", 
+		!"{FFFFFF}Введите ID игрока и стоимость через запятую\n\
+		Например: 123, 10000\n\n\
+		{e5714c}Обратите внимание: содержимое инвентаря жилья переместится\n\
+		{e5714c}на склад вещей и будет храниться там 45 дней.\n\n\
+		{FFFF99}Примичание: Вы должны находиться около входа в дом", !"Продать", !"Закрыть");
 }
