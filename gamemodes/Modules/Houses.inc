@@ -478,48 +478,46 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 			if !response *then return callcmd::home(playerid);
 			if response *then
 			{
-				new house = PI[playerid][pHouseKey];
-
 				switch(listitem)
 				{
 					case 0:
 					{
-						new Value;
-						Value = HouseInfo[house][hCost] - (HouseInfo[house][hCost] / 100 * 35);
-						
-						if(HouseInfo[house][hParkPlaces] >= 3)
-						{
-							Value += 75000 / 100 * 50;
-						}
-						if(HouseInfo[house][hBoombox] > 0)
-						{
-							Value += (HouseInfo[house][hBoombox] *35000) / 100 * 50;
-						}
-						if(HouseInfo[house][hFridge] > 0)
-						{
-							Value += (HouseInfo[house][hFridge] * 25000) / 100 * 50;
-						}
-						if(HouseInfo[house][hCloset] > 0)
-						{
-							Value += (HouseInfo[house][hCloset] * 15000) / 100 * 50;
-						}
-						if(HouseInfo[house][hGrant] > 0)
-						{
-							Value += (HouseInfo[house][hGrant] * 10000) / 100 * 50;
-						}
-
-						SPDF(playerid, dHouseSell, DIALOG_STYLE_INPUT, !"{EE3366}Продажа жилья", !"Продать", !"Закрыть", 
-							"{FFFFFF}Вы действительно хотите продать своё жильё государству?\n\n\
-							Налог на продажу составляет 35%% от государственной стоимости.\n\
-							Вам будет возвращено 50%% от стоимости купленных улучешний.\n\n\
-							Наш Ваш Банковский счёт будет переведено {3366cc}%d руб\n\
-							{FFFFFF}Для подтверждения введите стоимость цифрой: {4cce76}%d\n\n\
-							{e5714c}Обратите внимание: содержимое инвентаря жилья переместится\n\
-							{e5714c}на склад вещей и будет храниться там 45 дней.\n\n\
-							{FFFF99}Примичание: Вы должны находиться в одной из Мэрий (/gps 3 1-3)", Value, HouseInfo[house][hCost]);
+						ShowSellMenu(playerid, 0);
 					}
-					case 1: ShowSellMenu(playerid);
+					case 1: ShowSellMenu(playerid, 1);
 				}
+			}
+		}
+		case dHouseSellGoverment:
+		{
+			if !response *then return 1;
+			if response *then
+			{
+				new house = PI[playerid][pHouseKey];
+
+				if(strval(inputtextsave) != HouseInfo[house][hCost]) 
+					return ShowSellMenu(playerid, 0);
+				
+				new Value;
+				Value = HouseInfo[house][hCost] - (HouseInfo[house][hCost] / 100 * 35);
+				
+				if(HouseInfo[house][hParkPlaces] >= 3) Value += 75000 / 100 * 50;
+				if(HouseInfo[house][hBoombox] > 0) Value += (HouseInfo[house][hBoombox] *35000) / 100 * 50;
+				if(HouseInfo[house][hFridge] > 0) Value += (HouseInfo[house][hFridge] * 25000) / 100 * 50;
+				if(HouseInfo[house][hCloset] > 0) Value += (HouseInfo[house][hCloset] * 15000) / 100 * 50;
+				if(HouseInfo[house][hGrant] > 0) Value += (HouseInfo[house][hGrant] * 10000) / 100 * 50;
+
+				GivePlayerMoneyLog(playerid, Value, "Продажа дома государству");
+
+				strmid(HouseInfo[house][hOwner], "The State", 0, strlen(HouseInfo[house][hOwner]), 24);
+
+				PI[playerid][pHouseKey] = -1;
+
+    			HouseInfo[house][hGrant] = 0;
+				HouseInfo[house][hFridge] = 0;
+				HouseInfo[house][hCloset] = 0;
+				HouseInfo[house][hBoombox] = 0;
+				HouseInfo[house][hParkPlaces] = 2;
 			}
 		}
 		case dHouseSellPlayer:
@@ -530,10 +528,10 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 				new id, value;
 
 				if(sscanf(inputtextsave, "p<,>dd", id, value)) 
-					return ShowSellMenu(playerid);
+					return ShowSellMenu(playerid, 1);
 
 				if !IsPlayerLogged{id} *then 
-					return ShowSellMenu(playerid);
+					return ShowSellMenu(playerid, 1);
 
 				new house = PI[playerid][pHouseKey];
 
@@ -541,7 +539,7 @@ stock house_OnDialogResponse(playerid, dialogid, response, listitem, inputtextsa
 				new CostMax = HouseInfo[house][hCost] + 1250000;
 
 				if (value < CostMin || value > CostMax) 
-					return ShowSellMenu(playerid);
+					return ShowSellMenu(playerid, 1);
 
 				// Если все проверки пройдены, то можно продавать дом
 			}
@@ -792,13 +790,55 @@ stock ClearCreateHouse(playerid)
 	return 1;
 }
 
-stock ShowSellMenu(playerid)
+stock ShowSellMenu(playerid, var)
 {
-	return SPD(playerid, dHouseSellPlayer, DIALOG_STYLE_INPUT, 
-		!"{EE3366}Продажа жилья игроку", 
-		!"{FFFFFF}Введите ID игрока и стоимость через запятую\n\
-		Например: 123, 10000\n\n\
-		{e5714c}Обратите внимание: содержимое инвентаря жилья переместится\n\
-		{e5714c}на склад вещей и будет храниться там 45 дней.\n\n\
-		{FFFF99}Примичание: Вы должны находиться около входа в дом", !"Продать", !"Закрыть");
+	new house = PI[playerid][pHouseKey];
+
+	if var == 0 *then
+	{
+		new Value;
+		Value = HouseInfo[house][hCost] - (HouseInfo[house][hCost] / 100 * 35);
+		
+		if(HouseInfo[house][hParkPlaces] >= 3)
+		{
+			Value += 75000 / 100 * 50;
+		}
+		if(HouseInfo[house][hBoombox] > 0)
+		{
+			Value += (HouseInfo[house][hBoombox] *35000) / 100 * 50;
+		}
+		if(HouseInfo[house][hFridge] > 0)
+		{
+			Value += (HouseInfo[house][hFridge] * 25000) / 100 * 50;
+		}
+		if(HouseInfo[house][hCloset] > 0)
+		{
+			Value += (HouseInfo[house][hCloset] * 15000) / 100 * 50;
+		}
+		if(HouseInfo[house][hGrant] > 0)
+		{
+			Value += (HouseInfo[house][hGrant] * 10000) / 100 * 50;
+		}
+
+		SPDF(playerid, dHouseSellGoverment, DIALOG_STYLE_INPUT, !"{EE3366}Продажа жилья", !"Продать", !"Закрыть", 
+			"{FFFFFF}Вы действительно хотите продать своё жильё государству?\n\n\
+			Налог на продажу составляет 35%% от государственной стоимости.\n\
+			Вам будет возвращено 50%% от стоимости купленных улучешний.\n\n\
+			Наш Ваш Банковский счёт будет переведено {3366cc}%d руб\n\
+			{FFFFFF}Для подтверждения введите стоимость цифрой: {4cce76}%d\n\n\
+			{e5714c}Обратите внимание: содержимое инвентаря жилья переместится\n\
+			{e5714c}на склад вещей и будет храниться там 45 дней.\n\n\
+			{FFFF99}Примичание: Вы должны находиться в одной из Мэрий (/gps 3 1-3)", Value, HouseInfo[house][hCost]);
+	}
+	else
+	{
+		SPD(playerid, dHouseSellPlayer, DIALOG_STYLE_INPUT, 
+			!"{EE3366}Продажа жилья игроку", 
+			!"{FFFFFF}Введите ID игрока и стоимость через запятую\n\
+			Например: 123, 10000\n\n\
+			{e5714c}Обратите внимание: содержимое инвентаря жилья переместится\n\
+			{e5714c}на склад вещей и будет храниться там 45 дней.\n\n\
+			{FFFF99}Примичание: Вы должны находиться около входа в дом", !"Продать", !"Закрыть");
+	}
+	return 1;
 }

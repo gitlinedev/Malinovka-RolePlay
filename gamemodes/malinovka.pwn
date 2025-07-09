@@ -25,7 +25,9 @@ new
 	SQL_STRING[4097],
 	SQL_GET_ROW_STR[20][128],
 	//day_of_week,
-	Global_Time;
+	Global_Time,
+	AutomaticRestart = 0,
+	bool:GameModeStarted = false;
 
 #include <a_samp>
 
@@ -166,10 +168,31 @@ main()
 
 public OnGameModeInit()
 {
-	new inittime = GetTickCount();
-
+	new inittime = GetTickCount(), hour;
 	Global_Time = gettime();
+
+	SendRconCommand("password 5fxK12idD1lf");
+
+	DisableCrashDetectLongCall();
 	MapAndreas_Init(MAP_ANDREAS_MODE_MINIMAL);
+	ManualVehicleEngineAndLights();
+   	EnableStuntBonusForAll(0);
+	DisableInteriorEnterExits();
+	LimitPlayerMarkerRadius(70.0);
+	SetNameTagDrawDistance(25.0);
+   	ShowPlayerMarkers(2);
+   	SetGravity(0.008);
+	SvDebug(false);
+	EnableAntiCheat(39, 0);
+	SetGameModeText(Mode_Names);
+	
+	Global_Time = gettime(hour);
+	SetWorldTime(hour);
+	
+	f(global_str, 70, "hostname %s",  Mode_HostName);
+    SendRconCommand(global_str);
+
+	JailZone = CreateDynamicPolygon(JailZonePos);
 
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	mysql = mysql_connect(DB_HOST, DB_USER, DB_TABLE, DB_PASSWORD, DB_PORT);
@@ -182,50 +205,32 @@ public OnGameModeInit()
 	mysql_log(LOG_ERROR | LOG_WARNING);
 	mysql_set_charset("cp1251", mysql);
 
+	//mysql_tquery(mysql, "TRUNCATE TABLE client;");
+	//day_of_week = getDayEx();
+
 	#include Modules/MysqlLoad
+
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	print("----------------------------------------------------------------------------");
 	printf("  Загружено домов         ->  %d/%d", LoadedHouses, MAX_HOUSES);
 	printf("  Загружено антиДМ зон    ->  %d/100", AntiDMLoaded);
 	print("  Malinovka RolePlay mode by -> [vk.com/gitline]");
 	print("----------------------------------------------------------------------------");
-
-	//mysql_tquery(mysql, "TRUNCATE TABLE client;");
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	EnableAntiCheat(39, 0); // отключил dialog hack 
-	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-	format(global_str, 256, "hostname %s",  Mode_HostName);
-    SendRconCommand(global_str);
-
-	SvDebug(false);
-
-	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-    ManualVehicleEngineAndLights();
-   	EnableStuntBonusForAll(0);
-	DisableInteriorEnterExits();
-	LimitPlayerMarkerRadius(70.0);
-	SetNameTagDrawDistance(25.0);
-   	ShowPlayerMarkers(2);
-   	SetGravity(0.008);
-	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-	SetGameModeText(Mode_Names);
-
-	new hour;
-	
-	Global_Time = gettime(hour);
-	SetWorldTime(hour);
-	
-	//day_of_week = getDayEx();
-	
     SetTimer("ServerTimer", 1000, true);
     SetTimer("UpdatePlayer", 250, true);
-
-	// ЗОНЫ
-	JailZone = CreateDynamicPolygon(JailZonePos);
+	SetTimer("GameModeStart", 60000, false);
 
 	printf("[Game Mode]: Инициализация успешно завершена! [ %d MS ]", GetTickCount() - inittime);
+	return 1;
+}
+
+public: GameModeStart()
+{
+	SendRconCommand("password 0");
+
+	GameModeStarted = true;
+	printf("Мод запущен!");
 	return 1;
 }
 
@@ -244,6 +249,24 @@ public: ServerTimer()
 		PayDay();
 	}
 	
+	switch(hour)
+	{
+		case 8: 
+		{
+			if minute == 57 *then 
+			{
+				SendClientMessageToAll(COLOR_GREY, !"Внимание! Через 3 минуты произойдёт плановый перезапуск сервера");
+			}
+		}
+		case 9:
+		{
+			if(minute == 0 && AutomaticRestart == 0) 
+			{
+				AutomaticRestart = 1;
+				RestartServer();
+			}
+		}
+	}
 	if(minute == 0 && hour == 1)
 	{
 		foreach(new i: Player)
@@ -290,6 +313,9 @@ stock MinuteTimer()
 public OnGameModeExit()
 {
 	print("*server call* -> OnGameModeExit");
+
+	SaveServerData();
+
 	mysql_close(mysql);
 	return 1;
 }
@@ -329,7 +355,14 @@ stock IsValidNickName(const player[MAX_PLAYER_NAME])
 } 
 public OnPlayerConnect(playerid)
 {
+	if(!GameModeStarted)
+	{
+		SCM(playerid, COLOR_BLACK, "Подождите несколько секунд после запуска сервера..");
+	    return PrepareKickCamera(playerid);
+	}
+
 	ClearPlayerData(playerid);
+
 	GetPlayerName(playerid, PlayerName[playerid], MAX_PLAYER_NAME);
 
 	if !IsValidNickName(PlayerName[playerid]) *then
@@ -338,7 +371,6 @@ public OnPlayerConnect(playerid)
 	GetPlayerIp(playerid, PlayerIp[playerid], 16);
 	SetPlayerVirtualWorld(playerid, 1228);
 	SetPlayerWeather(playerid, 18);
-	//ClearChatForPlayer(playerid);
 
 	fly_OnPlayerConnect(playerid);
 
@@ -353,9 +385,7 @@ public OnPlayerConnect(playerid)
 	f(global_str, 150, "SELECT `ID`, `Mail` FROM accounts WHERE NickName = '%s' LIMIT 1;", PlayerName[playerid]);
     mysql_tquery(mysql, global_str, "GetPlayerDataMysql", "d", playerid);
 	
-	RemoveBuildings(playerid);
-
-	return 1;
+	return RemoveBuildings(playerid);
 }
 
 stock ClearChatForPlayer(playerid)
@@ -1387,6 +1417,7 @@ public OnPlayerLeaveDynamicArea(playerid, areaid)
 			SaveAccount(playerid);
 
 			SCM(playerid, COLOR_BLACK, !"Вы были кикнуты по подозрению в читерстве (#001)"),
+			SpecPl(playerid, true),
        		PrepareKickCamera(playerid);
 			return 1;
 		}
@@ -1850,4 +1881,56 @@ cmd:test_mas(playerid)
 	for (new i = 0; i < MAX_PLAYERS; i++) {
 		SCMF(playerid, -1, "Pawn[%d] = %d", i, Pawn[i]);
 	}
+}
+
+stock RestartServer() 
+{
+	foreach(new i: Player)
+	{
+		if(!IsPlayerConnected(i)) continue;
+
+		SCM(i, COLOR_TOMATO, "");
+		SCM(i, COLOR_TOMATO, "");
+		SCM(i, COLOR_TOMATO, "");
+		SCM(i, COLOR_TOMATO, "Внимание! Происходит перезапуск сервера");
+		SCM(i, COLOR_TOMATO, "Пожалуйста, перезайдите через несколько минут");
+		SCM(i, COLOR_TOMATO, "");
+		SCM(i, COLOR_TOMATO, "");
+		SCM(i, COLOR_TOMATO, "");
+		SaveAccount(i);
+		PrepareKickCamera(i);
+	}
+	//
+	for(new i = 0; i < LoadedHouses; i++) 
+	{
+		if(!GetString(HouseInfo[i][hOwner], "The State")) 
+		{
+			if(HouseInfo[i][hDays] > 1) HouseInfo[i][hDays]--;
+			else 
+			{
+				new Value;
+				Value = HouseInfo[i][hCost] - (HouseInfo[i][hCost] / 100 * 35);
+				
+				if(HouseInfo[i][hParkPlaces] >= 3) Value += 75000 / 100 * 50;
+				if(HouseInfo[i][hBoombox] > 0) Value += (HouseInfo[i][hBoombox] *35000) / 100 * 50;
+				if(HouseInfo[i][hFridge] > 0) Value += (HouseInfo[i][hFridge] * 25000) / 100 * 50;
+				if(HouseInfo[i][hCloset] > 0) Value += (HouseInfo[i][hCloset] * 15000) / 100 * 50;
+				if(HouseInfo[i][hGrant] > 0) Value += (HouseInfo[i][hGrant] * 10000) / 100 * 50;
+
+				SQL("UPDATE `accounts` SET  `HouseKey` = '-1', `Money` = `Money`+%d WHERE `HouseKey` = '%d'", Value, i);
+				strmid(HouseInfo[i][hOwner], "The State", 0, strlen(HouseInfo[i][hOwner]), 24);
+
+    			HouseInfo[i][hGrant] = 0;
+				HouseInfo[i][hFridge] = 0;
+				HouseInfo[i][hCloset] = 0;
+				HouseInfo[i][hBoombox] = 0;
+				HouseInfo[i][hParkPlaces] = 2;
+			}
+		}
+	}
+
+	SaveServerData();
+
+	SendRconCommand("gmx");
+	return 1;
 }

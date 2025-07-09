@@ -300,4 +300,6 @@ stock RemoveBuildings(playerid)
     RemoveBuildingForPlayer(playerid, 785, -1598.0200, -2897.8501, 7.6610, 0.25);
     RemoveBuildingForPlayer(playerid, 785, -1641.4000, -2940.2700, 9.6610, 0.25);
     RemoveBuildingForPlayer(playerid, 785, -1682.7500, -2939.0701, 16.6610, 0.25);
+
+    return 1;
 }

@@ -46,5 +46,6 @@ enum
     dStartAHouse,
     dHouseMenuUpgrades,
     dHouseSell,
+    dHouseSellGoverment,
     dHouseSellPlayer
 };
