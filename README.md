@@ -1,4 +1,4 @@
 # LethalityProd
 The best basis for writing a copy of Malinovka
 
-*withour database
+* maybe not best version of database
